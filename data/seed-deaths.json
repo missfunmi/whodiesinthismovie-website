@@ -1,0 +1,29 @@
+[
+  {
+    "movieTitle": "John Wick",
+    "tmdbId": 245891,
+    "deaths": [
+      {
+        "character": "Iosef Tarasov",
+        "timeOfDeath": "Act 3, nightclub basement",
+        "cause": "Gunshot",
+        "killedBy": "John Wick",
+        "context": "Final confrontation after stealing John's car and killing his dog",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Daisy (dog)",
+        "timeOfDeath": "Act 1, John's home",
+        "cause": "Beating",
+        "killedBy": "Iosef Tarasov",
+        "context": "Killed during home invasion while John was sleeping",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "La La Land",
+    "tmdbId": 313369,
+    "deaths": []
+  }
+]
