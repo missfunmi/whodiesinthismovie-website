@@ -19,7 +19,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 - Movie names in the autocomplete search results should be prefixed with the poster image and suffixed with the year in parentheses. For example, "\<poster> Sinners (2025)"
 - Upon selecting a movie name, a page is shown with the movie metadata and character deaths list. 
 	- Movie detail page shows: poster image, title, year, director, tagline (if available), runtime, and MPAA rating. Do not include budget, box office, or full cast list
-	- Death list table with columns: Character Name | Time of Death (timestamp or act/scene) | Cause of Death | Killed By (person/entity or "N/A" for accidents/natural causes) | Surrounding Context (brief summary of the situation that led to character's death)
+	- Character death cards containing Character Name | Time of Death (timestamp or act/scene) | Cause of Death | Killed By (person/entity or "N/A" for accidents/natural causes) | Surrounding Context (brief summary of the situation that led to character's death)
 - The list of characters who die (as well as the count of characters, whether 0 or > 0) is hidden by default but can be clicked to unhide. ´
 	- Upon clicking, the list will be revealed as well as all the information about when/how they die. If no deaths, a peppy message like "No deaths! Everyone survives! 🥳" is presented instead
 	- Ambiguous deaths shown in a separate section below confirmed deaths, with grayed-out text and a '?' icon next to the character name, along with the detail surrounding the particular ambiguity
