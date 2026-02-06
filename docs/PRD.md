@@ -50,8 +50,8 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 ### Data sources:
 
 - Movie metadata:
-	- For MVP: Manually seed database with 15 movies from 2024-2026 top lists. Include mix of high-death-count films (action, horror) and low/zero-death films (drama, comedy) to test both cases. Movie metadata sourced from The Movie Database API: https://developer.themoviedb.org/docs/getting-started
-	- Post-MVP: Build scraping pipeline for RateYourMusic (RYM) top films 2024-2026, working backwards from 2026: https://rateyourmusic.com/charts/top/film/2026 
+	- For MVP: Manually seed database with 15 movies from 2024-2026 top lists. Include mix of high-death-count films (action, horror) and low/zero-death films (drama, comedy) to test both cases. Movie metadata sourced from The Movie Database API: https://developer.themoviedb.org/docs/getting-started and stored in a JSON file (data/seed-movies.json)
+	- Post-MVP: Build scraping pipeline for RateYourMusic (RYM) top films 2024-2026, working backwards from 2026: https://rateyourmusic.com/charts/top/film/2026
 - Character deaths information priority sources (in order):
 	1. List of Deaths fandom wiki: https://listofdeaths.fandom.com/wiki/List_of_Deaths_Wiki
 	2. The Movie Spoiler: https://themoviespoiler.com
