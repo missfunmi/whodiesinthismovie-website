@@ -1,75 +1,5 @@
 [
   {
-    "movieTitle": "300",
-    "tmdbId": 1271,
-    "deaths": [
-      {
-        "character": "King Leonidas",
-        "timeOfDeath": "Act 3 (Final Stand)",
-        "cause": "Arrow Fire",
-        "killedBy": "Persian Archers",
-        "context": "Dies under a rain of arrows after refusing to kneel to Xerxes",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Captain Artemis",
-        "timeOfDeath": "Act 3 (Final Stand)",
-        "cause": "Slash",
-        "killedBy": "Persian Soldiers",
-        "context": "Mortally wounded protecting Leonidas",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Astinos",
-        "timeOfDeath": "Act 2 (Battle)",
-        "cause": "Decapitation",
-        "killedBy": "Persian Soldier",
-        "context": "Decapitated during battle",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Stelios",
-        "timeOfDeath": "Act 3 (Final Stand)",
-        "cause": "Speared/Arrows",
-        "killedBy": "Persian Soldiers",
-        "context": "Dies after jumping from a pile of bodies to kill a Persian general",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Theron",
-        "timeOfDeath": "Act 3 (Sparta Council)",
-        "cause": "Stab",
-        "killedBy": "Queen Gorgo",
-        "context": "Stabbed by the Queen during his betrayal; falls and drops Persian coins",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Persian Messenger",
-        "timeOfDeath": "Act 1 (The Pit)",
-        "cause": "Kick",
-        "killedBy": "King Leonidas",
-        "context": "Kicked into the pit by Leonidas (\"This is Sparta\")",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Uber Immortal",
-        "timeOfDeath": "Act 2 (Battle)",
-        "cause": "Decapitation",
-        "killedBy": "King Leonidas",
-        "context": "Head cut off by Leonidas during the battle with the Immortals",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Spartan Soldiers",
-        "timeOfDeath": "Act 3 (Final Stand)",
-        "cause": "Arrows/Combat",
-        "killedBy": "Persian Army",
-        "context": "The remaining 300 Spartans are all killed by arrow fire",
-        "isAmbiguous": false
-      }
-    ]
-  },
-  {
     "movieTitle": "Star Wars",
     "tmdbId": 11,
     "deaths": [
@@ -1136,6 +1066,76 @@
     ]
   },
   {
+    "movieTitle": "300",
+    "tmdbId": 1271,
+    "deaths": [
+      {
+        "character": "King Leonidas",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Arrow Fire",
+        "killedBy": "Persian Archers",
+        "context": "Dies under a rain of arrows after refusing to kneel to Xerxes",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Artemis",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Slash",
+        "killedBy": "Persian Soldiers",
+        "context": "Mortally wounded protecting Leonidas",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Astinos",
+        "timeOfDeath": "Act 2 (Battle)",
+        "cause": "Decapitation",
+        "killedBy": "Persian Soldier",
+        "context": "Decapitated during battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stelios",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Speared/Arrows",
+        "killedBy": "Persian Soldiers",
+        "context": "Dies after jumping from a pile of bodies to kill a Persian general",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Theron",
+        "timeOfDeath": "Act 3 (Sparta Council)",
+        "cause": "Stab",
+        "killedBy": "Queen Gorgo",
+        "context": "Stabbed by the Queen during his betrayal; falls and drops Persian coins",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Persian Messenger",
+        "timeOfDeath": "Act 1 (The Pit)",
+        "cause": "Kick",
+        "killedBy": "King Leonidas",
+        "context": "Kicked into the pit by Leonidas (\"This is Sparta\")",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Uber Immortal",
+        "timeOfDeath": "Act 2 (Battle)",
+        "cause": "Decapitation",
+        "killedBy": "King Leonidas",
+        "context": "Head cut off by Leonidas during the battle with the Immortals",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Spartan Soldiers",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Arrows/Combat",
+        "killedBy": "Persian Army",
+        "context": "The remaining 300 Spartans are all killed by arrow fire",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
     "movieTitle": "The Departed",
     "tmdbId": 1422,
     "deaths": [
@@ -1678,70 +1678,6 @@
         "killedBy": "Sidney Prescott",
         "context": "Shot in the head by Sidney after being shot by Gale",
         "isAmbiguous": false
-      },
-      {
-        "character": "Vince Schneider",
-        "timeOfDeath": "Act 1",
-        "cause": "Stabbed",
-        "killedBy": "Ghostface (Amber)",
-        "context": "Stabbed in the neck in a car",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Judy Hicks",
-        "timeOfDeath": "Act 2",
-        "cause": "Stabbed",
-        "killedBy": "Ghostface (Amber)",
-        "context": "Stabbed repeatedly on her front lawn in broad daylight",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Wes Hicks",
-        "timeOfDeath": "Act 2",
-        "cause": "Stabbed",
-        "killedBy": "Ghostface (Richie)",
-        "context": "Stabbed in the neck immediately after his mother's death",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Deputy Clay",
-        "timeOfDeath": "Act 3",
-        "cause": "Throat slit",
-        "killedBy": "Ghostface",
-        "context": "Killed at the hospital while guarding Tara",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Dewey Riley",
-        "timeOfDeath": "Act 3",
-        "cause": "Disemboweled",
-        "killedBy": "Ghostface (Amber)",
-        "context": "Killed at the hospital while trying to ensure Ghostface was dead",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Liv McKenzie",
-        "timeOfDeath": "Act 3",
-        "cause": "Shot",
-        "killedBy": "Amber Freeman",
-        "context": "Shot in the head by Amber to reveal herself as the killer",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Richie Kirsch",
-        "timeOfDeath": "Act 3",
-        "cause": "Stabbed/Shot",
-        "killedBy": "Sam Carpenter",
-        "context": "Stabbed repeatedly and shot by Sam in the finale",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Amber Freeman",
-        "timeOfDeath": "Act 3",
-        "cause": "Burned/Shot",
-        "killedBy": "Gale Weathers/Tara Carpenter",
-        "context": "Set on fire and then shot in the head",
-        "isAmbiguous": false
       }
     ]
   },
@@ -2185,22 +2121,6 @@
         "cause": "Mauling",
         "killedBy": "Hyenas",
         "context": "Eaten by hyenas after betraying them",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Mufasa",
-        "timeOfDeath": "Act 1",
-        "cause": "Trampled / Fall",
-        "killedBy": "Scar",
-        "context": "Scar throws him off the cliff into a stampede of wildebeests.",
-        "isAmbiguous": false
-      },
-      {
-        "character": "Scar",
-        "timeOfDeath": "Act 3 climax",
-        "cause": "Mauled",
-        "killedBy": "Hyenas",
-        "context": "Survived the fall fighting Simba but was turned on and eaten by his own hyena henchmen for betraying them.",
         "isAmbiguous": false
       }
     ]
@@ -4424,6 +4344,28 @@
     ]
   },
   {
+    "movieTitle": "The Lion King",
+    "tmdbId": 420818,
+    "deaths": [
+      {
+        "character": "Mufasa",
+        "timeOfDeath": "Act 1",
+        "cause": "Trampled / Fall",
+        "killedBy": "Scar",
+        "context": "Scar throws him off the cliff into a stampede of wildebeests.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Scar",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Mauled",
+        "killedBy": "Hyenas",
+        "context": "Survived the fall fighting Simba but was turned on and eaten by his own hyena henchmen for betraying them.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
     "movieTitle": "Spider-Man: Far From Home",
     "tmdbId": 429617,
     "deaths": [
@@ -5010,6 +4952,76 @@
     ]
   },
   {
+    "movieTitle": "Scream",
+    "tmdbId": 646385,
+    "deaths": [
+      {
+        "character": "Vince Schneider",
+        "timeOfDeath": "Act 1",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Stabbed in the neck in a car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Judy Hicks",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Stabbed repeatedly on her front lawn in broad daylight",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wes Hicks",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Richie)",
+        "context": "Stabbed in the neck immediately after his mother's death",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Deputy Clay",
+        "timeOfDeath": "Act 3",
+        "cause": "Throat slit",
+        "killedBy": "Ghostface",
+        "context": "Killed at the hospital while guarding Tara",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dewey Riley",
+        "timeOfDeath": "Act 3",
+        "cause": "Disemboweled",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Killed at the hospital while trying to ensure Ghostface was dead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Liv McKenzie",
+        "timeOfDeath": "Act 3",
+        "cause": "Shot",
+        "killedBy": "Amber Freeman",
+        "context": "Shot in the head by Amber to reveal herself as the killer",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Richie Kirsch",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed/Shot",
+        "killedBy": "Sam Carpenter",
+        "context": "Stabbed repeatedly and shot by Sam in the finale",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Amber Freeman",
+        "timeOfDeath": "Act 3",
+        "cause": "Burned/Shot",
+        "killedBy": "Gale Weathers/Tara Carpenter",
+        "context": "Set on fire and then shot in the head",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
     "movieTitle": "Kingdom of the Planet of the Apes",
     "tmdbId": 653346,
     "deaths": [
@@ -5401,20 +5413,6 @@
         "cause": "Stabbed",
         "killedBy": "Sam Carpenter",
         "context": "Stabbed multiple times and through the eye by Sam in the Billy Loomis costume",
-        "isAmbiguous": false
-      }
-    ]
-  },
-  {
-    "movieTitle": "movieTitle",
-    "tmdbId": 0,
-    "deaths": [
-      {
-        "character": "character",
-        "timeOfDeath": "timeOfDeath",
-        "cause": "cause",
-        "killedBy": "killedBy",
-        "context": "context",
         "isAmbiguous": false
       }
     ]
