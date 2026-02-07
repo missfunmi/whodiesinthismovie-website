@@ -21,15 +21,14 @@ const csvContent = fs.readFileSync(csvFile, "utf-8");
 const lines = csvContent.trim().split("\n");
 const headers = lines[0].split(",").map((h) => h.trim());
 
-// Group deaths by movie
+// Group deaths by tmdbId to handle duplicate titles (e.g., remakes)
 const movieDeaths = {};
 
 for (let i = 1; i < lines.length; i++) {
   if (!lines[i].trim()) continue; // Skip truly empty lines
 
   /**
-   * Robust CSV Split: Handles commas inside quoted strings
-   * This regex looks for commas that are not inside double quotes.
+   * Robust CSV Split: Handles commas inside quoted strings.
    */
   const values = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map((v) => {
     let clean = v.trim();
@@ -44,19 +43,21 @@ for (let i = 1; i < lines.length; i++) {
 
   if (!row.movieTitle) continue;
 
-  const movieTitle = row.movieTitle;
+  // tmdbId is the canonical unique attribute
+  const id = row.tmdbId;
+  if (!id) continue;
 
-  // Initialize movie entry if it doesn't exist
-  if (!movieDeaths[movieTitle]) {
-    movieDeaths[movieTitle] = {
-      movieTitle: movieTitle,
-      tmdbId: parseInt(row.tmdbId) || 0,
+  // Initialize movie entry using tmdbId as the key
+  if (!movieDeaths[id]) {
+    movieDeaths[id] = {
+      movieTitle: row.movieTitle,
+      tmdbId: parseInt(id),
       deaths: [],
     };
   }
 
   // Push the character data into the deaths array
-  movieDeaths[movieTitle].deaths.push({
+  movieDeaths[id].deaths.push({
     character: row.character,
     timeOfDeath: row.timeOfDeath,
     cause: row.cause,
