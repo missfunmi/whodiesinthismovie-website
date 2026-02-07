@@ -1,29 +1,5692 @@
 [
   {
-    "movieTitle": "John Wick",
-    "tmdbId": 245891,
+    "movieTitle": "300",
+    "tmdbId": 1271,
     "deaths": [
       {
-        "character": "Iosef Tarasov",
-        "timeOfDeath": "Act 3, nightclub basement",
-        "cause": "Gunshot",
-        "killedBy": "John Wick",
-        "context": "Final confrontation after stealing John's car and killing his dog",
+        "character": "King Leonidas",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Arrow Fire",
+        "killedBy": "Persian Archers",
+        "context": "Dies under a rain of arrows after refusing to kneel to Xerxes",
         "isAmbiguous": false
       },
       {
-        "character": "Daisy (dog)",
-        "timeOfDeath": "Act 1, John's home",
-        "cause": "Beating",
-        "killedBy": "Iosef Tarasov",
-        "context": "Killed during home invasion while John was sleeping",
+        "character": "Captain Artemis",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Slash",
+        "killedBy": "Persian Soldiers",
+        "context": "Mortally wounded protecting Leonidas",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Astinos",
+        "timeOfDeath": "Act 2 (Battle)",
+        "cause": "Decapitation",
+        "killedBy": "Persian Soldier",
+        "context": "Decapitated during battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stelios",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Speared/Arrows",
+        "killedBy": "Persian Soldiers",
+        "context": "Dies after jumping from a pile of bodies to kill a Persian general",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Theron",
+        "timeOfDeath": "Act 3 (Sparta Council)",
+        "cause": "Stab",
+        "killedBy": "Queen Gorgo",
+        "context": "Stabbed by the Queen during his betrayal; falls and drops Persian coins",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Persian Messenger",
+        "timeOfDeath": "Act 1 (The Pit)",
+        "cause": "Kick",
+        "killedBy": "King Leonidas",
+        "context": "Kicked into the pit by Leonidas (\"This is Sparta\")",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Uber Immortal",
+        "timeOfDeath": "Act 2 (Battle)",
+        "cause": "Decapitation",
+        "killedBy": "King Leonidas",
+        "context": "Head cut off by Leonidas during the battle with the Immortals",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Spartan Soldiers",
+        "timeOfDeath": "Act 3 (Final Stand)",
+        "cause": "Arrows/Combat",
+        "killedBy": "Persian Army",
+        "context": "The remaining 300 Spartans are all killed by arrow fire",
         "isAmbiguous": false
       }
     ]
   },
   {
-    "movieTitle": "La La Land",
-    "tmdbId": 313369,
-    "deaths": []
+    "movieTitle": "Star Wars",
+    "tmdbId": 11,
+    "deaths": [
+      {
+        "character": "Raymus Antilles",
+        "timeOfDeath": "Opening scene",
+        "cause": "Strangulation",
+        "killedBy": "Darth Vader",
+        "context": "Choked to death while being interrogated about the Death Star plans",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Greedo",
+        "timeOfDeath": "Cantina scene",
+        "cause": "Gunshot",
+        "killedBy": "Han Solo",
+        "context": "Shot under the table during confrontation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Alderaan Population",
+        "timeOfDeath": "Mid-movie",
+        "cause": "Superlaser",
+        "killedBy": "Grand Moff Tarkin",
+        "context": "Entire planet destroyed by the Death Star",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Obi-Wan Kenobi",
+        "timeOfDeath": "Act 3",
+        "cause": "Lightsaber",
+        "killedBy": "Darth Vader",
+        "context": "Sacrifices himself during duel to allow Luke and others to escape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Grand Moff Tarkin",
+        "timeOfDeath": "Climax",
+        "cause": "Explosion",
+        "killedBy": "Luke Skywalker",
+        "context": "Dies when the Death Star explodes",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jek Porkins",
+        "timeOfDeath": "Battle of Yavin",
+        "cause": "Ship explosion",
+        "killedBy": "Empire",
+        "context": "X-Wing shot down by turbolasers/TIE fighters",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Biggs Darklighter",
+        "timeOfDeath": "Battle of Yavin",
+        "cause": "Ship explosion",
+        "killedBy": "Darth Vader",
+        "context": "X-Wing shot down by Vader in the trench run",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Garven \"Red Leader\" Dreis",
+        "timeOfDeath": "Battle of Yavin",
+        "cause": "Ship explosion",
+        "killedBy": "Darth Vader",
+        "context": "Shot down after failed trench run attempt",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jon \"Gold Leader\" Vander",
+        "timeOfDeath": "Battle of Yavin",
+        "cause": "Ship explosion",
+        "killedBy": "Darth Vader",
+        "context": "Shot down during first trench run attempt",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Owen Lars",
+        "timeOfDeath": "Act 1",
+        "cause": "Blaster fire",
+        "killedBy": "Stormtroopers",
+        "context": "Burned skeleton found by Luke at the homestead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Beru Lars",
+        "timeOfDeath": "Act 1",
+        "cause": "Blaster fire",
+        "killedBy": "Stormtroopers",
+        "context": "Burned skeleton found by Luke at the homestead",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Forrest Gump",
+    "tmdbId": 13,
+    "deaths": [
+      {
+        "character": "Bubba Blue",
+        "timeOfDeath": "Vietnam War sequence",
+        "cause": "Gunshot",
+        "killedBy": "Viet Cong",
+        "context": "Dies in Forrest's arms by the riverbank after ambush",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mrs. Gump",
+        "timeOfDeath": "Act 3",
+        "cause": "Cancer",
+        "killedBy": "Nature",
+        "context": "Dies in bed at home with Forrest present",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jenny Curran",
+        "timeOfDeath": "End of movie",
+        "cause": "Viral Illness (implied HIV/AIDS)",
+        "killedBy": "Nature",
+        "context": "Dies in bed; grave visited by Forrest",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Dark Knight",
+    "tmdbId": 155,
+    "deaths": [
+      {
+        "character": "Brian Douglas",
+        "timeOfDeath": "Parking garage scene",
+        "cause": "Hanging",
+        "killedBy": "The Joker",
+        "context": "Vigilante dressed as Batman found hanging outside window",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gambol",
+        "timeOfDeath": "Gang meeting",
+        "cause": "Knife laceration",
+        "killedBy": "The Joker",
+        "context": "Mouth slashed (\"Why so serious?\") after Joker plays dead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gillian B. Loeb",
+        "timeOfDeath": "Police funeral",
+        "cause": "Poisoning",
+        "killedBy": "The Joker",
+        "context": "Drinks acid/poison replaced in his water glass",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Judge Surrillo",
+        "timeOfDeath": "Car scene",
+        "cause": "Car bomb",
+        "killedBy": "The Joker",
+        "context": "Killed when she flips playing card over in her car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rachel Dawes",
+        "timeOfDeath": "Mid-point",
+        "cause": "Explosion",
+        "killedBy": "The Joker",
+        "context": "Tied to explosives in warehouse; Batman saves Harvey instead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Harvey \"Two-Face\" Dent",
+        "timeOfDeath": "Climax",
+        "cause": "Fall",
+        "killedBy": "Batman",
+        "context": "Pushed off building ledge to save Gordon's son",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sal Maroni",
+        "timeOfDeath": "Act 3",
+        "cause": "Car crash",
+        "killedBy": "Harvey \"Two-Face\" Dent",
+        "context": "Car flipped by Dent; implied death but not shown",
+        "isAmbiguous": true
+      },
+      {
+        "character": "The Chechen",
+        "timeOfDeath": "Mob meeting",
+        "cause": "Burning/Dogs",
+        "killedBy": "The Joker",
+        "context": "Burned on the pile of money and likely eaten by his own dogs",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Godfather",
+    "tmdbId": 238,
+    "deaths": [
+      {
+        "character": "Khartoum (horse)",
+        "timeOfDeath": "Act 1",
+        "cause": "Decapitation",
+        "killedBy": "Luca Brasi (implied)",
+        "context": "Head found in Jack Woltz's bed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Luca Brasi",
+        "timeOfDeath": "Meeting with Sollozzo",
+        "cause": "Strangulation",
+        "killedBy": "Sollozzo / Bruno Tattaglia",
+        "context": "Hand pinned to bar with knife and garroted",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Paulie Gatto",
+        "timeOfDeath": "Car ride",
+        "cause": "Gunshot",
+        "killedBy": "Rocco Lampone",
+        "context": "Shot in the head while sitting in car (\"Leave the gun take the cannoli\")",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Virgil \"The Turk\" Sollozzo",
+        "timeOfDeath": "Restaurant scene",
+        "cause": "Gunshot",
+        "killedBy": "Michael Corleone",
+        "context": "Shot in the head at dinner",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mark McCluskey",
+        "timeOfDeath": "Restaurant scene",
+        "cause": "Gunshot",
+        "killedBy": "Michael Corleone",
+        "context": "Shot in the throat and head at dinner",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Apollonia Vitelli-Corleone",
+        "timeOfDeath": "Sicily sequence",
+        "cause": "Car bomb",
+        "killedBy": "Fabrizio",
+        "context": "Killed by bomb intended for Michael",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sonny Corleone",
+        "timeOfDeath": "Toll booth scene",
+        "cause": "Machine gun fire",
+        "killedBy": "Barzini Hitmen",
+        "context": "Ambushed at causeway toll booth",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vito Corleone",
+        "timeOfDeath": "Garden scene",
+        "cause": "Heart attack",
+        "killedBy": "Nature",
+        "context": "Collapses while playing with grandson in tomato garden",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Salvatore Tessio",
+        "timeOfDeath": "Compound",
+        "cause": "Execution (off-screen)",
+        "killedBy": "Willi Cicci / Nick Geraci",
+        "context": "Led away to car after betrayal is discovered",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Moe Greene",
+        "timeOfDeath": "Massage scene",
+        "cause": "Gunshot",
+        "killedBy": "Unknown (Corleone Hitman)",
+        "context": "Shot through the eye while getting a massage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Emilio Barzini",
+        "timeOfDeath": "Steps sequence",
+        "cause": "Gunshot",
+        "killedBy": "Al Neri",
+        "context": "Shot on steps of courthouse during baptism montage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Philip Tattaglia",
+        "timeOfDeath": "Bedroom scene",
+        "cause": "Machine gun fire",
+        "killedBy": "Rocco Lampone",
+        "context": "Shot in bed with prostitute during baptism montage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carmine Cuneo",
+        "timeOfDeath": "Revolving door scene",
+        "cause": "Gunshot",
+        "killedBy": "Willi Cicci",
+        "context": "Trapped in revolving door and shot during baptism montage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Victor Stracci",
+        "timeOfDeath": "Elevator scene",
+        "cause": "Shotgun",
+        "killedBy": "Clemenza",
+        "context": "Shot in elevator during baptism montage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carlo Rizzi",
+        "timeOfDeath": "Car scene",
+        "cause": "Garrote",
+        "killedBy": "Clemenza",
+        "context": "Strangled in car after admitting involvement in Sonny's death",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Godfather Part II",
+    "tmdbId": 240,
+    "deaths": [
+      {
+        "character": "Paolo Andolini",
+        "timeOfDeath": "1901 Flashback",
+        "cause": "Gunshot",
+        "killedBy": "Don Ciccio's Men",
+        "context": "Shot in the hills of Sicily",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Antonio Andolini",
+        "timeOfDeath": "1901 Flashback",
+        "cause": "Gunshot",
+        "killedBy": "Don Ciccio's Men",
+        "context": "Mentioned as killed for not paying tribute",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Signora Andolini",
+        "timeOfDeath": "1901 Flashback",
+        "cause": "Shotgun",
+        "killedBy": "Don Ciccio's Bodyguards",
+        "context": "Shot while begging for Vito's life",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Don Fanucci",
+        "timeOfDeath": "1917 Flashback",
+        "cause": "Gunshot",
+        "killedBy": "Vito Corleone",
+        "context": "Shot in his apartment doorway during festival",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Don Ciccio",
+        "timeOfDeath": "1920s Flashback",
+        "cause": "Knife",
+        "killedBy": "Vito Corleone",
+        "context": "Stomach ripped open by Vito in revenge",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bussetta",
+        "timeOfDeath": "Havana hospital",
+        "cause": "Suffocation",
+        "killedBy": "Bodyguard",
+        "context": "Smothered while trying to kill Roth",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Johnny Ola",
+        "timeOfDeath": "Havana hotel",
+        "cause": "Garrote",
+        "killedBy": "Bussetta",
+        "context": "Strangled on balcony",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hyman Roth",
+        "timeOfDeath": "Airport scene",
+        "cause": "Gunshot",
+        "killedBy": "Rocco Lampone",
+        "context": "Shot while speaking to press at airport",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rocco Lampone",
+        "timeOfDeath": "Airport scene",
+        "cause": "Gunshot",
+        "killedBy": "Federal Agents",
+        "context": "Shot immediately after killing Hyman Roth",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Frank Pentangeli",
+        "timeOfDeath": "Bathtub scene",
+        "cause": "Suicide (Wrist slitting)",
+        "killedBy": "Self",
+        "context": "Found dead in bathtub after agreeing to suicide to save family",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fredo Corleone",
+        "timeOfDeath": "Lake fishing scene",
+        "cause": "Gunshot",
+        "killedBy": "Al Neri",
+        "context": "Shot in back of head while fishing on lake",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Batman Begins",
+    "tmdbId": 272,
+    "deaths": [
+      {
+        "character": "Joe Chill",
+        "timeOfDeath": "Court exit",
+        "cause": "Gunshot",
+        "killedBy": "Falcone's Assassin",
+        "context": "Shot by female assassin posing as reporter",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Thomas Wayne",
+        "timeOfDeath": "Flashback alley",
+        "cause": "Gunshot",
+        "killedBy": "Joe Chill",
+        "context": "Shot during mugging",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Martha Wayne",
+        "timeOfDeath": "Flashback alley",
+        "cause": "Gunshot",
+        "killedBy": "Joe Chill",
+        "context": "Shot during mugging",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fake Ra's al Ghul (Decoy)",
+        "timeOfDeath": "Monastery",
+        "cause": "Debris/Explosion",
+        "killedBy": "Bruce Wayne",
+        "context": "Killed when monastery collapses during Bruce's escape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ra's al Ghul (Ducard)",
+        "timeOfDeath": "Train climax",
+        "cause": "Crash/Explosion",
+        "killedBy": "Batman / Self",
+        "context": "Left on crashing train (\"I won't kill you but I don't have to save you\")",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Shawshank Redemption",
+    "tmdbId": 278,
+    "deaths": [
+      {
+        "character": "Brooks Hatlen",
+        "timeOfDeath": "Apartment",
+        "cause": "Suicide (Hanging)",
+        "killedBy": "Self",
+        "context": "Hangs himself after being paroled and unable to adjust",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tommy Williams",
+        "timeOfDeath": "Prison yard",
+        "cause": "Gunshot",
+        "killedBy": "Captain Hadley",
+        "context": "Shot under guise of escape attempt to silence him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Warden Samuel Norton",
+        "timeOfDeath": "Office",
+        "cause": "Suicide (Gunshot)",
+        "killedBy": "Self",
+        "context": "Shoots himself as police arrive to arrest him",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Alien",
+    "tmdbId": 348,
+    "deaths": [
+      {
+        "character": "Kane",
+        "timeOfDeath": "Mess hall",
+        "cause": "Chestburster",
+        "killedBy": "Xenomorph",
+        "context": "Alien bursts through his chest during dinner",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Brett",
+        "timeOfDeath": "Landing leg room",
+        "cause": "Headbite",
+        "killedBy": "Xenomorph",
+        "context": "Attacked by Alien while searching for the cat",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dallas",
+        "timeOfDeath": "Ventilation shaft",
+        "cause": "Ambushed",
+        "killedBy": "Xenomorph",
+        "context": "Presumed dead in theatrical release; deleted scene shows him cocooned",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Ash",
+        "timeOfDeath": "Mess hall",
+        "cause": "Bludgeoning/Flamethrower",
+        "killedBy": "Parker / Ripley",
+        "context": "Android head knocked off then incinerated",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Parker",
+        "timeOfDeath": "Storage room",
+        "cause": "Headbite",
+        "killedBy": "Xenomorph",
+        "context": "Killed while trying to protect Lambert",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lambert",
+        "timeOfDeath": "Storage room",
+        "cause": "Impaled (implied)",
+        "killedBy": "Xenomorph",
+        "context": "Cornered and killed by Alien (death screams heard)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "The Alien",
+        "timeOfDeath": "Escape shuttle",
+        "cause": "Airlock/Engine blast",
+        "killedBy": "Ripley",
+        "context": "Blown out of airlock and incinerated by engines",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Schindler's List",
+    "tmdbId": 424,
+    "deaths": [
+      {
+        "character": "One-Armed Man",
+        "timeOfDeath": "Street clearing",
+        "cause": "Gunshot",
+        "killedBy": "Nazi Soldiers",
+        "context": "Shot in the head for not shoveling snow fast enough",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Diana Reiter",
+        "timeOfDeath": "Construction site",
+        "cause": "Gunshot",
+        "killedBy": "Amon Goeth",
+        "context": "Engineer shot for arguing about foundation construction",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Amon Goeth",
+        "timeOfDeath": "Execution platform",
+        "cause": "Hanging",
+        "killedBy": "Allied Forces",
+        "context": "Executed for war crimes at end of film",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lisiek",
+        "timeOfDeath": "Goeth's Villa",
+        "cause": "Gunshot",
+        "killedBy": "Amon Goeth",
+        "context": "Boy shot by Goeth for not cleaning bathtub properly",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Fight Club",
+    "tmdbId": 550,
+    "deaths": [
+      {
+        "character": "Robert \"Bob\" Paulson",
+        "timeOfDeath": "Act 3 (Project Mayhem Mission)",
+        "cause": "Gunshot",
+        "killedBy": "Police",
+        "context": "Shot in the head by police during a Project Mayhem sabotage operation gone wrong",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tyler Durden",
+        "timeOfDeath": "Act 3 (Climax)",
+        "cause": "Gunshot",
+        "killedBy": "The Narrator",
+        "context": "The Narrator shoots himself in the mouth to \"kill\" the Tyler Durden persona",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Chloe",
+        "timeOfDeath": "Off-screen (Mentioned in Act 3)",
+        "cause": "Unknown",
+        "killedBy": "Unknown",
+        "context": "Marla Singer confirms to the Narrator that Chloe died (likely suicide or illness)",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Wild Bunch",
+    "tmdbId": 576,
+    "deaths": [
+      {
+        "character": "Pike Bishop",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshots",
+        "killedBy": "Mexican Soldiers",
+        "context": "Shot repeatedly by soldiers and a child soldier during the final standoff",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dutch Engstrom",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshots",
+        "killedBy": "Mexican Soldiers",
+        "context": "Shot repeatedly during the final standoff while calling Pike's name",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lyle Gorch",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshots",
+        "killedBy": "Mexican Soldiers",
+        "context": "Killed during the final massive shootout against Mapache's troops",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tector Gorch",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshots",
+        "killedBy": "Mexican Soldiers",
+        "context": "Killed alongside his brother during the final massive shootout",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Angel",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Throat Slit",
+        "killedBy": "General Mapache",
+        "context": "Throat slit by Mapache during the exchange",
+        "isAmbiguous": false
+      },
+      {
+        "character": "General Mapache",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshot",
+        "killedBy": "Pike Bishop",
+        "context": "Shot by Pike immediately after he kills Angel",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Commander Mohr",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshot",
+        "killedBy": "Pike Bishop",
+        "context": "Shot by Pike during the initial eruption of the final battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Herrera",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshot",
+        "killedBy": "Pike Bishop",
+        "context": "Shot by Pike during the initial eruption of the final battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Major Zamorra",
+        "timeOfDeath": "Act 3 (Final Battle)",
+        "cause": "Gunshots",
+        "killedBy": "The Wild Bunch",
+        "context": "Killed during the chaos of the final battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Clarence \"Crazy\" Lee",
+        "timeOfDeath": "Act 1 (Bank Robbery)",
+        "cause": "Gunshots",
+        "killedBy": "Thornton's Posse",
+        "context": "Shot while covering the gang's escape from the bank",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Teresa",
+        "timeOfDeath": "Act 1 (Flashback/Mention)",
+        "cause": "Gunshot",
+        "killedBy": "Angel",
+        "context": "Revealed to have been shot by Angel (her former lover) for being with Mapache",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "2 Fast 2 Furious",
+    "tmdbId": 584,
+    "deaths": [
+      {
+        "character": "Unnamed Driver 1",
+        "timeOfDeath": "Act 2 (Highway Chase)",
+        "cause": "Crushed",
+        "killedBy": "Unknown",
+        "context": "Driving a Mustang that gets crushed under the wheels of a semi-truck during the scramble",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Driver 2",
+        "timeOfDeath": "Act 2 (Highway Chase)",
+        "cause": "Car Crash",
+        "killedBy": "Self/Accident",
+        "context": "Crashes Corvette into the wreckage of the Mustang",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Titanic",
+    "tmdbId": 597,
+    "deaths": [
+      {
+        "character": "Jack Dawson",
+        "timeOfDeath": "Act 3 (Post-Sinking)",
+        "cause": "Hypothermia",
+        "killedBy": "Nature",
+        "context": "Freezes to death in the Atlantic ocean while holding onto the door panel for Rose",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fabrizio",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Crushed",
+        "killedBy": "Funnel",
+        "context": "Crushed by one of the ship's falling smoke funnels while swimming",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Thomas Andrews",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Unknown/Implied",
+        "killedBy": "Nature/Ship",
+        "context": "Last seen standing by the clock in the first class smoking room awaiting the end",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Edward Smith",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning/Crushed",
+        "killedBy": "Nature/Ship",
+        "context": "Locks himself in the bridge and dies when the windows implode from water pressure",
+        "isAmbiguous": false
+      },
+      {
+        "character": "First Officer William Murdoch",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Gunshot",
+        "killedBy": "Self",
+        "context": "Commits suicide by shooting himself in the head after shooting passengers",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tommy Ryan",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Gunshot",
+        "killedBy": "First Officer William Murdoch",
+        "context": "Accidentally pushed forward and shot by Murdoch during the panic at the lifeboats",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Spicer Lovejoy",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Massive Trauma",
+        "killedBy": "Nature/Ship",
+        "context": "Falls into the splitting hull of the ship (deleted scene confirms death but implied in film)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cora Cartmell",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Trapped behind a gate in steerage with her parents as water rises",
+        "isAmbiguous": false
+      },
+      {
+        "character": "J. Bruce Ismay's Reputation",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Social Death",
+        "killedBy": "Self",
+        "context": "Not a physical death but explicitly framed as the death of his life/character",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Ida Straus",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Lying in bed embracing her husband as water rushes into their cabin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Isidor Straus",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Lying in bed embracing his wife as water rushes into their cabin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Benjamin Guggenheim",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Dressed in his best to \"go down like a gentleman\" in the main staircase",
+        "isAmbiguous": false
+      },
+      {
+        "character": "John Jacob Astor IV",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Crushed/Drowning",
+        "killedBy": "Funnel/Nature",
+        "context": "Last seen clinging to the grand staircase pillar as the dome implodes",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sixth Officer James Moody",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Last seen struggling with davits as water washes over the deck",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Chief Officer Henry Wilde",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Hypothermia",
+        "killedBy": "Nature",
+        "context": "Dies in the water blowing his whistle; Rose takes the whistle from his frozen body",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wallace Hartley",
+        "timeOfDeath": "Act 3 (Sinking)",
+        "cause": "Drowning",
+        "killedBy": "Nature",
+        "context": "Plays violin until the water overtakes the band",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rose Dawson Calvert (Old)",
+        "timeOfDeath": "End of Movie",
+        "cause": "Natural Causes",
+        "killedBy": "Nature",
+        "context": "Dies peacefully in her sleep (warmly embraced by Jack in the afterlife sequence)",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Aliens",
+    "tmdbId": 679,
+    "deaths": [
+      {
+        "character": "Private Frost",
+        "timeOfDeath": "Act 1 (Hive Ambush)",
+        "cause": "Burned",
+        "killedBy": "Private Wierzbowski",
+        "context": "Accidentally set on fire by Wierzbowski's flamethrower during the ambush",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Crowe",
+        "timeOfDeath": "Act 1 (Hive Ambush)",
+        "cause": "Explosion",
+        "killedBy": "Ammo cook-off",
+        "context": "Killed by an explosion from the ammo bag during the ambush",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Wierzbowski",
+        "timeOfDeath": "Act 1 (Hive Ambush)",
+        "cause": "Mauled",
+        "killedBy": "Xenomorphs",
+        "context": "Dragged away by aliens during the ambush (confirmed dead by life monitor flatline)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Drake",
+        "timeOfDeath": "Act 1 (Hive Ambush)",
+        "cause": "Acid Burns",
+        "killedBy": "Xenomorph",
+        "context": "Sprayed by acid blood after shooting an alien at point-blank range",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sergeant Apone",
+        "timeOfDeath": "Act 1 (Hive Ambush)",
+        "cause": "Mauled/Captured",
+        "killedBy": "Xenomorphs",
+        "context": "Grabbed by an alien in the hive ceiling (later presumed impregnated/dead)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Corporal Ferro",
+        "timeOfDeath": "Act 2 (Dropship)",
+        "cause": "Crash",
+        "killedBy": "Xenomorph",
+        "context": "Killed in the cockpit by an alien",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Spunkmeyer",
+        "timeOfDeath": "Act 2 (Dropship)",
+        "cause": "Crash",
+        "killedBy": "Xenomorph",
+        "context": "Killed in the dropship crash caused by the alien attack",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carter Burke",
+        "timeOfDeath": "Act 3 (Operations)",
+        "cause": "Mauled",
+        "killedBy": "Xenomorph",
+        "context": "Trapped himself with an alien while trying to lock the others out",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Hudson",
+        "timeOfDeath": "Act 3 (Last Stand)",
+        "cause": "Mauled",
+        "killedBy": "Xenomorphs",
+        "context": "Dragged through the floor grating by aliens while covering the retreat",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lieutenant Gorman",
+        "timeOfDeath": "Act 3 (Ventilation Shafts)",
+        "cause": "Explosion",
+        "killedBy": "Self",
+        "context": "Detonates a grenade to kill himself and Vasquez to avoid capture",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Vasquez",
+        "timeOfDeath": "Act 3 (Ventilation Shafts)",
+        "cause": "Explosion",
+        "killedBy": "Lieutenant Gorman",
+        "context": "Holds the grenade with Gorman to die on her own terms",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Alien Queen",
+        "timeOfDeath": "Act 3 (Sulaco Airlock)",
+        "cause": "Ejection",
+        "killedBy": "Ellen Ripley",
+        "context": "Expelled into space through the airlock",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Russ Jorden",
+        "timeOfDeath": "Act 1 (Special Edition/Flashback)",
+        "cause": "Parasitization",
+        "killedBy": "Facehugger",
+        "context": "Attacked by a facehugger while exploring the derelict ship",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Anne Jorden",
+        "timeOfDeath": "Act 1 (Special Edition/Flashback)",
+        "cause": "Unknown",
+        "killedBy": "Xenomorphs",
+        "context": "Presumed killed during the fall of the colony (Special Edition context)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mary (Colonist)",
+        "timeOfDeath": "Act 1 (Atmosphere Processor)",
+        "cause": "Chestburster",
+        "killedBy": "Xenomorph",
+        "context": "Found cocooned; dies when a chestburster erupts from her body",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Pulp Fiction",
+    "tmdbId": 680,
+    "deaths": [
+      {
+        "character": "Brett",
+        "timeOfDeath": "Act 1 (Apartment)",
+        "cause": "Gunshots",
+        "killedBy": "Jules and Vincent",
+        "context": "Execuated by Jules and Vincent after the \"Ezekiel 25:17\" speech",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Roger",
+        "timeOfDeath": "Act 1 (Apartment)",
+        "cause": "Gunshot",
+        "killedBy": "Jules",
+        "context": "Shot on the couch by Jules during the interrogation of Brett",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fourth Man",
+        "timeOfDeath": "Act 1 (Apartment)",
+        "cause": "Gunshots",
+        "killedBy": "Jules and Vincent",
+        "context": "Shot repeatedly after bursting out of the bathroom and missing his shots",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Marvin",
+        "timeOfDeath": "Act 3 (The Car)",
+        "cause": "Gunshot",
+        "killedBy": "Vincent Vega",
+        "context": "Accidentally shot in the face by Vincent when the car hits a bump",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vincent Vega",
+        "timeOfDeath": "Act 2 (Butch's Apartment)",
+        "cause": "Gunshot",
+        "killedBy": "Butch Coolidge",
+        "context": "Shot with his own MAC-10 by Butch upon exiting the bathroom",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maynard",
+        "timeOfDeath": "Act 2 (Pawn Shop)",
+        "cause": "Slash/Stab",
+        "killedBy": "Butch Coolidge",
+        "context": "Slashed and stabbed with a katana by Butch (left for dead/Marsellus)",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Zed",
+        "timeOfDeath": "Act 2 (Pawn Shop)",
+        "cause": "Gunshot",
+        "killedBy": "Marsellus Wallace",
+        "context": "Shot in the groin by Marsellus; Marsellus promises to get medieval on him (implied torture/death)",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Departed",
+    "tmdbId": 1422,
+    "deaths": [
+      {
+        "character": "Frank Costello",
+        "timeOfDeath": "Act 3 (Warehouse)",
+        "cause": "Gunshots",
+        "killedBy": "Colin Sullivan",
+        "context": "Shot by Sullivan after being cornered; admits he is an FBI informant",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Billy Costigan",
+        "timeOfDeath": "Act 3 (Elevator)",
+        "cause": "Gunshot",
+        "killedBy": "Trooper Barrigan",
+        "context": "Shot in the head as the elevator doors open by the mole Barrigan",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Colin Sullivan",
+        "timeOfDeath": "Act 3 (Apartment)",
+        "cause": "Gunshot",
+        "killedBy": "Mark Dignam",
+        "context": "Shot in the head by Dignam in his apartment (wearing foot covers)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Queenan",
+        "timeOfDeath": "Act 2 (Rooftop)",
+        "cause": "Fall/Trauma",
+        "killedBy": "Costello's Thugs",
+        "context": "Thrown off the building to the street below",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Trooper Barrigan",
+        "timeOfDeath": "Act 3 (Elevator)",
+        "cause": "Gunshot",
+        "killedBy": "Colin Sullivan",
+        "context": "Shot by Sullivan to tie up loose ends after killing Costigan/Brown",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Trooper Brown",
+        "timeOfDeath": "Act 3 (Elevator)",
+        "cause": "Gunshot",
+        "killedBy": "Trooper Barrigan",
+        "context": "Shot by Barrigan immediately after Costigan is killed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mr. French",
+        "timeOfDeath": "Act 3 (Warehouse)",
+        "cause": "Gunshot/Suicide",
+        "killedBy": "Police/Self",
+        "context": "Shot by police and then shoots himself in the head",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Timothy Delahunt",
+        "timeOfDeath": "Act 2 (Warehouse)",
+        "cause": "Gunshots",
+        "killedBy": "Police",
+        "context": "Dies of wounds after the police shootout; gives Costello false info before dying",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fitzy",
+        "timeOfDeath": "Act 3 (Warehouse)",
+        "cause": "Gunshots",
+        "killedBy": "Police",
+        "context": "Killed during the police raid on Costello's drug drop",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Flatliners",
+    "tmdbId": 1551,
+    "deaths": [
+      {
+        "character": "Terminal Woman (Mrs. Amsler)",
+        "timeOfDeath": "Act 1 (Hospital)",
+        "cause": "Natural Causes/Illness",
+        "killedBy": "Nature",
+        "context": "Dies while Dr. Rachel Mannus listens to her story about the afterlife",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Iron Man",
+    "tmdbId": 1726,
+    "deaths": [
+      {
+        "character": "Ho Yinsen",
+        "timeOfDeath": "Around the 1 hour 20 minute mark",
+        "cause": "Gunshot",
+        "killedBy": "Ten Rings Soldiers",
+        "context": "Fatally shot while buying time for Tony Stark's escape from the cave",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Raza",
+        "timeOfDeath": "Around the 1 hour 30 minute mark",
+        "cause": "Paralysis/Execution",
+        "killedBy": "Obadiah Stane's men",
+        "context": "Paralyzed by sonic device and then executed by Stane's guards off-screen",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Obadiah Stane",
+        "timeOfDeath": "Around the 2 hour mark",
+        "cause": "Electrocution/Explosion",
+        "killedBy": "Pepper Potts / Self",
+        "context": "Falls into the exploding Arc Reactor after Pepper overloads it",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ten Rings Soldiers (Cave)",
+        "timeOfDeath": "Around the 1 hour 20 minute mark",
+        "cause": "Repulsor blasts/Blunt force",
+        "killedBy": "Iron Man (Mark I)",
+        "context": "Multiple terrorists killed during Tony's escape from the cave",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ten Rings Soldiers (Gulmira)",
+        "timeOfDeath": "Around the 1 hour 40 minute mark",
+        "cause": "Repulsor blasts/Missiles",
+        "killedBy": "Iron Man (Mark III)",
+        "context": "Multiple terrorists killed by Tony while saving the village of Gulmira",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Captain America: The First Avenger",
+    "tmdbId": 1771,
+    "deaths": [
+      {
+        "character": "Dr. Abraham Erskine",
+        "timeOfDeath": "Around the 35 minute mark",
+        "cause": "Gunshot",
+        "killedBy": "Heinz Krueger",
+        "context": "Shot in the lab immediately after Steve Rogers' transformation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Heinz Krueger",
+        "timeOfDeath": "Around the 45 minute mark",
+        "cause": "Cyanide Poisoning",
+        "killedBy": "Self",
+        "context": "Bites a cyanide capsule after being captured by Captain America",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bucky Barnes",
+        "timeOfDeath": "Around the 1 hour 35 minute mark",
+        "cause": "Fall from height",
+        "killedBy": "Gravity / HYDRA Agent",
+        "context": "Falls from a HYDRA train into a ravine; later revealed to have survived as the Winter Soldier",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Johann Schmidt (Red Skull)",
+        "timeOfDeath": "Around the 1 hour 55 minute mark",
+        "cause": "Disintegration/Teleportation",
+        "killedBy": "The Tesseract",
+        "context": "Dissolves into light after handling the Tesseract; ambiguous if death or transportation",
+        "isAmbiguous": true
+      },
+      {
+        "character": "HYDRA Soldiers",
+        "timeOfDeath": "Throughout the film",
+        "cause": "Gunfire/Explosions",
+        "killedBy": "Howling Commandos",
+        "context": "Various soldiers killed during the montage of raids on HYDRA facilities",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Empire Strikes Back",
+    "tmdbId": 1891,
+    "deaths": [
+      {
+        "character": "Dak Ralter",
+        "timeOfDeath": "Around the 35 minute mark",
+        "cause": "Explosion",
+        "killedBy": "AT-AT Walker",
+        "context": "Killed when the back of the snowspeeder is hit by blaster fire during the Battle of Hoth",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Admiral Ozzel",
+        "timeOfDeath": "Around the 25 minute mark",
+        "cause": "Force Choke",
+        "killedBy": "Darth Vader",
+        "context": "Choked to death via video screen for alerting the Rebels too early",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Needa",
+        "timeOfDeath": "Around the 1 hour 5 minute mark",
+        "cause": "Force Choke",
+        "killedBy": "Darth Vader",
+        "context": "Choked to death after apologizing for losing the Millennium Falcon",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Zev Senesca (Rogue Two)",
+        "timeOfDeath": "Around the 40 minute mark",
+        "cause": "Explosion",
+        "killedBy": "AT-AT Walker",
+        "context": "His snowspeeder is shot down and crashes during the Battle of Hoth",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Return of the Jedi",
+    "tmdbId": 1892,
+    "deaths": [
+      {
+        "character": "Oola",
+        "timeOfDeath": "Around the 15 minute mark",
+        "cause": "Mauled/Eaten",
+        "killedBy": "Rancor",
+        "context": "Dropped into the Rancor pit by Jabba for refusing to dance",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rancor",
+        "timeOfDeath": "Around the 25 minute mark",
+        "cause": "Crushed",
+        "killedBy": "Luke Skywalker",
+        "context": "Crushed by the heavy gate after Luke throws a skull at the control panel",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Yoda",
+        "timeOfDeath": "Around the 45 minute mark",
+        "cause": "Old Age",
+        "killedBy": "Time",
+        "context": "Fades away into the Force in his hut on Dagobah",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jabba the Hutt",
+        "timeOfDeath": "Around the 35 minute mark",
+        "cause": "Strangulation",
+        "killedBy": "Leia Organa",
+        "context": "Choked with his own chain during the Sail Barge skirmish",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Boba Fett",
+        "timeOfDeath": "Around the 35 minute mark",
+        "cause": "Eaten (Presumed)",
+        "killedBy": "Sarlacc / Han Solo",
+        "context": "Jetpack malfunctions after being hit by Han, falls into Sarlacc pit; survival confirmed in later canon",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Emperor Palpatine",
+        "timeOfDeath": "Around the 2 hour mark",
+        "cause": "Fall / Energy Explosion",
+        "killedBy": "Darth Vader",
+        "context": "Thrown down the Death Star reactor shaft; explodes",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Anakin Skywalker (Darth Vader)",
+        "timeOfDeath": "Around the 2 hour 5 minute mark",
+        "cause": "Energy Damage / Life Support Failure",
+        "killedBy": "Emperor Palpatine",
+        "context": "Dies from lightning damage and removing his mask to see Luke",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Admiral Piett",
+        "timeOfDeath": "Around the 2 hour mark",
+        "cause": "Explosion",
+        "killedBy": "A-Wing Pilot",
+        "context": "Killed when a damaged A-Wing crashes into the Executor's bridge",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: Episode I - The Phantom Menace",
+    "tmdbId": 1893,
+    "deaths": [
+      {
+        "character": "Qui-Gon Jinn",
+        "timeOfDeath": "Around the 2 hour mark",
+        "cause": "Stabbed",
+        "killedBy": "Darth Maul",
+        "context": "Stabbed through the torso with a lightsaber during the duel on Naboo",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Darth Maul",
+        "timeOfDeath": "Around the 2 hour 5 minute mark",
+        "cause": "Bisection",
+        "killedBy": "Obi-Wan Kenobi",
+        "context": "Cut in half at the waist and falls down a shaft; survival revealed in Clone Wars animated series",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: Episode II - Attack of the Clones",
+    "tmdbId": 1894,
+    "deaths": [
+      {
+        "character": "Cordé",
+        "timeOfDeath": "Around the 3 minute mark",
+        "cause": "Explosion",
+        "killedBy": "Zam Wesell",
+        "context": "Killed by a bomb on the landing platform while acting as Padmé's decoy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Zam Wesell",
+        "timeOfDeath": "Around the 25 minute mark",
+        "cause": "Poison Dart",
+        "killedBy": "Jango Fett",
+        "context": "Shot in the neck with a toxic saberdart to prevent her from talking",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Shmi Skywalker",
+        "timeOfDeath": "Around the 1 hour 20 minute mark",
+        "cause": "Torture / Wounds",
+        "killedBy": "Tusken Raiders",
+        "context": "Dies in Anakin's arms after being tortured by Tusken Raiders",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Coleman Trebor",
+        "timeOfDeath": "Around the 1 hour 50 minute mark",
+        "cause": "Gunshot",
+        "killedBy": "Jango Fett",
+        "context": "Shot off the balcony by Jango Fett during the Geonosis Arena battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jango Fett",
+        "timeOfDeath": "Around the 1 hour 55 minute mark",
+        "cause": "Decapitation",
+        "killedBy": "Mace Windu",
+        "context": "Head cut off by Mace Windu's lightsaber in the Geonosis Arena",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: Episode III - Revenge of the Sith",
+    "tmdbId": 1895,
+    "deaths": [
+      {
+        "character": "Count Dooku",
+        "timeOfDeath": "Around the 15 minute mark",
+        "cause": "Decapitation",
+        "killedBy": "Anakin Skywalker",
+        "context": "Beheaded by Anakin with two lightsabers at Palpatine's urging",
+        "isAmbiguous": false
+      },
+      {
+        "character": "General Grievous",
+        "timeOfDeath": "Around the 1 hour 5 minute mark",
+        "cause": "Incineration",
+        "killedBy": "Obi-Wan Kenobi",
+        "context": "Shot in his exposed organic heart with a blaster until he catches fire",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mace Windu",
+        "timeOfDeath": "Around the 1 hour 15 minute mark",
+        "cause": "Force Lightning / Defenestration",
+        "killedBy": "Emperor Palpatine",
+        "context": "Hand cut off by Anakin, then blasted out the window by Palpatine's lightning",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agen Kolar",
+        "timeOfDeath": "Around the 1 hour 10 minute mark",
+        "cause": "Stabbed",
+        "killedBy": "Emperor Palpatine",
+        "context": "Stabbed immediately when the Jedi confront Palpatine",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Saesee Tiin",
+        "timeOfDeath": "Around the 1 hour 10 minute mark",
+        "cause": "Slashed",
+        "killedBy": "Emperor Palpatine",
+        "context": "Cut down immediately when the Jedi confront Palpatine",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kit Fisto",
+        "timeOfDeath": "Around the 1 hour 10 minute mark",
+        "cause": "Slashed",
+        "killedBy": "Emperor Palpatine",
+        "context": "Killed during the duel in Palpatine's office",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ki-Adi-Mundi",
+        "timeOfDeath": "Around the 1 hour 25 minute mark",
+        "cause": "Gunfire",
+        "killedBy": "Clone Troopers",
+        "context": "Shot by his own troops during Order 66 on Mygeeto",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Aayla Secura",
+        "timeOfDeath": "Around the 1 hour 25 minute mark",
+        "cause": "Gunfire",
+        "killedBy": "Clone Troopers",
+        "context": "Shot in the back by her troops during Order 66 on Felucia",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Plo Koon",
+        "timeOfDeath": "Around the 1 hour 25 minute mark",
+        "cause": "Explosion",
+        "killedBy": "Clone Troopers",
+        "context": "His starfighter is shot down by his wingmen during Order 66",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Zett Jukassa",
+        "timeOfDeath": "Around the 1 hour 30 minute mark",
+        "cause": "Gunfire",
+        "killedBy": "Clone Troopers",
+        "context": "Padawan shot down while trying to escape the Jedi Temple",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nute Gunray",
+        "timeOfDeath": "Around the 1 hour 50 minute mark",
+        "cause": "Slashed",
+        "killedBy": "Anakin Skywalker (Darth Vader)",
+        "context": "Killed on Mustafar along with other Separatist leaders",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Padmé Amidala",
+        "timeOfDeath": "Around the 2 hour 10 minute mark",
+        "cause": "Broken Heart / Childbirth",
+        "killedBy": "Anakin Skywalker (Indirectly)",
+        "context": "Dies after giving birth, having lost the will to live",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Bambi",
+    "tmdbId": 3170,
+    "deaths": [
+      {
+        "character": "Bambi's Mother",
+        "timeOfDeath": "Around the 40 minute mark",
+        "cause": "Gunshot",
+        "killedBy": "Man",
+        "context": "Shot by a hunter in the forest while she and Bambi are fleeing",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pheasant",
+        "timeOfDeath": "Around the 40 minute mark",
+        "cause": "Gunshot",
+        "killedBy": "Man",
+        "context": "Panics and flies out of the grass, getting shot immediately",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Scream",
+    "tmdbId": 4232,
+    "deaths": [
+      {
+        "character": "Steven 'Steve' Orth",
+        "timeOfDeath": "Opening scene",
+        "cause": "Gutted",
+        "killedBy": "Stu Macher",
+        "context": "Tied to a chair and disemboweled while Casey watches",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Casey Becker",
+        "timeOfDeath": "Opening scene",
+        "cause": "Stabbed and Hanged",
+        "killedBy": "Stu Macher / Billy Loomis",
+        "context": "Stabbed repeatedly and hung from a tree after phone quiz game",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Principal Arthur Himbry",
+        "timeOfDeath": "Act 2, office",
+        "cause": "Stabbed",
+        "killedBy": "Billy Loomis",
+        "context": "Stabbed in his office after checking on students",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tatum Riley",
+        "timeOfDeath": "Act 3, garage",
+        "cause": "Crushed",
+        "killedBy": "Billy Loomis",
+        "context": "Crushed by garage door while trying to escape through cat flap",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kenny Brown",
+        "timeOfDeath": "Act 3, news van",
+        "cause": "Throat Slit",
+        "killedBy": "Stu Macher",
+        "context": "Throat slit while watching camera feed in the news van",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stu Macher",
+        "timeOfDeath": "Climax",
+        "cause": "Electrocuted / Crushed",
+        "killedBy": "Sidney Prescott",
+        "context": "TV dropped on his head after being stabbed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Billy Loomis",
+        "timeOfDeath": "Climax",
+        "cause": "Shot",
+        "killedBy": "Sidney Prescott",
+        "context": "Shot in the head by Sidney after being shot by Gale",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vince Schneider",
+        "timeOfDeath": "Act 1",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Stabbed in the neck in a car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Judy Hicks",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Stabbed repeatedly on her front lawn in broad daylight",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wes Hicks",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Ghostface (Richie)",
+        "context": "Stabbed in the neck immediately after his mother's death",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Deputy Clay",
+        "timeOfDeath": "Act 3",
+        "cause": "Throat slit",
+        "killedBy": "Ghostface",
+        "context": "Killed at the hospital while guarding Tara",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dewey Riley",
+        "timeOfDeath": "Act 3",
+        "cause": "Disemboweled",
+        "killedBy": "Ghostface (Amber)",
+        "context": "Killed at the hospital while trying to ensure Ghostface was dead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Liv McKenzie",
+        "timeOfDeath": "Act 3",
+        "cause": "Shot",
+        "killedBy": "Amber Freeman",
+        "context": "Shot in the head by Amber to reveal herself as the killer",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Richie Kirsch",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed/Shot",
+        "killedBy": "Sam Carpenter",
+        "context": "Stabbed repeatedly and shot by Sam in the finale",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Amber Freeman",
+        "timeOfDeath": "Act 3",
+        "cause": "Burned/Shot",
+        "killedBy": "Gale Weathers/Tara Carpenter",
+        "context": "Set on fire and then shot in the head",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Scream 2",
+    "tmdbId": 4233,
+    "deaths": [
+      {
+        "character": "Phil Stevens",
+        "timeOfDeath": "Opening scene",
+        "cause": "Stabbed",
+        "killedBy": "Debbie Salt (Mrs. Loomis)",
+        "context": "Stabbed through bathroom stall ear-first at movie premiere",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maureen Evans",
+        "timeOfDeath": "Opening scene",
+        "cause": "Stabbed",
+        "killedBy": "Mickey Altieri",
+        "context": "Stabbed repeatedly in movie theater while crowd watches",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Casey 'Cici' Cooper",
+        "timeOfDeath": "Act 1, sorority house",
+        "cause": "Thrown from balcony",
+        "killedBy": "Mickey Altieri",
+        "context": "Thrown off balcony after being chased through house",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Randy Meeks",
+        "timeOfDeath": "Act 2, news van",
+        "cause": "Stabbed",
+        "killedBy": "Debbie Salt (Mrs. Loomis)",
+        "context": "Dragged into van and stabbed to death while on phone with killer",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Officer Andrews",
+        "timeOfDeath": "Act 3, car crash",
+        "cause": "Throat Slit",
+        "killedBy": "Mickey Altieri",
+        "context": "Throat slit while unconscious after car crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Officer Richards",
+        "timeOfDeath": "Act 3, car crash",
+        "cause": "Impaled",
+        "killedBy": "Mickey Altieri",
+        "context": "Impaled by construction pipe while on hood of moving car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hallie McDaniel",
+        "timeOfDeath": "Act 3, campus",
+        "cause": "Stabbed",
+        "killedBy": "Mickey Altieri",
+        "context": "Stabbed after escaping the car crash while waiting for Sidney",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Derek Feldman",
+        "timeOfDeath": "Climax, theater",
+        "cause": "Shot",
+        "killedBy": "Mickey Altieri",
+        "context": "Shot in the chest while tied to a stage prop",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mickey Altieri",
+        "timeOfDeath": "Climax, theater",
+        "cause": "Shot",
+        "killedBy": "Debbie Salt / Gale Weathers",
+        "context": "Shot by partner Mrs. Loomis and then finished off by Gale/Sidney",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Debbie Salt (Mrs. Loomis)",
+        "timeOfDeath": "Climax, theater",
+        "cause": "Shot",
+        "killedBy": "Cotton Weary / Sidney Prescott",
+        "context": "Shot in throat by Cotton and head by Sidney",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Scream 3",
+    "tmdbId": 4234,
+    "deaths": [
+      {
+        "character": "Christine Hamilton",
+        "timeOfDeath": "Opening scene",
+        "cause": "Stabbed",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed in back after shower",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cotton Weary",
+        "timeOfDeath": "Opening scene",
+        "cause": "Stabbed",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed while trying to save Christine",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sarah Darling",
+        "timeOfDeath": "Act 1, studio",
+        "cause": "Stabbed",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed in back after hiding in costume rack",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Steven Stone",
+        "timeOfDeath": "Act 2, trailer",
+        "cause": "Stabbed / Beating",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed and beaten with a frying pan",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tom Prinze",
+        "timeOfDeath": "Act 2, mansion",
+        "cause": "Explosion",
+        "killedBy": "Roman Bridger",
+        "context": "Killed when using a lighter in a gas-filled room",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Angelina Tyler",
+        "timeOfDeath": "Act 3, mansion",
+        "cause": "Stabbed",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed in the chest during chase",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tyson Fox",
+        "timeOfDeath": "Act 3, mansion",
+        "cause": "Fall",
+        "killedBy": "Roman Bridger",
+        "context": "Thrown off balcony after being stabbed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jennifer Jolie",
+        "timeOfDeath": "Act 3, mansion",
+        "cause": "Stabbed",
+        "killedBy": "Roman Bridger",
+        "context": "Stabbed repeatedly behind secret passage mirror",
+        "isAmbiguous": false
+      },
+      {
+        "character": "John Milton",
+        "timeOfDeath": "Climax, mansion",
+        "cause": "Throat Slit",
+        "killedBy": "Roman Bridger",
+        "context": "Throat slit by Roman in front of Sidney",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Roman Bridger",
+        "timeOfDeath": "Climax, mansion",
+        "cause": "Shot",
+        "killedBy": "Dewey Riley",
+        "context": "Shot in the head by Dewey",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Mist",
+    "tmdbId": 5876,
+    "deaths": [
+      {
+        "character": "Norm",
+        "timeOfDeath": "Act 1, loading dock",
+        "cause": "Dragged by tentacles",
+        "killedBy": "Creatures",
+        "context": "Dragged into the mist by tentacles while fixing generator",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Biker",
+        "timeOfDeath": "Act 1, store",
+        "cause": "Bitten / Torn apart",
+        "killedBy": "Creatures",
+        "context": "Only lower half of body found; killed when retrieving shotgun",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Brent Norton",
+        "timeOfDeath": "Act 1, outside",
+        "cause": "Unknown (Presumed Dead)",
+        "killedBy": "Creatures",
+        "context": "Walked into the mist to seek help and never returned",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Sally",
+        "timeOfDeath": "Act 2, store",
+        "cause": "Insect Sting",
+        "killedBy": "Creatures",
+        "context": "Stung by giant insect and died from swelling/toxin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private suicide victims (Morales/Donaldson)",
+        "timeOfDeath": "Act 2, pharmacy",
+        "cause": "Hanging",
+        "killedBy": "Self",
+        "context": "Found hanging in the pharmacy back room",
+        "isAmbiguous": false
+      },
+      {
+        "character": "MP (Military Police)",
+        "timeOfDeath": "Act 2, pharmacy",
+        "cause": "Spider bites",
+        "killedBy": "Creatures",
+        "context": "Host for spider eggs which hatch through his skin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hattie Turman",
+        "timeOfDeath": "Act 2, pharmacy",
+        "cause": "Suicide / Poison",
+        "killedBy": "Self",
+        "context": "Found dead from overdose in pharmacy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Private Jessup",
+        "timeOfDeath": "Act 3, store",
+        "cause": "Stabbed / Eaten",
+        "killedBy": "Mrs. Carmody / Creatures",
+        "context": "Stabbed by crowd then thrown to creatures as sacrifice",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mrs. Carmody",
+        "timeOfDeath": "Act 3, store",
+        "cause": "Shot",
+        "killedBy": "Ollie Weeks",
+        "context": "Shot by Ollie to stop her from sacrificing Billy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ollie Weeks",
+        "timeOfDeath": "Act 3, parking lot",
+        "cause": "Eaten",
+        "killedBy": "Creatures",
+        "context": "Grabbed and eaten by giant mantis-like creature during escape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Myron LaFleur",
+        "timeOfDeath": "Act 3, parking lot",
+        "cause": "Eaten",
+        "killedBy": "Creatures",
+        "context": "Killed by spiders while fleeing the store",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ambrose Cornell",
+        "timeOfDeath": "Act 3, parking lot",
+        "cause": "Eaten",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures while fleeing the store",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dan Miller",
+        "timeOfDeath": "Climax, car",
+        "cause": "Shot",
+        "killedBy": "David Drayton",
+        "context": "Shot by David in mercy killing to avoid being eaten",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Amanda Dumfries",
+        "timeOfDeath": "Climax, car",
+        "cause": "Shot",
+        "killedBy": "David Drayton",
+        "context": "Shot by David in mercy killing to avoid being eaten",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Irene Reppler",
+        "timeOfDeath": "Climax, car",
+        "cause": "Shot",
+        "killedBy": "David Drayton",
+        "context": "Shot by David in mercy killing to avoid being eaten",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Billy Drayton",
+        "timeOfDeath": "Climax, car",
+        "cause": "Shot",
+        "killedBy": "David Drayton",
+        "context": "Shot by David in mercy killing to avoid being eaten",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "No Country for Old Men",
+    "tmdbId": 6977,
+    "deaths": [
+      {
+        "character": "Deputy",
+        "timeOfDeath": "Opening scene",
+        "cause": "Strangled",
+        "killedBy": "Anton Chigurh",
+        "context": "Strangled with handcuffs while Chigurh was in custody",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Driver",
+        "timeOfDeath": "Opening scene",
+        "cause": "Bolt Gun",
+        "killedBy": "Anton Chigurh",
+        "context": "Forehead penetrated by captive bolt stunner",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Llewelyn Moss",
+        "timeOfDeath": "Act 3, motel",
+        "cause": "Gunshot",
+        "killedBy": "Mexican Cartel",
+        "context": "Killed off-screen during shootout at motel",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carson Wells",
+        "timeOfDeath": "Act 3, hotel",
+        "cause": "Shot",
+        "killedBy": "Anton Chigurh",
+        "context": "Shot in the face with suppressed shotgun",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bill Wyrick (Hotel Clerk)",
+        "timeOfDeath": "Act 3, hotel",
+        "cause": "Unknown (Implied)",
+        "killedBy": "Anton Chigurh",
+        "context": "Chigurh waits for him in lobby; implied killed off-screen",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Chicken Farmer",
+        "timeOfDeath": "Act 3, road",
+        "cause": "Unknown (Implied)",
+        "killedBy": "Anton Chigurh",
+        "context": "Implied killed when Chigurh steals his truck",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Carla Jean Moss",
+        "timeOfDeath": "Climax, house",
+        "cause": "Unknown (Implied)",
+        "killedBy": "Anton Chigurh",
+        "context": "Implied shot after she refuses coin toss; Chigurh checks boots on exit",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Cast Away",
+    "tmdbId": 8358,
+    "deaths": [
+      {
+        "character": "Albert R. Miller",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died on impact or drowning during crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pilot Peter",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died during FedEx plane crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pilot Blaine",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died during FedEx plane crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pilot Kevin",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died during FedEx plane crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pilot Jack",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died during FedEx plane crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pilot Gwen",
+        "timeOfDeath": "Act 1, plane crash",
+        "cause": "Plane Crash",
+        "killedBy": "Nature / Gravity",
+        "context": "Died during FedEx plane crash",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Lion King",
+    "tmdbId": 8587,
+    "deaths": [
+      {
+        "character": "Mufasa",
+        "timeOfDeath": "Act 1, gorge",
+        "cause": "Trampled / Fall",
+        "killedBy": "Scar",
+        "context": "Thrown into wildebeest stampede by Scar",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Scar",
+        "timeOfDeath": "Climax, Pride Rock",
+        "cause": "Mauling",
+        "killedBy": "Hyenas",
+        "context": "Eaten by hyenas after betraying them",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mufasa",
+        "timeOfDeath": "Act 1",
+        "cause": "Trampled / Fall",
+        "killedBy": "Scar",
+        "context": "Scar throws him off the cliff into a stampede of wildebeests.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Scar",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Mauled",
+        "killedBy": "Hyenas",
+        "context": "Survived the fall fighting Simba but was turned on and eaten by his own hyena henchmen for betraying them.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Final Destination 3",
+    "tmdbId": 9286,
+    "deaths": [
+      {
+        "character": "Ashley Freund",
+        "timeOfDeath": "Act 1, tanning salon",
+        "cause": "Burned alive",
+        "killedBy": "Death (Malfunction)",
+        "context": "Trapped in tanning bed that overheats",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ashlyn Halperin",
+        "timeOfDeath": "Act 1, tanning salon",
+        "cause": "Burned alive",
+        "killedBy": "Death (Malfunction)",
+        "context": "Trapped in tanning bed that overheats",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Frankie Cheeks",
+        "timeOfDeath": "Act 2, drive-thru",
+        "cause": "Head trauma",
+        "killedBy": "Death (Engine Fan)",
+        "context": "Back of head sliced off by truck engine fan",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lewis Romero",
+        "timeOfDeath": "Act 2, gym",
+        "cause": "Crushed",
+        "killedBy": "Death (Weights)",
+        "context": "Head crushed between two weight machine plates",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Erin Ulmer",
+        "timeOfDeath": "Act 2, hardware store",
+        "cause": "Impaled",
+        "killedBy": "Death (Nail Gun)",
+        "context": "Shot repeatedly in head by nail gun",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Perry Malinowski",
+        "timeOfDeath": "Act 3, fair",
+        "cause": "Impaled",
+        "killedBy": "Death (Flagpole)",
+        "context": "Impaled through back by flying flagpole",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ian McKinley",
+        "timeOfDeath": "Act 3, fair",
+        "cause": "Crushed / Bisected",
+        "killedBy": "Death (Cherry Picker)",
+        "context": "Crushed by falling cherry picker lift",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Julie Christensen",
+        "timeOfDeath": "Climax, subway",
+        "cause": "Impact",
+        "killedBy": "Death (Train Crash)",
+        "context": "Killed in subway derailment (premonition realized)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kevin Fischer",
+        "timeOfDeath": "Climax, subway",
+        "cause": "Impact / Grinding",
+        "killedBy": "Death (Train Crash)",
+        "context": "Thrown from train and ground against tunnel wall (premonition realized)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wendy Christensen",
+        "timeOfDeath": "Climax, subway",
+        "cause": "Impact",
+        "killedBy": "Death (Train Crash)",
+        "context": "Hit by oncoming train (premonition realized, cut to black)",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Final Destination 2",
+    "tmdbId": 9358,
+    "deaths": [
+      {
+        "character": "Shaina McKlank",
+        "timeOfDeath": "End of movie (Act 3)",
+        "cause": "Incinerated in car explosion",
+        "killedBy": "Truck / Death",
+        "context": "Killed when a semi-truck plows into Kimberly's car while they are chatting; occurs after they think they are safe",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dano Estevez",
+        "timeOfDeath": "End of movie (Act 3)",
+        "cause": "Incinerated in car explosion",
+        "killedBy": "Truck / Death",
+        "context": "Killed alongside Shaina and Frankie when the semi-truck hits their car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Frankie Whitman",
+        "timeOfDeath": "End of movie (Act 3)",
+        "cause": "Incinerated in car explosion",
+        "killedBy": "Truck / Death",
+        "context": "Killed alongside Shaina and Dano in the car explosion",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Evan Lewis",
+        "timeOfDeath": "Act 1 (post-premonition)",
+        "cause": "Impaled through eye",
+        "killedBy": "Ladder / Death",
+        "context": "After escaping a fire in his apartment, he slips and a fire escape ladder falls into his eye",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tim Carpenter",
+        "timeOfDeath": "Act 2",
+        "cause": "Crushed by glass pane",
+        "killedBy": "Glass Pane / Death",
+        "context": "Crushed by a giant pane of glass falling from a crane while leaving the dentist",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nora Carpenter",
+        "timeOfDeath": "Act 2",
+        "cause": "Decapitated",
+        "killedBy": "Elevator / Death",
+        "context": "Head trapped in elevator doors and severed when the elevator ascends",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kat Jennings",
+        "timeOfDeath": "Act 3",
+        "cause": "Impaled through head",
+        "killedBy": "PVC Pipe / Airbag / Death",
+        "context": "Airbag deploys after a crash, pushing her head onto a sharp PVC pipe protruding from the car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rory Peters",
+        "timeOfDeath": "Act 3",
+        "cause": "Sliced into pieces",
+        "killedBy": "Barbed wire fence / Death",
+        "context": "A barbed wire fence is sent flying by an explosion, slicing through him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Eugene Dix",
+        "timeOfDeath": "Act 3",
+        "cause": "Incinerated",
+        "killedBy": "Oxygen tank explosion / Death",
+        "context": "Killed in a hospital room explosion when oxygen tanks ignite",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Brian Gibbons",
+        "timeOfDeath": "End of movie",
+        "cause": "Incinerated",
+        "killedBy": "Barbecue grill explosion / Death",
+        "context": "Blown up by a barbecue grill malfunction at the very end of the film",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Final Destination",
+    "tmdbId": 9532,
+    "deaths": [
+      {
+        "character": "Tod Waggner",
+        "timeOfDeath": "Act 1",
+        "cause": "Strangulation",
+        "killedBy": "Shower cord / Death",
+        "context": "Slipped in the shower and got strangled by a retracting clothesline cord",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Terry Chaney",
+        "timeOfDeath": "Act 2",
+        "cause": "Hit by bus",
+        "killedBy": "Bus / Death",
+        "context": "Sudden impact by a speeding bus while arguing on the street",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Valerie Lewton",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed / Falling glass",
+        "killedBy": "Knife / Falling glass / Death",
+        "context": "Stabbed by falling kitchen knives and then impaled by falling glass",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Billy Hitchcock",
+        "timeOfDeath": "Act 3",
+        "cause": "Decapitated",
+        "killedBy": "Shrapnel / Death",
+        "context": "Decapitated by a piece of metal shrapnel from a train track accident",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carter Horton",
+        "timeOfDeath": "End of movie",
+        "cause": "Crushed by sign (Implied)",
+        "killedBy": "Giant neon sign / Death",
+        "context": "The movie cuts to black just as a giant sign swings toward him; death is confirmed in sequels but ambiguous here",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Alex Browning",
+        "timeOfDeath": "Off-screen (implied post-movie)",
+        "cause": "Brick / Death",
+        "killedBy": "Brick / Death",
+        "context": "While he survives the main events, the end implies Death is still coming; sequels confirm he was killed by a falling brick",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Fast and the Furious: Tokyo Drift",
+    "tmdbId": 9615,
+    "deaths": [
+      {
+        "character": "Han Lue",
+        "timeOfDeath": "Act 3",
+        "cause": "Car explosion",
+        "killedBy": "Deckard Shaw (retcon) / Crash",
+        "context": "T-boned during a chase and trapped in the car before it explodes (Retconned to be alive in F9)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Morimoto",
+        "timeOfDeath": "Act 3",
+        "cause": "Car crash",
+        "killedBy": "Traffic",
+        "context": "Crashes head-on into oncoming traffic during the high-speed chase",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Fast and the Furious",
+    "tmdbId": 9799,
+    "deaths": [
+      {
+        "character": "Jesse",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Johnny Tran",
+        "context": "Shot in a drive-by shooting outside Toretto's house after pleading for help",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Johnny Tran",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Brian O'Connor",
+        "context": "Shot in the back by Brian during the final chase sequence",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Incredibles",
+    "tmdbId": 9806,
+    "deaths": [
+      {
+        "character": "Syndrome (Buddy Pine)",
+        "timeOfDeath": "Act 3",
+        "cause": "Shredded in jet turbine",
+        "killedBy": "Self / Cape",
+        "context": "Sucked into his own jet turbine when his cape gets caught",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gazerbeam",
+        "timeOfDeath": "Off-screen (discovered skeleton)",
+        "cause": "Unknown (presumed Omnidroid)",
+        "killedBy": "Omnidroid",
+        "context": "Skeleton found by Mr. Incredible in a cave, pointing to the password 'KRONOS'",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Thunderhead",
+        "timeOfDeath": "Flashback montage",
+        "cause": "Missile snag",
+        "killedBy": "Cape / Missile",
+        "context": "Cape snagged on a missile fin during launch",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stratogale",
+        "timeOfDeath": "Flashback montage",
+        "cause": "Sucked into jet turbine",
+        "killedBy": "Cape / Jet turbine",
+        "context": "Cape got caught in a jet turbine during flight",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Meta Man",
+        "timeOfDeath": "Flashback montage",
+        "cause": "Crushed by elevator",
+        "killedBy": "Cape / Elevator",
+        "context": "Cape snagged on an express elevator beam",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dynaguy",
+        "timeOfDeath": "Flashback montage",
+        "cause": "Strangulation",
+        "killedBy": "Cape / Takeoff",
+        "context": "Snagged on ground during takeoff due to cape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Splashdown",
+        "timeOfDeath": "Flashback montage",
+        "cause": "Sucked into vortex",
+        "killedBy": "Cape / Vortex",
+        "context": "Cape sucked into a vortex while flying",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Universal Man",
+        "timeOfDeath": "Off-screen (implied)",
+        "cause": "Killed by robot",
+        "killedBy": "Omnidroid",
+        "context": "Listed as 'Terminated' in Syndrome's computer files",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Psycwave",
+        "timeOfDeath": "Off-screen (implied)",
+        "cause": "Killed by robot",
+        "killedBy": "Omnidroid",
+        "context": "Listed as 'Terminated' in Syndrome's computer files",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Iron Man 2",
+    "tmdbId": 10138,
+    "deaths": [
+      {
+        "character": "Ivan Vanko (Whiplash)",
+        "timeOfDeath": "Act 3",
+        "cause": "Explosion (Suicide)",
+        "killedBy": "Self",
+        "context": "Detonates his own armor after being defeated by Iron Man and War Machine",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Officer Noel Chevalier",
+        "timeOfDeath": "Act 1",
+        "cause": "Neck snap",
+        "killedBy": "Ivan Vanko",
+        "context": "Guard killed during Vanko's escape from the French prison; neck snapped through cell bars",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Prisoner",
+        "timeOfDeath": "Act 1",
+        "cause": "Explosion",
+        "killedBy": "Ivan Vanko",
+        "context": "Fellow prisoner blown up by a bomb Vanko planted during the escape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Troy McGatlin",
+        "timeOfDeath": "Act 1 (found body)",
+        "cause": "Hanged",
+        "killedBy": "Ivan Vanko",
+        "context": "Hammer Industries guard found hanging in the ceiling after Vanko takes over",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Hammer Guard",
+        "timeOfDeath": "Act 1 (found body)",
+        "cause": "Hanged",
+        "killedBy": "Ivan Vanko",
+        "context": "Another guard found hanging alongside McGatlin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hammer Drone (Land)",
+        "timeOfDeath": "Act 3",
+        "cause": "Explosion",
+        "killedBy": "Iron Man / War Machine",
+        "context": "While robots, they are anthropomorphized enemies; destroyed in mass during garden fight",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hammer Drone (Air)",
+        "timeOfDeath": "Act 3",
+        "cause": "Explosion",
+        "killedBy": "Iron Man / War Machine",
+        "context": "Destroyed during the aerial chase sequence",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Deer Hunter",
+    "tmdbId": 11778,
+    "deaths": [
+      {
+        "character": "Nick Chevotarevich",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot (Suicide)",
+        "killedBy": "Self",
+        "context": "Shoots himself in the head during a game of Russian Roulette in Saigon",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Deer",
+        "timeOfDeath": "Act 1",
+        "cause": "Gunshot",
+        "killedBy": "Mike Vronsky",
+        "context": "Shot by Mike during the initial hunting trip (symbolic death)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vietnamese Soldier 1",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Mike Vronsky",
+        "context": "Shot by Mike during the escape from the river cage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vietnamese Soldier 2",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Mike Vronsky",
+        "context": "Shot by Mike during the escape from the river cage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vietnamese Soldier 3",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Nick Chevotarevich",
+        "context": "Shot by Nick during the escape from the river cage",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Alone in the Dark",
+    "tmdbId": 12142,
+    "deaths": [
+      {
+        "character": "Commander Richard Burke",
+        "timeOfDeath": "Act 3",
+        "cause": "Monster attack / Ambiguous",
+        "killedBy": "Creatures",
+        "context": "Appears to be killed/overwhelmed by creatures, though some sources list him as institutionalized (ambiguous)",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Prof. Lionel Hudgens",
+        "timeOfDeath": "Act 3",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by the creatures he helped unleash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sister Clara",
+        "timeOfDeath": "Act 3",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures during the invasion of the orphanage/lab",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agent Miles",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures during the operation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agent Turner",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures during the operation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agent Marko",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures during the operation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Chernick",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures",
+        "isAmbiguous": false
+      },
+      {
+        "character": "James Pinkerton",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agent Fischer",
+        "timeOfDeath": "Act 2",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed by creatures",
+        "isAmbiguous": false
+      },
+      {
+        "character": "John (Mercenary)",
+        "timeOfDeath": "Act 3",
+        "cause": "Monster attack",
+        "killedBy": "Creatures",
+        "context": "Killed during the final stand",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Aline Cedrac",
+        "timeOfDeath": "Act 3",
+        "cause": "Unknown / Ambiguous",
+        "killedBy": "Unknown",
+        "context": "Her fate is left ambiguous at the end as the city is devoid of people",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Fast & Furious",
+    "tmdbId": 13804,
+    "deaths": [
+      {
+        "character": "Leticia 'Letty' Ortiz",
+        "timeOfDeath": "Flashback (Act 1)",
+        "cause": "Car crash / Gunshot",
+        "killedBy": "Fenix Calderon",
+        "context": "Her car is run off the road and she is shot by Fenix (revealed to be alive in Fast & Furious 6)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fenix Calderon",
+        "timeOfDeath": "Act 3",
+        "cause": "Crushed by car",
+        "killedBy": "Dom Toretto",
+        "context": "Crushed between two cars by Dom in the tunnels",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Driver",
+        "timeOfDeath": "Act 1",
+        "cause": "Car crash",
+        "killedBy": "Oil Tanker",
+        "context": "Driver of the fuel tanker jumps/crashes during the opening heist",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Drug Runner 1",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot / Crash",
+        "killedBy": "Brian O'Connor",
+        "context": "Killed during the tunnel chase",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Drug Runner 2",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot / Crash",
+        "killedBy": "Dom Toretto",
+        "context": "Killed during the tunnel chase",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Up",
+    "tmdbId": 14160,
+    "deaths": [
+      {
+        "character": "Ellie Fredricksen",
+        "timeOfDeath": "Opening Montage",
+        "cause": "Old Age / Illness",
+        "killedBy": "Natural Causes",
+        "context": "Dies in the hospital after falling ill, leaving Carl alone",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Charles Muntz",
+        "timeOfDeath": "Act 3",
+        "cause": "Fall from height",
+        "killedBy": "Gravity / Balloons",
+        "context": "Falls from the dirigible after getting tangled in balloon strings",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Final Destination",
+    "tmdbId": 19912,
+    "deaths": [
+      {
+        "character": "Nadia Monroy",
+        "timeOfDeath": "Act 2, auto repair shop",
+        "cause": "Decapitated",
+        "killedBy": "Tire / Accident",
+        "context": "Head severed by a loose tire launched from an explosion while arguing with the group",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carter Daniels",
+        "timeOfDeath": "Act 2, tow yard",
+        "cause": "Dragging / Burning",
+        "killedBy": "Tow truck / Accident",
+        "context": "Dragged by a tow truck hook and set on fire when the truck explodes",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Samantha Lane",
+        "timeOfDeath": "Act 2, hair salon",
+        "cause": "Impaled",
+        "killedBy": "Rock / Lawnmower",
+        "context": "A rock shot by a lawnmower penetrates her eye socket",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Andy Kewzer",
+        "timeOfDeath": "Act 2, mechanics shop",
+        "cause": "Sliced",
+        "killedBy": "CO2 Tank / Fence",
+        "context": "Knocked backwards into a chain-link fence by a CO2 tank, slicing his body into pieces",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hunt Wynorski",
+        "timeOfDeath": "Act 3, swimming pool",
+        "cause": "Disemboweled",
+        "killedBy": "Pool drain",
+        "context": "Internal organs sucked out through a pool drain pipe after diving in for a lucky coin",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jonathan Groves",
+        "timeOfDeath": "Act 3, hospital",
+        "cause": "Crushed",
+        "killedBy": "Bathtub",
+        "context": "Crushed by an overflowing bathtub falling through the ceiling above his hospital bed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "George Lanter",
+        "timeOfDeath": "Act 3, street",
+        "cause": "Impact",
+        "killedBy": "Ambulance",
+        "context": "Run over by an ambulance immediately after attempting suicide and failing",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nick O'Bannon",
+        "timeOfDeath": "Final scene, cafe",
+        "cause": "Impact",
+        "killedBy": "Truck",
+        "context": "Crushed by a semi-truck crashing into the cafe",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lori Milligan",
+        "timeOfDeath": "Final scene, cafe",
+        "cause": "Impact",
+        "killedBy": "Truck",
+        "context": "Crushed by a semi-truck crashing into the cafe",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Janet Cunningham",
+        "timeOfDeath": "Final scene, cafe",
+        "cause": "Impact",
+        "killedBy": "Truck",
+        "context": "Crushed by a semi-truck crashing into the cafe",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Avengers",
+    "tmdbId": 24428,
+    "deaths": [
+      {
+        "character": "Phil Coulson",
+        "timeOfDeath": "Act 2, Helicarrier",
+        "cause": "Stabbed",
+        "killedBy": "Loki",
+        "context": "Stabbed through the chest with the Scepter while attempting to stop Loki",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Heinrich Schäfer",
+        "timeOfDeath": "Act 1, Stuttgart",
+        "cause": "Eye extraction",
+        "killedBy": "Loki",
+        "context": "Loki uses a device to extract his eyeball to bypass a retinal scanner",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Chitauri Army",
+        "timeOfDeath": "Act 3, New York City",
+        "cause": "Mass casualty / Neural link severed",
+        "killedBy": "Iron Man / Self",
+        "context": "The entire army collapses simultaneously when Iron Man destroys their mothership with a nuke",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Dark Knight Rises",
+    "tmdbId": 49026,
+    "deaths": [
+      {
+        "character": "Dr. Leonid Pavel",
+        "timeOfDeath": "Prologue, Plane",
+        "cause": "Neck broken",
+        "killedBy": "Bane",
+        "context": "Neck snapped during the plane hijacking sequence",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bill Wilson (CIA)",
+        "timeOfDeath": "Prologue, Plane",
+        "cause": "Plane crash",
+        "killedBy": "Bane",
+        "context": "Left on the crashing plane after Bane's extraction",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mayor Anthony Garcia",
+        "timeOfDeath": "Act 2, Football stadium",
+        "cause": "Explosion",
+        "killedBy": "Bane",
+        "context": "Killed when his VIP box explodes during the stadium attack",
+        "isAmbiguous": false
+      },
+      {
+        "character": "John Daggett",
+        "timeOfDeath": "Act 2, Construction site",
+        "cause": "Beating (Off-screen)",
+        "killedBy": "Bane",
+        "context": "Bane confronts him for failure; death screams are heard as the scene cuts away",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Peter Foley",
+        "timeOfDeath": "Act 3, City streets",
+        "cause": "Impact / Gunfire",
+        "killedBy": "Talia al Ghul",
+        "context": "Gunned down/run over by the Tumbler during the final street battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bane",
+        "timeOfDeath": "Act 3, City Hall steps",
+        "cause": "Gunshot",
+        "killedBy": "Catwoman",
+        "context": "Shot with the Batpod's cannon, blasting him through a door",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Talia al Ghul",
+        "timeOfDeath": "Act 3, Street level",
+        "cause": "Impact / Crash",
+        "killedBy": "Batman / Self",
+        "context": "Dies from internal injuries after crashing the truck carrying the neutron bomb",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Jones",
+        "timeOfDeath": "Act 3, City streets",
+        "cause": "Neck broken",
+        "killedBy": "Bane",
+        "context": "Killed during the hand-to-hand skirmish between police and mercenaries",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Fast Five",
+    "tmdbId": 51497,
+    "deaths": [
+      {
+        "character": "Vince",
+        "timeOfDeath": "Act 3, En route to safehouse",
+        "cause": "Gunshot",
+        "killedBy": "Reyes' Henchmen",
+        "context": "Shot in the abdomen while rescuing Luke Hobbs during the ambush",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Zizi",
+        "timeOfDeath": "Act 3, Bridge",
+        "cause": "Gunshot",
+        "killedBy": "Brian O'Conner",
+        "context": "Shot by Brian to save Dom just as Zizi was about to kill him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hernan Reyes",
+        "timeOfDeath": "Act 3, Bridge",
+        "cause": "Gunshot",
+        "killedBy": "Luke Hobbs",
+        "context": "executed by Hobbs with two shots to the chest after the vault chase",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fusco",
+        "timeOfDeath": "Act 3, Ambush site",
+        "cause": "Gunshot",
+        "killedBy": "Reyes' Henchmen",
+        "context": "Killed during the ambush on the convoy transporting the vault team",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wilkes",
+        "timeOfDeath": "Act 3, Ambush site",
+        "cause": "Gunshot",
+        "killedBy": "Reyes' Henchmen",
+        "context": "Killed during the ambush on the convoy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Chato",
+        "timeOfDeath": "Act 3, Ambush site",
+        "cause": "Gunshot",
+        "killedBy": "Reyes' Henchmen",
+        "context": "Killed during the ambush on the convoy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Macroy",
+        "timeOfDeath": "Act 3, Ambush site",
+        "cause": "Gunshot",
+        "killedBy": "Reyes' Henchmen",
+        "context": "Killed during the ambush on the convoy",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Final Destination 5",
+    "tmdbId": 55779,
+    "deaths": [
+      {
+        "character": "Candice Hooper",
+        "timeOfDeath": "Act 1, Gymnastics practice",
+        "cause": "Spine snapped",
+        "killedBy": "Gravity / Accident",
+        "context": "Falls from the uneven bars, snapping her spine and neck",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Isaac Palmer",
+        "timeOfDeath": "Act 2, Chinese Spa",
+        "cause": "Crushed",
+        "killedBy": "Buddha Statue",
+        "context": "Head crushed by a falling statue after escaping a fire in the acupuncture room",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Olivia Castle",
+        "timeOfDeath": "Act 2, Eye clinic",
+        "cause": "Defenestration / Impact",
+        "killedBy": "Accident",
+        "context": "Trips on a teddy bear eye, falling out a window and landing on a car",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dennis Lapman",
+        "timeOfDeath": "Act 2, Factory",
+        "cause": "Impaled",
+        "killedBy": "Wrench",
+        "context": "A wrench launched by a belt sander penetrates his skull",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agent Jim Block",
+        "timeOfDeath": "Act 3, Kitchen",
+        "cause": "Gunshot",
+        "killedBy": "Peter Friedkin",
+        "context": "Shot by Peter who attempts to claim his life span",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Peter Friedkin",
+        "timeOfDeath": "Act 3, Kitchen",
+        "cause": "Impaled",
+        "killedBy": "Sam Lawton",
+        "context": "Stabbed in the back with a large meat spit/skewer",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Molly Harper",
+        "timeOfDeath": "Act 3, Flight 180",
+        "cause": "Bisected",
+        "killedBy": "Plane wing",
+        "context": "Sucked out of the plane and cut in half by the tail wing (links to first movie)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sam Lawton",
+        "timeOfDeath": "Act 3, Flight 180",
+        "cause": "Explosion",
+        "killedBy": "Plane crash",
+        "context": "Dies in the explosion of Flight 180 (links to first movie)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nathan Sears",
+        "timeOfDeath": "Epilogue, Bar",
+        "cause": "Crushed",
+        "killedBy": "Plane landing gear",
+        "context": "Crushed by the landing gear of Flight 180 falling through the bar roof",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Brave",
+    "tmdbId": 62177,
+    "deaths": [
+      {
+        "character": "Mor'du (Bear)",
+        "timeOfDeath": "Act 3, Castle ruins",
+        "cause": "Crushed",
+        "killedBy": "Menhir (Standing Stone)",
+        "context": "Crushed by a falling megalith stone during the fight with the clans",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Iron Man 3",
+    "tmdbId": 68721,
+    "deaths": [
+      {
+        "character": "Ellen Brandt",
+        "timeOfDeath": "Act 2, Bar",
+        "cause": "Explosion",
+        "killedBy": "Iron Man",
+        "context": "Blown up when Tony overloads her Extremis energy using a microwave and gas leak",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Eric Savin",
+        "timeOfDeath": "Act 3, Air Force One",
+        "cause": "Blast",
+        "killedBy": "Iron Man",
+        "context": "Chest repulsor blast from the Mark 42 armor disintegrates him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maya Hansen",
+        "timeOfDeath": "Act 3, Villa",
+        "cause": "Gunshot",
+        "killedBy": "Aldrich Killian",
+        "context": "Shot by Killian for questioning his motives",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Aldrich Killian",
+        "timeOfDeath": "Act 3, Shipyard",
+        "cause": "Explosion",
+        "killedBy": "Pepper Potts",
+        "context": "Blown up by an explosive device detonated by Pepper after surviving Tony's self-destruct attack",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Avatar: Fire and Ash",
+    "tmdbId": 83533,
+    "deaths": [
+      {
+        "character": "Riku",
+        "timeOfDeath": "Act 2, Ash Clan territory",
+        "cause": "Gunshot",
+        "killedBy": "Recom Lyle Wainfleet",
+        "context": "Shot in the head by a sniper rifle during a skirmish",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Rotxo te Rara Yapto'itan",
+        "timeOfDeath": "Act 3, Final Battle",
+        "cause": "Gunshot",
+        "killedBy": "Crabsuit",
+        "context": "Shot in the chest with projectiles from a Crabsuit rotary gun",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tsahìk Ronal te Natsira Tan'ite",
+        "timeOfDeath": "Act 3, Final Battle",
+        "cause": "Gunshot",
+        "killedBy": "Crabsuit",
+        "context": "Bleeds out after being shot in the chest protecting the clan",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Avengers: Age of Ultron",
+    "tmdbId": 99861,
+    "deaths": [
+      {
+        "character": "Baron Wolfgang von Strucker",
+        "timeOfDeath": "Act 1, Jail cell",
+        "cause": "Unknown (Force)",
+        "killedBy": "Ultron",
+        "context": "Found dead in his cell with \"PEACE\" written in blood on the wall",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dr. List",
+        "timeOfDeath": "Act 2, Hydra Base",
+        "cause": "Blast",
+        "killedBy": "Iron Man",
+        "context": "Knocked out/killed by a repulsor blast during the raid",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Pietro Maximoff (Quicksilver)",
+        "timeOfDeath": "Act 3, Sokovia",
+        "cause": "Gunshot",
+        "killedBy": "Ultron",
+        "context": "Dies shielding Hawkeye and a child from machine gun fire from the Quinjet",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ultron",
+        "timeOfDeath": "Act 3, Forest",
+        "cause": "Vaporized",
+        "killedBy": "Vision",
+        "context": "Destroyed by Vision's Mind Stone energy beam after being cut off from the network",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Captain America: The Winter Soldier",
+    "tmdbId": 100402,
+    "deaths": [
+      {
+        "character": "Jasper Sitwell",
+        "timeOfDeath": "Act 2, Highway",
+        "cause": "Traffic Impact",
+        "killedBy": "Winter Soldier",
+        "context": "Thrown out of a moving car into the path of an oncoming truck",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Arnim Zola",
+        "timeOfDeath": "Act 2, Bunker",
+        "cause": "Explosion",
+        "killedBy": "SHIELD Missile",
+        "context": "His consciousness (stored in computer banks) is destroyed when the bunker is bombed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Renata",
+        "timeOfDeath": "Act 3, Pierce's home",
+        "cause": "Gunshot",
+        "killedBy": "Alexander Pierce",
+        "context": "Shot by Pierce after he realizes she saw the Winter Soldier in his kitchen",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Alexander Pierce",
+        "timeOfDeath": "Act 3, Triskelion",
+        "cause": "Gunshot",
+        "killedBy": "Nick Fury",
+        "context": "Shot in the chest by Fury while holding Natasha Romanoff at gunpoint",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Guardians of the Galaxy",
+    "tmdbId": 118340,
+    "deaths": [
+      {
+        "character": "Meredith Quill",
+        "timeOfDeath": "Beginning of movie",
+        "cause": "Cancer",
+        "killedBy": "Illness",
+        "context": "Dies in hospital bed surrounded by family",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Korath the Pursuer",
+        "timeOfDeath": "Battle of Xandar",
+        "cause": "Cybernetics ripped out",
+        "killedBy": "Drax the Destroyer",
+        "context": "Killed during the final battle confrontation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Groot",
+        "timeOfDeath": "Battle of Xandar",
+        "cause": "Crash landing",
+        "killedBy": "Self",
+        "context": "Sacrifices himself to shield the other Guardians from the crashing Dark Aster",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Ronan the Accuser",
+        "timeOfDeath": "Battle of Xandar",
+        "cause": "Infinity Stone energy blast",
+        "killedBy": "Guardians of the Galaxy",
+        "context": "Destroyed by the power of the Infinity Stone channeled by the group",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Carina",
+        "timeOfDeath": "Knowhere sequence",
+        "cause": "Explosion",
+        "killedBy": "Self",
+        "context": "Grabs the Infinity Stone and explodes, destroying the Collector's museum",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Grand Budapest Hotel",
+    "tmdbId": 120467,
+    "deaths": [
+      {
+        "character": "Madame D.",
+        "timeOfDeath": "Prior to main plot",
+        "cause": "Poisoning",
+        "killedBy": "Dmitri (implied)",
+        "context": "Found dead at start of movie, later revealed to be strychnine poisoning",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Deputy Kovacs",
+        "timeOfDeath": "Act 2",
+        "cause": "Unknown (likely stabbing/beating)",
+        "killedBy": "J.G. Jopling",
+        "context": "Stalked in the art museum and killed off-screen; head found in laundry basket",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Serge X",
+        "timeOfDeath": "Act 2, Monastery",
+        "cause": "Strangulation",
+        "killedBy": "J.G. Jopling",
+        "context": "Strangled from behind while confessing to M. Gustave",
+        "isAmbiguous": false
+      },
+      {
+        "character": "J.G. Jopling",
+        "timeOfDeath": "Act 3, Cliffside",
+        "cause": "Fall",
+        "killedBy": "Zero Moustafa",
+        "context": "Pushed off a cliff edge after a ski chase",
+        "isAmbiguous": false
+      },
+      {
+        "character": "M. Gustave",
+        "timeOfDeath": "Epilogue",
+        "cause": "Execution (Gunshot)",
+        "killedBy": "Death Squad",
+        "context": "Taken off a train and shot by soldiers (narrated by Zero)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agatha",
+        "timeOfDeath": "Epilogue",
+        "cause": "Prussian Grippe",
+        "killedBy": "Illness",
+        "context": "Died of disease along with her infant son (narrated by Zero)",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: The Force Awakens",
+    "tmdbId": 140607,
+    "deaths": [
+      {
+        "character": "Lor San Tekka",
+        "timeOfDeath": "Opening scene",
+        "cause": "Slashed with lightsaber",
+        "killedBy": "Kylo Ren",
+        "context": "Executed in the village on Jakku",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hosnian Prime Inhabitants",
+        "timeOfDeath": "Act 2",
+        "cause": "Planet destruction",
+        "killedBy": "Starkiller Base",
+        "context": "Mass casualty event when the Starkiller weapon destroys the Hosnian system",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Han Solo",
+        "timeOfDeath": "Act 3, Starkiller Base",
+        "cause": "Stabbed with lightsaber",
+        "killedBy": "Kylo Ren",
+        "context": "Confronts his son on the bridge and is killed, falling into the reactor",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Starkiller Base Personnel",
+        "timeOfDeath": "Act 3",
+        "cause": "Planet destruction",
+        "killedBy": "Resistance Pilots",
+        "context": "Mass casualty event when the base explodes",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Inside Out",
+    "tmdbId": 150540,
+    "deaths": [
+      {
+        "character": "Bing Bong",
+        "timeOfDeath": "Act 3, Memory Dump",
+        "cause": "Fades from existence",
+        "killedBy": "Self",
+        "context": "Sacrifices himself by jumping off the rocket wagon so Joy can escape",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Furious 7",
+    "tmdbId": 168259,
+    "deaths": [
+      {
+        "character": "Han Lue",
+        "timeOfDeath": "Opening credits (Flashback)",
+        "cause": "Car explosion",
+        "killedBy": "Deckard Shaw",
+        "context": "Ramming attack in Tokyo (Retcon of Tokyo Drift scene)",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Mose Jakande",
+        "timeOfDeath": "Act 3, Los Angeles",
+        "cause": "Helicopter explosion",
+        "killedBy": "Dominic Toretto / Luke Hobbs",
+        "context": "Dom hooks grenades to helicopter, Hobbs shoots them",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kiet",
+        "timeOfDeath": "Act 3, Los Angeles",
+        "cause": "Fall / Crushing",
+        "killedBy": "Brian O'Conner",
+        "context": "Sent down an elevator shaft in a car",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: The Last Jedi",
+    "tmdbId": 181808,
+    "deaths": [
+      {
+        "character": "Paige Tico",
+        "timeOfDeath": "Opening battle",
+        "cause": "Explosion",
+        "killedBy": "Self",
+        "context": "Sacrifices herself to drop bombs on the First Order Dreadnought",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Admiral Ackbar",
+        "timeOfDeath": "Act 1",
+        "cause": "Explosion / Vacuum",
+        "killedBy": "First Order TIE Fighters",
+        "context": "Killed when the bridge of the Raddus is destroyed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vice Admiral Holdo",
+        "timeOfDeath": "Act 3",
+        "cause": "Suicide ramming",
+        "killedBy": "Self",
+        "context": "Lightspeed rams the Raddus into the Supremacy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Snoke",
+        "timeOfDeath": "Act 2, Throne Room",
+        "cause": "Bisected with lightsaber",
+        "killedBy": "Kylo Ren",
+        "context": "Betrayed and cut in half by Kylo Ren using the Skywalker saber",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Phasma",
+        "timeOfDeath": "Act 3, Supremacy",
+        "cause": "Fall into fire",
+        "killedBy": "Finn",
+        "context": "Defeated in combat and falls into the collapsing floor of the ship",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Luke Skywalker",
+        "timeOfDeath": "Ending",
+        "cause": "Force exhaustion / Ascension",
+        "killedBy": "Self",
+        "context": "Fades away becoming one with the Force after projecting himself to Crait",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Star Wars: The Rise of Skywalker",
+    "tmdbId": 181812,
+    "deaths": [
+      {
+        "character": "Boolio",
+        "timeOfDeath": "Act 1",
+        "cause": "Decapitation",
+        "killedBy": "First Order",
+        "context": "Head thrown onto a table during a meeting",
+        "isAmbiguous": false
+      },
+      {
+        "character": "General Hux",
+        "timeOfDeath": "Act 2",
+        "cause": "Blaster shot",
+        "killedBy": "Allegiant General Pryde",
+        "context": "Executed for being the spy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Snap Wexley",
+        "timeOfDeath": "Final Battle",
+        "cause": "Ship explosion",
+        "killedBy": "Final Order",
+        "context": "Shot down during the battle over Exegol",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Allegiant General Pryde",
+        "timeOfDeath": "Final Battle",
+        "cause": "Explosion",
+        "killedBy": "Finn / Rose Tico",
+        "context": "Killed when the command ship bridge is destroyed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Leia Organa",
+        "timeOfDeath": "Act 2",
+        "cause": "Old age / Force usage",
+        "killedBy": "Self",
+        "context": "Uses last of her energy to reach out to Ben Solo through the Force",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ben Solo",
+        "timeOfDeath": "Ending",
+        "cause": "Force drain / Sacrifice",
+        "killedBy": "Self",
+        "context": "Transfers his life force to resurrect Rey, then fades away",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Emperor Palpatine",
+        "timeOfDeath": "Ending",
+        "cause": "Reflected Force Lightning",
+        "killedBy": "Rey",
+        "context": "Disintegrated by his own lightning reflected by Rey",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kijimi Inhabitants",
+        "timeOfDeath": "Act 2",
+        "cause": "Planet destruction",
+        "killedBy": "Final Order",
+        "context": "Planet destroyed as a show of force",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "John Wick",
+    "tmdbId": 245891,
+    "deaths": [
+      {
+        "character": "Helen Wick",
+        "timeOfDeath": "Flashback",
+        "cause": "Illness",
+        "killedBy": "Natural Causes",
+        "context": "Died of unnamed terminal illness before movie starts",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Daisy (dog)",
+        "timeOfDeath": "Act 1",
+        "cause": "Blunt force / Neck break",
+        "killedBy": "Iosef Tarasov",
+        "context": "Killed during the home invasion",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Victor",
+        "timeOfDeath": "Act 1, Club",
+        "cause": "Neck break",
+        "killedBy": "John Wick",
+        "context": "Grappled and killed in the Red Circle club locker room",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Harry",
+        "timeOfDeath": "Act 2, Hotel Room",
+        "cause": "Gunshot",
+        "killedBy": "Ms. Perkins",
+        "context": "Shot with a pillow muffler after Perkins frees herself",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Iosef Tarasov",
+        "timeOfDeath": "Act 3, Safe House",
+        "cause": "Gunshot",
+        "killedBy": "John Wick",
+        "context": "Shot in the head by John after begging for mercy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Kirill",
+        "timeOfDeath": "Act 3, Car Chase",
+        "cause": "Strangulation",
+        "killedBy": "John Wick",
+        "context": "Strangled with handcuffs",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Viggo Tarasov",
+        "timeOfDeath": "Ending",
+        "cause": "Stab wound / Gunshot",
+        "killedBy": "John Wick",
+        "context": "Stabbed and left to die in the rain",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ms. Perkins",
+        "timeOfDeath": "Ending",
+        "cause": "Gunshot",
+        "killedBy": "Winston's Henchmen",
+        "context": "Executed for breaking Continental rules",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Marcus",
+        "timeOfDeath": "Act 3, Home",
+        "cause": "Gunshot",
+        "killedBy": "Viggo Tarasov",
+        "context": "Tortured and killed for helping John",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Captain America: Civil War",
+    "tmdbId": 271110,
+    "deaths": [
+      {
+        "character": "Peggy Carter",
+        "timeOfDeath": "Act 1",
+        "cause": "Old age",
+        "killedBy": "Natural Causes",
+        "context": "Died in her sleep (off-screen)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Crossbones (Brock Rumlow)",
+        "timeOfDeath": "Act 1, Lagos",
+        "cause": "Explosion",
+        "killedBy": "Self / Scarlet Witch",
+        "context": "Detonates suicide vest, explosion contained but kills him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "King T'Chaka",
+        "timeOfDeath": "Act 1, Vienna",
+        "cause": "Explosion",
+        "killedBy": "Helmut Zemo",
+        "context": "Killed in bombing of the UN conference",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dr. Broussard",
+        "timeOfDeath": "Act 2",
+        "cause": "Unknown",
+        "killedBy": "Helmut Zemo",
+        "context": "Body found in hotel bathtub (off-screen)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Howard Stark",
+        "timeOfDeath": "Flashback",
+        "cause": "Blunt force",
+        "killedBy": "Winter Soldier",
+        "context": "Beaten to death / car crash staged",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maria Stark",
+        "timeOfDeath": "Flashback",
+        "cause": "Strangulation",
+        "killedBy": "Winter Soldier",
+        "context": "Strangled after the car crash",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Winter Soldiers (Other)",
+        "timeOfDeath": "Act 3, Siberia",
+        "cause": "Gunshot",
+        "killedBy": "Helmut Zemo",
+        "context": "Executed in their cryo-stasis chambers",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Sicario",
+    "tmdbId": 273481,
+    "deaths": [
+      {
+        "character": "Manuel Diaz",
+        "timeOfDeath": "Act 3",
+        "cause": "Stab wound",
+        "killedBy": "Alejandro Gillick",
+        "context": "Stabbed in the neck while driving",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Silvio",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Alejandro Gillick",
+        "context": "Corrupt cop forced to drive Alejandro, then executed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fausto Alarcon",
+        "timeOfDeath": "Act 3, Dinner Table",
+        "cause": "Gunshot",
+        "killedBy": "Alejandro Gillick",
+        "context": "Shot at the dinner table after his family was killed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fausto Alarcon's Wife",
+        "timeOfDeath": "Act 3, Dinner Table",
+        "cause": "Gunshot",
+        "killedBy": "Alejandro Gillick",
+        "context": "Shot at the dinner table",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fausto Alarcon's Sons",
+        "timeOfDeath": "Act 3, Dinner Table",
+        "cause": "Gunshot",
+        "killedBy": "Alejandro Gillick",
+        "context": "Both sons shot at the dinner table",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Guardians of the Galaxy Vol. 2",
+    "tmdbId": 283995,
+    "deaths": [
+      {
+        "character": "Meredith Quill",
+        "timeOfDeath": "Flashback (Opening)",
+        "cause": "Brain Tumor",
+        "killedBy": "Ego",
+        "context": "Revealed that Ego deliberately implanted the tumor that killed her. (Flashback)",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Abolisk",
+        "timeOfDeath": "Opening Scene",
+        "cause": "Throat Slit",
+        "killedBy": "Gamora",
+        "context": "Interdimensional monster killed by Gamora during the opening credits battle.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tullk",
+        "timeOfDeath": "Act 2",
+        "cause": "Ejected into space",
+        "killedBy": "Taserface",
+        "context": "Loyal Ravager executed via airlock by Taserface's mutineers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Oblo",
+        "timeOfDeath": "Act 2",
+        "cause": "Ejected into space",
+        "killedBy": "Taserface",
+        "context": "Loyal Ravager executed via airlock by Taserface's mutineers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Retch",
+        "timeOfDeath": "Act 2",
+        "cause": "Thrown from height",
+        "killedBy": "Baby Groot",
+        "context": "Groot throws him off the catwalk in revenge for earlier torment.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Taserface",
+        "timeOfDeath": "Climax",
+        "cause": "Explosion",
+        "killedBy": "Yondu Udonta (Indirect)",
+        "context": "dies when the Ravager ship explodes; sends coordinates to the Sovereign before dying.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ego",
+        "timeOfDeath": "Climax",
+        "cause": "Brain Destruction",
+        "killedBy": "Baby Groot",
+        "context": "Groot plants a bomb on Ego's living planet brain core.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Yondu Udonta",
+        "timeOfDeath": "Climax",
+        "cause": "Suffocation/Freezing",
+        "killedBy": "Self",
+        "context": "Sacrifices his only spacesuit to save Peter Quill in the vacuum of space.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ego's Children",
+        "timeOfDeath": "Mid-movie (Discovery)",
+        "cause": "Unknown (Internal)",
+        "killedBy": "Ego",
+        "context": "Mass grave of skulls discovered by Gamora and Nebula in caverns.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Black Panther",
+    "tmdbId": 284054,
+    "deaths": [
+      {
+        "character": "N'Jobu",
+        "timeOfDeath": "Flashback",
+        "cause": "Stabbed",
+        "killedBy": "T'Chaka",
+        "context": "Killed by his brother T'Chaka to save Zuri during a confrontation in Oakland.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ulysses Klaue",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Erik Killmonger",
+        "context": "Betrayed and shot by Killmonger to use his body as a ticket into Wakanda.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Linda",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Erik Killmonger",
+        "context": "Shot by Killmonger to resolve a hostage situation and leave no loose ends.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Zuri",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed",
+        "killedBy": "Erik Killmonger",
+        "context": "Sacrifices himself to save T'Challa during the ritual combat.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Xoliswa",
+        "timeOfDeath": "Climax",
+        "cause": "Throat Slit",
+        "killedBy": "Erik Killmonger",
+        "context": "Dora Milaje member killed by Killmonger during the final battle.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Erik \"Killmonger\" Stevens",
+        "timeOfDeath": "Climax",
+        "cause": "Stabbed",
+        "killedBy": "T'Challa",
+        "context": "Stabbed by T'Challa; chooses to die rather than be healed and imprisoned.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Wonder Woman",
+    "tmdbId": 297762,
+    "deaths": [
+      {
+        "character": "Antiope",
+        "timeOfDeath": "Act 1",
+        "cause": "Gunshot",
+        "killedBy": "German Soldier",
+        "context": "Dies taking a bullet meant for Diana during the German invasion of Themyscira.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "German Soldiers",
+        "timeOfDeath": "Various",
+        "cause": "Gunshot/Stabbed",
+        "killedBy": "Amazons/Diana/Steve",
+        "context": "Casualties during the beach battle and the liberation of Veld.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Steve Trevor",
+        "timeOfDeath": "Climax",
+        "cause": "Explosion",
+        "killedBy": "Self",
+        "context": "Sacrifices himself by detonating the plane filled with poison gas at a safe altitude.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Erich Ludendorff",
+        "timeOfDeath": "Climax",
+        "cause": "Stabbed",
+        "killedBy": "Diana Prince",
+        "context": "Diana kills him believing he is Ares.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ares",
+        "timeOfDeath": "Climax",
+        "cause": "Energy Blast",
+        "killedBy": "Diana Prince",
+        "context": "Destroyed by Diana using her god-killer powers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Veld Villagers",
+        "timeOfDeath": "Climax",
+        "cause": "Poison Gas",
+        "killedBy": "Ludendorff's Forces",
+        "context": "The entire village is killed by the gas test while Diana is away.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Avengers: Endgame",
+    "tmdbId": 299534,
+    "deaths": [
+      {
+        "character": "Thanos (2018)",
+        "timeOfDeath": "Act 1",
+        "cause": "Decapitation",
+        "killedBy": "Thor",
+        "context": "Killed by Thor at 'The Garden' after revealing he destroyed the stones.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Akihiko",
+        "timeOfDeath": "Act 1",
+        "cause": "Throat Slit",
+        "killedBy": "Clint Barton (Ronin)",
+        "context": "Yakuza boss killed by Hawkeye in Tokyo.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Natasha Romanoff",
+        "timeOfDeath": "Act 2",
+        "cause": "Fall Damage",
+        "killedBy": "Self",
+        "context": "Sacrifices herself on Vormir so Hawkeye can obtain the Soul Stone.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nebula (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Nebula (2023)",
+        "context": "The future Nebula kills her past self to save Gamora.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Corvus Glaive (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed",
+        "killedBy": "Okoye",
+        "context": "Impaled by Okoye during the final battle.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cull Obsidian (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Crushed/Exploded",
+        "killedBy": "Scott Lang (Giant-Man)",
+        "context": "Stomped on and thrown by Giant-Man.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ebony Maw (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Disintegration",
+        "killedBy": "Tony Stark",
+        "context": "Turned to dust when Tony Stark snaps his fingers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Proxima Midnight (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Disintegration",
+        "killedBy": "Tony Stark",
+        "context": "Turned to dust when Tony Stark snaps his fingers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Thanos (2014)",
+        "timeOfDeath": "Act 3",
+        "cause": "Disintegration",
+        "killedBy": "Tony Stark",
+        "context": "Turned to dust when Tony Stark snaps his fingers.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tony Stark",
+        "timeOfDeath": "Act 3",
+        "cause": "Energy Overload",
+        "killedBy": "Self",
+        "context": "Dies from the massive energy surge caused by using the Infinity Stones.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Avengers: Infinity War",
+    "tmdbId": 299536,
+    "deaths": [
+      {
+        "character": "Heimdall",
+        "timeOfDeath": "Opening Scene",
+        "cause": "Stabbed",
+        "killedBy": "Thanos",
+        "context": "Killed after summoning the Bifrost to send Hulk to Earth.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Loki",
+        "timeOfDeath": "Opening Scene",
+        "cause": "Strangled",
+        "killedBy": "Thanos",
+        "context": "Choked to death after a failed attempt to stab Thanos.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gamora",
+        "timeOfDeath": "Act 2",
+        "cause": "Fall Damage",
+        "killedBy": "Thanos",
+        "context": "Thrown off a cliff on Vormir by Thanos to acquire the Soul Stone.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "The Collector",
+        "timeOfDeath": "Act 2",
+        "cause": "Unknown",
+        "killedBy": "Thanos",
+        "context": "Implied killed when Thanos seized the Reality Stone; only an illusion is seen.",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Ebony Maw",
+        "timeOfDeath": "Act 2",
+        "cause": "Freezing/Suffocation",
+        "killedBy": "Tony Stark/Peter Parker",
+        "context": "Ejected into space through a hull breach.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cull Obsidian",
+        "timeOfDeath": "Act 3",
+        "cause": "Explosion",
+        "killedBy": "Bruce Banner",
+        "context": "Thrown into the Wakandan shield barrier and explodes.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Proxima Midnight",
+        "timeOfDeath": "Act 3",
+        "cause": "Crushed",
+        "killedBy": "Wanda Maximoff",
+        "context": "Thrown into the alien thresher machines during the Battle of Wakanda.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Corvus Glaive",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed",
+        "killedBy": "Vision",
+        "context": "Stabbed with his own glaive by Vision.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Vision",
+        "timeOfDeath": "Act 3",
+        "cause": "Mind Stone Extraction",
+        "killedBy": "Thanos",
+        "context": "Killed when Thanos rips the Mind Stone from his forehead.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bucky Barnes",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sam Wilson",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "T'Challa",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wanda Maximoff",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Groot",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Peter \"Star-Lord\" Quill",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Drax",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mantis",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dr. Stephen Strange",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Peter Parker",
+        "timeOfDeath": "Climax",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maria Hill",
+        "timeOfDeath": "Post-Credits",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nick Fury",
+        "timeOfDeath": "Post-Credits",
+        "cause": "Disintegration",
+        "killedBy": "Thanos",
+        "context": "Turned to dust by the Snap.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Spider-Man: Homecoming",
+    "tmdbId": 315635,
+    "deaths": [
+      {
+        "character": "Jackson \"Shocker #1\" Brice",
+        "timeOfDeath": "Act 1",
+        "cause": "Disintegration",
+        "killedBy": "Adrian Toomes",
+        "context": "Accidentally killed when Toomes fires a Chitauri weapon believing it was a gravity gun.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Fate of the Furious",
+    "tmdbId": 337339,
+    "deaths": [
+      {
+        "character": "Elena Neves",
+        "timeOfDeath": "Mid-movie",
+        "cause": "Gunshot",
+        "killedBy": "Connor Rhodes",
+        "context": "Executed in front of Dom to force his compliance.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Connor Rhodes",
+        "timeOfDeath": "Climax",
+        "cause": "Neck Broken",
+        "killedBy": "Dominic Toretto",
+        "context": "Dom kills him in revenge for Elena's death.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Nocturnal Animals",
+    "tmdbId": 340666,
+    "deaths": [
+      {
+        "character": "Tony Hastings",
+        "timeOfDeath": "Climax (Novel)",
+        "cause": "Gunshot",
+        "killedBy": "Self (Accidental)",
+        "context": "Fictional character in the manuscript; shoots himself accidentally after being blinded.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Laura Hastings",
+        "timeOfDeath": "Act 1 (Novel)",
+        "cause": "Bludgeoned",
+        "killedBy": "Ray Marcus/Lou",
+        "context": "Fictional character in the manuscript; found dead in the desert.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "India Hastings",
+        "timeOfDeath": "Act 1 (Novel)",
+        "cause": "Bludgeoned",
+        "killedBy": "Ray Marcus/Lou",
+        "context": "Fictional character in the manuscript; found dead in the desert.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ray Marcus",
+        "timeOfDeath": "Climax (Novel)",
+        "cause": "Gunshot",
+        "killedBy": "Tony Hastings",
+        "context": "Fictional character in the manuscript; shot by Tony.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lou",
+        "timeOfDeath": "Act 3 (Novel)",
+        "cause": "Gunshot",
+        "killedBy": "Bobby Andes",
+        "context": "Fictional character in the manuscript; shot while fleeing.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Turk",
+        "timeOfDeath": "Act 3 (Novel)",
+        "cause": "Gunshot",
+        "killedBy": "Unknown",
+        "context": "Fictional character in the manuscript; mentioned as killed in a botched robbery.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Coco",
+    "tmdbId": 354912,
+    "deaths": [
+      {
+        "character": "Ernesto de la Cruz",
+        "timeOfDeath": "Flashback",
+        "cause": "Crushed",
+        "killedBy": "Accident",
+        "context": "Crushed by a giant bell during a concert in 1942.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hector",
+        "timeOfDeath": "Flashback",
+        "cause": "Poisoned",
+        "killedBy": "Ernesto de la Cruz",
+        "context": "Murdered by Ernesto so he could steal Hector's songs.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Chicharron",
+        "timeOfDeath": "Act 1",
+        "cause": "Faded Away",
+        "killedBy": "Natural (Forgotten)",
+        "context": "Suffers the Final Death in the Land of the Dead when no living person remembers him.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mama Coco",
+        "timeOfDeath": "Epilogue",
+        "cause": "Old Age",
+        "killedBy": "Natural",
+        "context": "Dies peacefully of old age surrounded by family.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Fast & Furious Presents: Hobbs & Shaw",
+    "tmdbId": 384018,
+    "deaths": [
+      {
+        "character": "Brixton Lore",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Deactivation / Fall",
+        "killedBy": "Eteon (Self)",
+        "context": "After failing to defeat Hobbs and Shaw, his cybernetics are remotely deactivated by Eteon director, causing him to fall from the cliff.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "F9",
+    "tmdbId": 385128,
+    "deaths": [
+      {
+        "character": "Otto",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Air strike / Explosion",
+        "killedBy": "Cipher",
+        "context": "Cipher betrays him by piloting a jet and bombing the truck he is standing on/in.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Fast X",
+    "tmdbId": 385687,
+    "deaths": [
+      {
+        "character": "Diogo",
+        "timeOfDeath": "Act 2 race sequence",
+        "cause": "Explosion",
+        "killedBy": "Dante Reyes",
+        "context": "Dante rigs his car with a bomb during the race in Rio.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jakob Toretto",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Explosion / Suicide",
+        "killedBy": "Self",
+        "context": "Sacrifices himself by using his fuel-line cannon to destroy incoming enemy vehicles to save Dom and Little B.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Spider-Man: Far From Home",
+    "tmdbId": 429617,
+    "deaths": [
+      {
+        "character": "Quentin 'Mysterio' Beck",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Gunshot (Misfire)",
+        "killedBy": "Self (Drone)",
+        "context": "Hit by a bullet from one of his own drones while trying to shoot Peter Parker; E.D.I.T.H. confirms no life signs, though illusions make it theoretically debatable.",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Dune",
+    "tmdbId": 438631,
+    "deaths": [
+      {
+        "character": "Dr. Wellington Yueh",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Baron Vladimir Harkonnen",
+        "context": "After lowering the shields and betraying the Duke, the Baron reneges on their deal and kills him.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Duke Leto Atreides",
+        "timeOfDeath": "Act 2",
+        "cause": "Poison Gas",
+        "killedBy": "Self / Baron Vladimir Harkonnen",
+        "context": "Bites down on a poison tooth implanted by Yueh in a failed attempt to assassinate the Baron.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Piter de Vries",
+        "timeOfDeath": "Act 2",
+        "cause": "Poison Gas",
+        "killedBy": "Duke Leto Atreides",
+        "context": "Succumbs to the poison gas released by Duke Leto's tooth.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Shadout Mapes",
+        "timeOfDeath": "Act 2",
+        "cause": "Stabbed",
+        "killedBy": "Sardaukar / Harkonnen Agents",
+        "context": "Killed during the initial Harkonnen invasion of Arrakeen.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Liet-Kynes",
+        "timeOfDeath": "Act 3",
+        "cause": "Devoured",
+        "killedBy": "Sandworm",
+        "context": "Summons a sandworm to swallow her and the Sardaukar troops pursuing her.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Duncan Idaho",
+        "timeOfDeath": "Act 3",
+        "cause": "Combat injuries",
+        "killedBy": "Sardaukar",
+        "context": "Sacrifices himself holding off a wave of Sardaukar soldiers to allow Paul and Jessica to escape.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jamis",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Stabbed",
+        "killedBy": "Paul Atreides",
+        "context": "Killed in a ritual duel to the death with Paul.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Guardians of the Galaxy Vol. 3",
+    "tmdbId": 447365,
+    "deaths": [
+      {
+        "character": "Lylla (otter)",
+        "timeOfDeath": "Flashback sequence",
+        "cause": "Gunshot",
+        "killedBy": "The High Evolutionary",
+        "context": "Shot by the High Evolutionary while trying to escape with Rocket.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Teefs (walrus)",
+        "timeOfDeath": "Flashback sequence",
+        "cause": "Gunshot",
+        "killedBy": "High Evolutionary's Guards",
+        "context": "Killed by guards in the chaos following Lylla's death.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Floor (rabbit)",
+        "timeOfDeath": "Flashback sequence",
+        "cause": "Gunshot",
+        "killedBy": "High Evolutionary's Guards",
+        "context": "Killed by guards in the chaos following Lylla's death.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ayesha",
+        "timeOfDeath": "Act 3",
+        "cause": "Explosion",
+        "killedBy": "The High Evolutionary",
+        "context": "Killed when the High Evolutionary destroys Counter-Earth while she is still on the ship.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Doctor Strange in the Multiverse of Madness",
+    "tmdbId": 453395,
+    "deaths": [
+      {
+        "character": "Defender Strange",
+        "timeOfDeath": "Opening sequence",
+        "cause": "Stabbed",
+        "killedBy": "Demon",
+        "context": "Killed by an interdimensional demon while trying to obtain the Book of Vishanti.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gargantos",
+        "timeOfDeath": "Act 1",
+        "cause": "Stabbed in eye",
+        "killedBy": "Doctor Strange",
+        "context": "Strange impales the creature's eye with a lamp post.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Black Bolt (Earth-838)",
+        "timeOfDeath": "Act 2 (Illuminati sequence)",
+        "cause": "Brain implosion",
+        "killedBy": "Wanda Maximoff (Scarlet Witch)",
+        "context": "Wanda uses chaos magic to remove his mouth, causing his sonic scream to backfire and blow out his brain.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Reed Richards (Earth-838)",
+        "timeOfDeath": "Act 2 (Illuminati sequence)",
+        "cause": "Shredded",
+        "killedBy": "Wanda Maximoff (Scarlet Witch)",
+        "context": "Wanda unravels his elastic body into strips.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Captain Carter (Earth-838)",
+        "timeOfDeath": "Act 2 (Illuminati sequence)",
+        "cause": "Bisected",
+        "killedBy": "Wanda Maximoff (Scarlet Witch)",
+        "context": "Cut in half by her own shield thrown by Wanda.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Maria Rambeau / Captain Marvel (Earth-838)",
+        "timeOfDeath": "Act 2 (Illuminati sequence)",
+        "cause": "Crushed",
+        "killedBy": "Wanda Maximoff (Scarlet Witch)",
+        "context": "Crushed by a falling statue toppled by Wanda.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Charles Xavier (Earth-838)",
+        "timeOfDeath": "Act 2 (Illuminati sequence)",
+        "cause": "Neck snapped (Mental projection)",
+        "killedBy": "Wanda Maximoff (Scarlet Witch)",
+        "context": "Wanda kills him in the mental plane by snapping his neck.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sinister Strange",
+        "timeOfDeath": "Act 3",
+        "cause": "Fall / Impalement",
+        "killedBy": "Doctor Strange",
+        "context": "Blasted out of the Sanctum window and falls onto a spiked fence.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Wanda Maximoff",
+        "timeOfDeath": "Act 3 climax",
+        "cause": "Crushed",
+        "killedBy": "Self",
+        "context": "Destroys Wundagore Mountain, collapsing it upon herself to destroy the Darkhold.",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "A Quiet Place Part II",
+    "tmdbId": 520763,
+    "deaths": [
+      {
+        "character": "Roger (Ronnie)",
+        "timeOfDeath": "Act 1 (Day 1 flashback)",
+        "cause": "Slashed/Torn apart",
+        "killedBy": "Death Angel",
+        "context": "Killed by a creature while investigating the initial attack in town",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Woman",
+        "timeOfDeath": "Act 1 (Day 1 flashback)",
+        "cause": "Crushed",
+        "killedBy": "Death Angel",
+        "context": "Crushed when a creature jumps onto her car during the initial chaos",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Man",
+        "timeOfDeath": "Act 3 (Marina)",
+        "cause": "Suicide/Mauled",
+        "killedBy": "Self/Death Angel",
+        "context": "Screams to attract the creature after finding his wife dead",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Marina People",
+        "timeOfDeath": "Act 3 (Marina)",
+        "cause": "Massacre",
+        "killedBy": "Death Angel",
+        "context": "Multiple feral survivors at the marina are slaughtered by a creature",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Island Colony Members",
+        "timeOfDeath": "Act 3 (Island)",
+        "cause": "Massacre",
+        "killedBy": "Death Angel",
+        "context": "Several colonists are killed when a creature drifts to the island on a boat",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Deadpool & Wolverine",
+    "tmdbId": 533535,
+    "deaths": [
+      {
+        "character": "Johnny Storm (Human Torch)",
+        "timeOfDeath": "Act 2 (The Void)",
+        "cause": "Skinned alive",
+        "killedBy": "Cassandra Nova",
+        "context": "Brutally killed by Nova after Deadpool claims he said terrible things about her",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Victor Creed (Sabretooth)",
+        "timeOfDeath": "Act 2 (The Void)",
+        "cause": "Decapitated",
+        "killedBy": "Wolverine",
+        "context": "Head cut off by Wolverine during a fight in the Void",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nicepool",
+        "timeOfDeath": "Act 3",
+        "cause": "Head exploded",
+        "killedBy": "Deadpool",
+        "context": "Used as a human shield by Deadpool; his head explodes from damage as he cannot regenerate",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cassandra Nova",
+        "timeOfDeath": "Act 3",
+        "cause": "Atomized",
+        "killedBy": "Deadpool and Wolverine",
+        "context": "Destroyed when Deadpool and Wolverine disrupt the Time Ripper's power flow",
+        "isAmbiguous": false
+      },
+      {
+        "character": "John Allerdyce (Pyro)",
+        "timeOfDeath": "Act 2 (The Void)",
+        "cause": "Neck snapped",
+        "killedBy": "Cassandra Nova",
+        "context": "Killed by Nova after she discovers his betrayal",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cain Marko (Juggernaut)",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Decapitated",
+        "killedBy": "X-23",
+        "context": "Head cut off by X-23 during the raid on Nova's base",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mortimer Toynbee (Toad)",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Electrocuted/Consumed",
+        "killedBy": "Storm/Alioth",
+        "context": "Struck by lightning or consumed by Alioth during the base battle",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Azazel",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Stabbed",
+        "killedBy": "Blade",
+        "context": "Killed during the raid on Nova's base",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Psylocke",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Stabbed",
+        "killedBy": "Unknown",
+        "context": "Killed during the raid on Nova's base",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lady Deathstrike",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Unknown",
+        "killedBy": "Blade/Gambit/Elektra",
+        "context": "Presumed killed during the raid on Nova's base",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Callisto",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Consumed",
+        "killedBy": "Alioth",
+        "context": "Consumed by Alioth when the base is destroyed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Buck",
+        "timeOfDeath": "Act 3 (The Void)",
+        "cause": "Consumed",
+        "killedBy": "Alioth",
+        "context": "Consumed by Alioth when the base is destroyed",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Minutemen (TVA)",
+        "timeOfDeath": "Throughout movie",
+        "cause": "Stabbed/Slashed",
+        "killedBy": "Deadpool and Wolverine",
+        "context": "Various TVA agents killed during the opening credit sequence and later battles",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Ballerina",
+    "tmdbId": 541671,
+    "deaths": [
+      {
+        "character": "Javier",
+        "timeOfDeath": "Prologue (Flashback)",
+        "cause": "Unknown",
+        "killedBy": "Cultists",
+        "context": "Sacrificed himself to allow young Eve to escape the Cult",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Eve's Mother",
+        "timeOfDeath": "Prologue (Flashback)",
+        "cause": "Unknown",
+        "killedBy": "Cultists",
+        "context": "Killed during the raid on their home",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Daniel Pine",
+        "timeOfDeath": "Act 2",
+        "cause": "Shot",
+        "killedBy": "Dex",
+        "context": "Killed by a Cultist assassin while trying to protect his daughter",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lena",
+        "timeOfDeath": "Act 3",
+        "cause": "Executed",
+        "killedBy": "The Chancellor",
+        "context": "Eve's sister; ordered killed by the Chancellor for being a liability",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dex",
+        "timeOfDeath": "Act 3",
+        "cause": "Shot",
+        "killedBy": "John Wick",
+        "context": "Cultist sniper killed by John Wick providing overwatch for Eve",
+        "isAmbiguous": false
+      },
+      {
+        "character": "The Chancellor",
+        "timeOfDeath": "Act 3",
+        "cause": "Stabbed/Shot",
+        "killedBy": "Eve Macarro",
+        "context": "The leader of the Cult; killed by Eve to end the cycle of violence",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Bad Boys: Ride or Die",
+    "tmdbId": 573435,
+    "deaths": [
+      {
+        "character": "Captain Conrad Howard",
+        "timeOfDeath": "Act 1 (Video)",
+        "cause": "Heart Attack/Stress (Pre-movie)",
+        "killedBy": "James McGrath",
+        "context": "Already deceased; appears in video logs revealing he was killed to cover up corruption",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Detective Sanchez",
+        "timeOfDeath": "Act 1 (Video)",
+        "cause": "Car Crash (Flashback)",
+        "killedBy": "Unknown",
+        "context": "Revealed to have been killed years prior to cover up the conspiracy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Detective Ruiz",
+        "timeOfDeath": "Act 1 (Video)",
+        "cause": "Car Crash (Flashback)",
+        "killedBy": "Unknown",
+        "context": "Revealed to have been killed years prior to cover up the conspiracy",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Manny the Butcher",
+        "timeOfDeath": "Act 2",
+        "cause": "Burned alive",
+        "killedBy": "Henchman",
+        "context": "Trapped between cars and set on fire with a Molotov cocktail",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Fletcher",
+        "timeOfDeath": "Act 2",
+        "cause": "Shot",
+        "killedBy": "James McGrath",
+        "context": "Killed by McGrath to silence him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Adam Lockwood",
+        "timeOfDeath": "Act 3",
+        "cause": "Eaten",
+        "killedBy": "Duke (Albino Alligator)",
+        "context": "Kicked into the alligator pit by Rita and eaten",
+        "isAmbiguous": false
+      },
+      {
+        "character": "James McGrath",
+        "timeOfDeath": "Act 3",
+        "cause": "Shot",
+        "killedBy": "Mike Lowrey",
+        "context": "Shot in the head by Mike during the final confrontation on the beach",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Final Destination Bloodlines",
+    "tmdbId": 574475,
+    "deaths": [
+      {
+        "character": "Iris Campbell",
+        "timeOfDeath": "Act 1",
+        "cause": "Impaled",
+        "killedBy": "Weather Vane (Death)",
+        "context": "Allows herself to be impaled to prove Death's design to Stefani",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Howard",
+        "timeOfDeath": "Act 2",
+        "cause": "Mangled",
+        "killedBy": "Lawnmower (Death)",
+        "context": "Fell into the path of a lawnmower after stepping on glass",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Julia",
+        "timeOfDeath": "Act 2",
+        "cause": "Crushed",
+        "killedBy": "Garbage Truck (Death)",
+        "context": "Knocked into a trash bin and dumped into a compactor",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Erik Campbell",
+        "timeOfDeath": "Act 3",
+        "cause": "Crushed/Impaled",
+        "killedBy": "MRI Machine (Death)",
+        "context": "Piercings pulled by MRI magnet; crushed by a flying wheelchair",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bobby Campbell",
+        "timeOfDeath": "Act 3",
+        "cause": "Impaled",
+        "killedBy": "Vending Machine Coil (Death)",
+        "context": "Impaled through the head by a spring launched from a vending machine",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Darlene Campbell",
+        "timeOfDeath": "Act 3",
+        "cause": "Bisected",
+        "killedBy": "Lamp Post (Death)",
+        "context": "Cut in half by a falling lamp post while saving Charlie",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stefani Reyes",
+        "timeOfDeath": "Ending",
+        "cause": "Crushed",
+        "killedBy": "Logs (Death)",
+        "context": "Crushed by logs from a derailed train in the final moments",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Charlie Reyes",
+        "timeOfDeath": "Ending",
+        "cause": "Crushed",
+        "killedBy": "Logs (Death)",
+        "context": "Crushed by logs from a derailed train in the final moments",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Mission: Impossible - The Final Reckoning",
+    "tmdbId": 575265,
+    "deaths": [
+      {
+        "character": "Luther Stickell",
+        "timeOfDeath": "Act 1",
+        "cause": "Explosion",
+        "killedBy": "Self",
+        "context": "Sacrifices himself to disarm a nuclear device and save a city",
+        "isAmbiguous": false
+      },
+      {
+        "character": "General Sidney",
+        "timeOfDeath": "Act 2",
+        "cause": "Shot",
+        "killedBy": "Rogue Secret Service Agent",
+        "context": "Shot accidentally during a confrontation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gabriel",
+        "timeOfDeath": "Act 3",
+        "cause": "Impact/Fall",
+        "killedBy": "Ethan Hunt",
+        "context": "Face crushed against a plane rudder before falling to his death",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Spider-Man: No Way Home",
+    "tmdbId": 634649,
+    "deaths": [
+      {
+        "character": "May Parker",
+        "timeOfDeath": "Act 2",
+        "cause": "Impaled/Internal Injuries",
+        "killedBy": "Green Goblin",
+        "context": "Struck by the Goblin Glider and dies in Peter's arms",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Civilians",
+        "timeOfDeath": "Act 1",
+        "cause": "Vehicle destruction",
+        "killedBy": "Doc Ock",
+        "context": "Unnamed people killed during the bridge battle sequence",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Kingdom of the Planet of the Apes",
+    "tmdbId": 653346,
+    "deaths": [
+      {
+        "character": "Dar",
+        "timeOfDeath": "Act 1, village raid",
+        "cause": "Electrocuted/Beaten",
+        "killedBy": "Sylva",
+        "context": "Killed during the initial raid on the Eagle Clan village while trying to protect his family",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Trevathan",
+        "timeOfDeath": "Act 2, during escape",
+        "cause": "Strangled",
+        "killedBy": "Mae",
+        "context": "Mae kills him to prevent him from alerting Proximus Caesar about their escape attempt",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lightning (Chimpanzee)",
+        "timeOfDeath": "Act 3, seawall confrontation",
+        "cause": "Gunshot",
+        "killedBy": "Mae",
+        "context": "Shot by Mae while he was threatening Noa",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sylva (Gorilla)",
+        "timeOfDeath": "Act 3, flooding bunker",
+        "cause": "Drowning",
+        "killedBy": "Noa (indirectly)",
+        "context": "Trapped in the rising water after Noa summons the eagles to attack him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Proximus Caesar",
+        "timeOfDeath": "Act 3, cliffside",
+        "cause": "Fall",
+        "killedBy": "Eagles/Gravity",
+        "context": "Besieged by eagles summoned by Noa and falls off the cliff into the ocean",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "Dune: Part Two",
+    "tmdbId": 693134,
+    "deaths": [
+      {
+        "character": "Shishakli",
+        "timeOfDeath": "Act 2, Sietch Tabr attack",
+        "cause": "Incinerated",
+        "killedBy": "Feyd-Rautha Harkonnen",
+        "context": "Burned alive with a flamethrower for refusing to reveal Paul's location",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Reverend Mother Ramallo",
+        "timeOfDeath": "Act 2, Temple",
+        "cause": "Old Age/Transmutation",
+        "killedBy": "Self",
+        "context": "Dies while passing her memories to Lady Jessica during the Water of Life ritual",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Glossu Rabban",
+        "timeOfDeath": "Act 3, Arrakeen battle",
+        "cause": "Stabbed/Slashed",
+        "killedBy": "Gurney Halleck",
+        "context": "Killed in a duel during the storming of Arrakeen",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Baron Vladimir Harkonnen",
+        "timeOfDeath": "Act 3, Emperor's throne room",
+        "cause": "Stabbed",
+        "killedBy": "Paul Atreides",
+        "context": "Stabbed in the neck by Paul as he ascends the throne steps",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Feyd-Rautha Harkonnen",
+        "timeOfDeath": "Act 3, final duel",
+        "cause": "Stabbed",
+        "killedBy": "Paul Atreides",
+        "context": "Stabbed in the chest by Paul during their ritual knife fight",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Garfield Movie",
+    "tmdbId": 748783,
+    "deaths": [
+      {
+        "character": "Bird",
+        "timeOfDeath": "Act 2, farm rescue",
+        "cause": "Electrocuted",
+        "killedBy": "Lactose Farms Fence",
+        "context": "Jeff Foxworthy's bird character flies into an electric fence while trying to help",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "A Quiet Place: Day One",
+    "tmdbId": 762441,
+    "deaths": [
+      {
+        "character": "Reuben",
+        "timeOfDeath": "Act 1, marionette theater",
+        "cause": "Mauling",
+        "killedBy": "Death Angel",
+        "context": "Attacked by a creature shortly after the initial meteor strike while trying to help Sam",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Henri",
+        "timeOfDeath": "Act 2, subway tunnels",
+        "cause": "Mauling",
+        "killedBy": "Death Angel",
+        "context": "Sacrifices himself to block a creature's path, allowing others to escape",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Samira 'Sam'",
+        "timeOfDeath": "Act 3, empty street",
+        "cause": "Suicide (Implied)",
+        "killedBy": "Death Angel",
+        "context": "Unplugs her headphones to play music loudly, attracting a creature to kill her on her own terms",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "KPop Demon Hunters",
+    "tmdbId": 803796,
+    "deaths": [
+      {
+        "character": "Mystery Saja",
+        "timeOfDeath": "Climax, concert stage",
+        "cause": "Throat Slit",
+        "killedBy": "Zoey",
+        "context": "Killed during the final defense of the stage",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Romance Saja",
+        "timeOfDeath": "Climax, concert stage",
+        "cause": "Stabbed",
+        "killedBy": "Mira",
+        "context": "Stabbed in the chest while fighting off demons",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Abby Saja",
+        "timeOfDeath": "Climax, concert stage",
+        "cause": "Slashed",
+        "killedBy": "Mira",
+        "context": "Chest cut open during the chaotic final battle",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jinu Saja",
+        "timeOfDeath": "Act 3, ritual site",
+        "cause": "Sacrifice/Disintegration",
+        "killedBy": "Gwi-Ma",
+        "context": "Sacrifices himself to allow the hunters to overload the villain",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Gwi-Ma",
+        "timeOfDeath": "Act 3, ritual site",
+        "cause": "Explosion",
+        "killedBy": "Demon Hunters",
+        "context": "Explodes after being overloaded with energy by Mira, Zoey, and Rumi",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Godzilla x Kong: The New Empire",
+    "tmdbId": 823464,
+    "deaths": [
+      {
+        "character": "Scylla",
+        "timeOfDeath": "Act 1, Rome",
+        "cause": "Crushed/Blasted",
+        "killedBy": "Godzilla",
+        "context": "Killed by Godzilla during a territorial dispute in Rome",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tiamat",
+        "timeOfDeath": "Act 2, Arctic Ocean",
+        "cause": "Dismembered",
+        "killedBy": "Godzilla",
+        "context": "Godzilla destroys her in her lair to absorb her energy for evolution",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Stone Fist (Ape)",
+        "timeOfDeath": "Act 2, Hollow Earth",
+        "cause": "Beating",
+        "killedBy": "Kong",
+        "context": "Beaten to death by Kong after bullying Suko",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Skar King",
+        "timeOfDeath": "Act 3, Rio de Janeiro",
+        "cause": "Shattered",
+        "killedBy": "Kong",
+        "context": "Frozen by Shimo and then smashed into pieces by Kong",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Life of Chuck",
+    "tmdbId": 842924,
+    "deaths": [
+      {
+        "character": "Charles 'Chuck' Krantz",
+        "timeOfDeath": "Act 3 (Chronological End), Hospital",
+        "cause": "Brain Tumor",
+        "killedBy": "Disease",
+        "context": "Dies in a hospital bed surrounded by family; his death causes the internal 'world' of the movie to end",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Albie Krantz",
+        "timeOfDeath": "Act 1 (Chronological Middle), Home",
+        "cause": "Heart Attack/Stroke",
+        "killedBy": "Disease",
+        "context": "Dies sitting in his chair; Chuck finds him",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Chuck's Parents",
+        "timeOfDeath": "Act 1 (Chronological Beginning), Flashback",
+        "cause": "Car Accident",
+        "killedBy": "Unknown Driver",
+        "context": "Killed in a crash that leaves Chuck an orphan; seen in memory/flashback",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Hamnet",
+    "tmdbId": 858024,
+    "deaths": [
+      {
+        "character": "Hamnet",
+        "timeOfDeath": "Act 2, Stratford",
+        "cause": "Plague",
+        "killedBy": "Disease",
+        "context": "Dies of the bubonic plague, essentially trading his life for his twin sister Judith's",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Agnes's Hawk",
+        "timeOfDeath": "Act 1, Forest",
+        "cause": "Unknown/Natural",
+        "killedBy": "Nature",
+        "context": "The hawk dies and is buried; serves as a metaphor for the coming loss",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Civil War",
+    "tmdbId": 929590,
+    "deaths": [
+      {
+        "character": "Bohai",
+        "timeOfDeath": "Act 2, Winter Wonderland",
+        "cause": "Gunshot",
+        "killedBy": "Wyatt",
+        "context": "Executed by the ultranationalist militia leader for not being 'American' enough",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tony",
+        "timeOfDeath": "Act 2, Winter Wonderland",
+        "cause": "Gunshot",
+        "killedBy": "Wyatt",
+        "context": "Shot by the militia leader while trying to de-escalate the situation",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Sammy",
+        "timeOfDeath": "Act 2, Car escape",
+        "cause": "Gunshot",
+        "killedBy": "Militia Soldier",
+        "context": "Shot while driving the SUV to rescue the others; dies shortly after from blood loss",
+        "isAmbiguous": false
+      },
+      {
+        "character": "The President",
+        "timeOfDeath": "Act 3, Oval Office",
+        "cause": "Gunshot",
+        "killedBy": "Western Forces Soldiers",
+        "context": "Executed after being dragged out from under his desk",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Lee Smith",
+        "timeOfDeath": "Act 3, White House hallway",
+        "cause": "Gunshot",
+        "killedBy": "Secret Service Agent",
+        "context": "Shot while pushing Jessie out of the line of fire",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Scream VI",
+    "tmdbId": 934433,
+    "deaths": [
+      {
+        "character": "Laura Crane",
+        "timeOfDeath": "Opening Scene, Alley",
+        "cause": "Stabbed",
+        "killedBy": "Jason Carvey",
+        "context": "Lured into an alley and stabbed by a Ghostface copycat",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Jason Carvey",
+        "timeOfDeath": "Opening Scene, Apartment",
+        "cause": "Gutted",
+        "killedBy": "Detective Wayne Bailey",
+        "context": "Killed by the 'real' Ghostface after failing to answer the phone quiz correctly",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Greg Bruckner",
+        "timeOfDeath": "Opening Scene, Apartment",
+        "cause": "Dismembered",
+        "killedBy": "Detective Wayne Bailey",
+        "context": "Body parts found in the refrigerator; killed off-screen prior to Jason's death",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Dr. Christopher Stone",
+        "timeOfDeath": "Act 2, Therapy Office",
+        "cause": "Stabbed",
+        "killedBy": "Detective Wayne Bailey",
+        "context": "Stabbed in the face through the door nose-first",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Anika Kayoko",
+        "timeOfDeath": "Act 2, Apartment",
+        "cause": "Fall/Gutted",
+        "killedBy": "Ethan Landry",
+        "context": "Gutted and then shaken off a ladder between two buildings",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Brooks",
+        "timeOfDeath": "Act 2, Gale's Apartment",
+        "cause": "Stabbed",
+        "killedBy": "Quinn Bailey",
+        "context": "Stabbed in the neck while answering the door",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Quinn Bailey",
+        "timeOfDeath": "Act 3, Shrine (Real Death)",
+        "cause": "Gunshot",
+        "killedBy": "Sam Carpenter",
+        "context": "Shot in the head by Sam; her earlier 'death' was faked",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ethan Landry",
+        "timeOfDeath": "Act 3, Shrine",
+        "cause": "Crushed",
+        "killedBy": "Kirby Reed",
+        "context": "TV (the one that killed Stu Macher) is dropped on his head",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Detective Wayne Bailey",
+        "timeOfDeath": "Act 3, Shrine",
+        "cause": "Stabbed",
+        "killedBy": "Sam Carpenter",
+        "context": "Stabbed multiple times and through the eye by Sam in the Billy Loomis costume",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "movieTitle",
+    "tmdbId": 0,
+    "deaths": [
+      {
+        "character": "character",
+        "timeOfDeath": "timeOfDeath",
+        "cause": "cause",
+        "killedBy": "killedBy",
+        "context": "context",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Descendants: The Rise of Red",
+    "tmdbId": 974262,
+    "deaths": [
+      {
+        "character": "Queen Ella",
+        "timeOfDeath": "Alternate timeline sequence",
+        "cause": "Decapitation",
+        "killedBy": "Crimson Soldier",
+        "context": "Beheaded on the orders of the Queen of Hearts during a coup in a timeline that was later erased.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cinderella's Mother",
+        "timeOfDeath": "Backstory (Off-screen)",
+        "cause": "Unknown",
+        "killedBy": "Unknown",
+        "context": "Mentioned as deceased prior to the movie's events.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cinderella's Father",
+        "timeOfDeath": "Backstory (Off-screen)",
+        "cause": "Unknown",
+        "killedBy": "Lady Tremaine",
+        "context": "Mentioned as deceased; possibly killed by Lady Tremaine according to dialogue implications.",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Unknown Person",
+        "timeOfDeath": "Backstory",
+        "cause": "Unknown",
+        "killedBy": "Unknown",
+        "context": "Skull shown on screen implying a death in the past.",
+        "isAmbiguous": true
+      }
+    ]
+  },
+  {
+    "movieTitle": "One Battle After Another",
+    "tmdbId": 1054867,
+    "deaths": [
+      {
+        "character": "Security Guard",
+        "timeOfDeath": "Act 1 (Flashback)",
+        "cause": "Gunshot",
+        "killedBy": "Perfidia Beverly Hills",
+        "context": "Murdered during an armed bank robbery committed by the French 75 revolutionary group.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Avanti Q",
+        "timeOfDeath": "Act 2",
+        "cause": "Gunshot",
+        "killedBy": "Militia Members",
+        "context": "Killed in a shootout with a far-right militia after freeing Willa.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Tim Smith",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Willa Ferguson",
+        "context": "Shot dead by Willa after she lured him into a car crash.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Steven Lockjaw",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Poison Gas",
+        "killedBy": "Christmas Adventurers Club",
+        "context": "Fatally gassed and cremated by the secret society he sought to join.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "French 75 Members",
+        "timeOfDeath": "Backstory (Off-screen)",
+        "cause": "Execution",
+        "killedBy": "Steven Lockjaw",
+        "context": "Summarily executed by Lockjaw using information provided by Perfidia.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Sinners",
+    "tmdbId": 1233413,
+    "deaths": [
+      {
+        "character": "Elijah 'Smoke' Moore",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Gunshot",
+        "killedBy": "Hogwood's Men",
+        "context": "Dies of wounds after killing Hogwood and his men; sees a vision of his wife before passing.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mary",
+        "timeOfDeath": "Act 2 (Human Death)",
+        "cause": "Vampire Turn/Survival",
+        "killedBy": "Remmick",
+        "context": "Bitten and turned into a vampire; explicitly revealed to be alive (undead) in the post-credits scene.",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Elias 'Stack' Moore",
+        "timeOfDeath": "Act 2 (Human Death)",
+        "cause": "Vampire Turn/Survival",
+        "killedBy": "Mary",
+        "context": "Turned into a vampire by Mary; revealed to have survived the sunlight in the post-credits scene.",
+        "isAmbiguous": true
+      },
+      {
+        "character": "Annie Moore",
+        "timeOfDeath": "Climax",
+        "cause": "Staked",
+        "killedBy": "Elijah 'Smoke' Moore",
+        "context": "Staked by Smoke at her own request after being bitten, to prevent her turning.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Grace Chow",
+        "timeOfDeath": "Act 3",
+        "cause": "Fire",
+        "killedBy": "Self",
+        "context": "Sacrifices herself by allowing herself to be burned alive to kill a vampire.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bo Chow",
+        "timeOfDeath": "Act 3",
+        "cause": "Bite/Mauling",
+        "killedBy": "Remmick",
+        "context": "Killed by Remmick; later revived as a vampire and incinerated by sunlight.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Delta Slim",
+        "timeOfDeath": "Act 3",
+        "cause": "Mauling",
+        "killedBy": "Vampires",
+        "context": "Sacrificed himself to be eaten by vampires to allow others to escape.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Pearline",
+        "timeOfDeath": "Climax",
+        "cause": "Sunlight",
+        "killedBy": "The Sun",
+        "context": "Turned into a vampire by Remmick and subsequently incinerated by the sunrise.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Remmick",
+        "timeOfDeath": "Climax",
+        "cause": "Staked/Sunlight",
+        "killedBy": "Elijah 'Smoke' Moore",
+        "context": "Staked by Smoke and incinerated by the rising sun.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Hogwood",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Gunshot",
+        "killedBy": "Elijah 'Smoke' Moore",
+        "context": "Killed by Smoke in the final confrontation.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Cornbread",
+        "timeOfDeath": "Act 2",
+        "cause": "Unknown",
+        "killedBy": "Bert and Joan",
+        "context": "Killed by vampires; revived and later incinerated by sunlight.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Bert",
+        "timeOfDeath": "Act 2",
+        "cause": "Bite",
+        "killedBy": "Remmick",
+        "context": "Neck bitten out by Remmick; revived as vampire and later killed.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Joan",
+        "timeOfDeath": "Act 2",
+        "cause": "Unknown",
+        "killedBy": "Remmick",
+        "context": "Killed by Remmick off-screen; revived as vampire and later incinerated.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Unnamed Vampires",
+        "timeOfDeath": "Climax",
+        "cause": "Sunlight",
+        "killedBy": "The Sun",
+        "context": "Mass casualty event where all remaining vampires (except Mary and Stack) were incinerated by the sunrise.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Klan Members",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Gunshot",
+        "killedBy": "Elijah 'Smoke' Moore",
+        "context": "Multiple members of Hogwood's group shot by Smoke during the final confrontation.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "The Rip",
+    "tmdbId": 1306368,
+    "deaths": [
+      {
+        "character": "Jackie Velez",
+        "timeOfDeath": "Opening sequence",
+        "cause": "Gunshot",
+        "killedBy": "Mateo 'Matty' Nix",
+        "context": "Ambushed and assassinated in her car; later revealed to be killed by her colleague Nix.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mateo 'Matty' Nix",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Gunshot",
+        "killedBy": "JD Byrne",
+        "context": "Executed by JD Byrne after being caught and revealing the deception.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Nix's Driver",
+        "timeOfDeath": "Ending sequence",
+        "cause": "Gunshot",
+        "killedBy": "Dane Dumars",
+        "context": "Killed during the shootout/chase sequence when Nix's crew was cornered.",
+        "isAmbiguous": false
+      }
+    ]
+  },
+  {
+    "movieTitle": "Marty Supreme",
+    "tmdbId": 1317288,
+    "deaths": [
+      {
+        "character": "Farmer",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Ezra Mishkin's Men",
+        "context": "Killed in a shootout at the farmhouse where he was harboring the dog Moses.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Ezra Mishkin",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Farmer",
+        "context": "Killed in the shootout at the farmhouse while kidnapping Marty and Rachel.",
+        "isAmbiguous": false
+      },
+      {
+        "character": "Mishkin's Henchmen",
+        "timeOfDeath": "Act 3",
+        "cause": "Gunshot",
+        "killedBy": "Farmer",
+        "context": "Unnamed men killed during the shootout at the farmhouse.",
+        "isAmbiguous": false
+      }
+    ]
   }
 ]
