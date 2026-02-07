@@ -10,14 +10,12 @@ Look up a movie and find out which characters die — when, how, and by whose ha
 - **Tailwind CSS** for styling
 - **PostgreSQL** with Prisma ORM
 - **Sentry** for error tracking
-- **Ollama + Llama 3.2 3B** for smart search easter egg (via separate Python RAG service)
 
 ## Prerequisites
 
 - **Node.js** 18+
 - **PostgreSQL** 15+
 - **npm** or **yarn**
-- **Ollama** (optional — only needed for the `!!` smart search feature)
 
 ## Getting Started
 
@@ -45,7 +43,6 @@ Edit `.env` with your values:
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/whodiesinthismovie"
 NEXT_PUBLIC_TMDB_IMAGE_BASE="https://image.tmdb.org/t/p"
-RAG_SERVICE_URL="http://localhost:8000"    # Optional: for smart search
 SENTRY_DSN=""                              # Optional: for error tracking
 ```
 
@@ -66,15 +63,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Create production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npx prisma migrate dev` | Run database migrations |
-| `npx prisma db seed` | Seed database from JSON files |
-| `npx prisma studio` | Open Prisma visual database browser |
+| Script                   | Description                         |
+| ------------------------ | ----------------------------------- |
+| `npm run dev`            | Start development server            |
+| `npm run build`          | Create production build             |
+| `npm run start`          | Start production server             |
+| `npm run lint`           | Run ESLint                          |
+| `npx prisma migrate dev` | Run database migrations             |
+| `npx prisma db seed`     | Seed database from JSON files       |
+| `npx prisma studio`      | Open Prisma visual database browser |
 
 ## Project Structure
 
@@ -143,10 +140,7 @@ The seed script uses upsert, so it's safe to run repeatedly.
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes | TMDB image CDN base URL |
-| `RAG_SERVICE_URL` | No | Python RAG service URL for smart search |
-| `SENTRY_DSN` | No | Sentry DSN for error tracking |
-| `NEXT_PUBLIC_SENTRY_DSN` | No | Sentry DSN for client-side error tracking |
+| Variable                      | Required | Description                  |
+| ----------------------------- | -------- | ---------------------------- |
+| `DATABASE_URL`                | Yes      | PostgreSQL connection string |
+| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL      |
