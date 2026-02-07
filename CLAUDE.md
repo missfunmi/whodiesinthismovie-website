@@ -42,8 +42,22 @@ npx prisma studio        # Visual database browser
 │       │   ├── search/route.ts # GET - search movies by title
 │       │   └── [tmdbId]/route.ts # GET - movie + deaths
 │       └── smart-search/route.ts # POST - RAG easter egg
-├── components/                 # Shared React components
-├── lib/                        # Utilities (prisma client, etc.)
+├── components/
+│   ├── search.tsx              # Search orchestrator (client, debounced fetch + keyboard nav)
+│   ├── search-input.tsx        # Styled search input with auto-focus
+│   ├── autocomplete-dropdown.tsx # Search results dropdown with keyboard nav
+│   ├── poster-background.tsx   # Animated poster crossfade grid (client)
+│   ├── rotating-taglines.tsx   # Tagline rotation with animation variants (client)
+│   ├── movie-header.tsx        # Sticky header with logo (server)
+│   ├── movie-metadata.tsx      # Poster + metadata layout (server)
+│   ├── death-reveal.tsx        # Reveal toggle + skeleton + death cards (client)
+│   ├── death-card.tsx          # Confirmed death card (presentational)
+│   ├── ambiguous-death-card.tsx # Ambiguous death card (presentational)
+│   └── skeleton-loader.tsx     # Pulsing skeleton grid (presentational)
+├── lib/
+│   ├── prisma.ts               # Prisma client singleton
+│   ├── types.ts                # Shared TypeScript types (decoupled from Prisma)
+│   └── utils.ts                # formatRuntime, getPosterUrl helpers
 ├── prisma/
 │   ├── schema.prisma           # Database schema
 │   └── seed.ts                 # Seed script
@@ -106,6 +120,31 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 ### SPEC Deviations
 - `posterPath` in the Prisma schema is `String?` (nullable) instead of `String`, because some movies in the seed data have `null` posterPath.
 - Search results are ordered by `year: "desc"` to show newer movies first (not specified in SPEC but better UX).
+
+## Architectural Decisions (Phase 2)
+
+### Component Architecture
+- **Server components by default**: `movie-header.tsx`, `movie-metadata.tsx`, and `app/movie/[tmdbId]/page.tsx` are server components (no `"use client"`). Client boundary is pushed as far down as possible.
+- **Shared types in `lib/types.ts`**: `DeathInfo`, `MovieSearchResult`, etc. are plain TypeScript types decoupled from Prisma, so they can be imported safely in client components.
+- **Presentational components**: `death-card.tsx`, `ambiguous-death-card.tsx`, and `skeleton-loader.tsx` are stateless — they receive props and render. No hooks, no state.
+
+### Search Component — Derived State Pattern
+- The `react-hooks/set-state-in-effect` ESLint rule prohibits calling `setState` synchronously in `useEffect` bodies (causes cascading renders).
+- Easter egg detection (`!!` prefix) uses `useMemo` for derived state instead of `useState` + `useEffect`.
+- Clearing results when a query becomes non-searchable is handled in the `handleQueryChange` callback (event handler), not in the effect. The effect only runs the debounced async fetch.
+- `shouldSearch()` is a pure helper function extracted outside the component for testability.
+
+### Poster Background — Hydration Safety
+- Initial 8 posters are chosen deterministically (`posterPaths.slice(0, 8)`) to avoid hydration mismatch between server and client renders. Randomization only occurs after mount via `setInterval`.
+- Poster slots use `key={`slot-${index}`}` (stable keys) since the array index is a fixed slot position, not a list identity.
+
+### Animation Keyframes
+- All 10 tagline animation keyframes are defined in `app/globals.css` as standard CSS `@keyframes` (not Tailwind utilities), since Tailwind v4 doesn't support arbitrary keyframe definitions via utility classes.
+- `prefers-reduced-motion` media query disables all custom animations globally.
+
+### Death Reveal — Zero Deaths Handling
+- Movies absent from `seed-deaths.json` have zero `Death` rows in the database (the seed script only creates deaths for movies present in the file).
+- The `DeathReveal` component checks `confirmedDeaths.length === 0 && ambiguousDeaths.length === 0` and renders a "No deaths! Everyone survives!" message directly — no reveal button is shown.
 
 ## Important Notes
 

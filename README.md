@@ -4,12 +4,19 @@ Look up a movie and find out which characters die — when, how, and by whose ha
 
 **Live site**: [whodiesinthismovie.com](https://whodiesinthismovie.com) (coming soon)
 
+## Status
+
+- **Phase 1** (Foundation): Next.js + Prisma + PostgreSQL + seeding + search/detail APIs
+- **Phase 2** (Core UI): Welcome page, search with autocomplete, movie detail page, death reveal system
+- **Phase 3** (Easter Egg): RAG-powered natural language search (planned)
+
 ## Tech Stack
 
-- **Next.js 14+** (App Router) with TypeScript
-- **Tailwind CSS** for styling
-- **PostgreSQL** with Prisma ORM
+- **Next.js 16** (App Router) with TypeScript and React 19
+- **Tailwind CSS v4** for styling
+- **PostgreSQL 15+** with Prisma ORM v7
 - **Sentry** for error tracking
+- **lucide-react** for icons
 
 ## Prerequisites
 
@@ -92,21 +99,53 @@ curl "http://localhost:3000/api/movies/245891"
 | `npx prisma db seed`     | Seed database from JSON files       |
 | `npx prisma studio`      | Open Prisma visual database browser |
 
+## Features
+
+- **Welcome page**: Full-viewport landing with animated movie poster background, rotating taglines, and instant search
+- **Search**: Debounced autocomplete (300ms) with poster thumbnails, keyboard navigation (Arrow keys, Enter, Escape), and click-outside dismiss
+- **Movie detail page**: Poster + metadata layout, dynamic page titles for SEO
+- **Death reveal**: Spoiler-gated death cards with skeleton loading animation. Confirmed and ambiguous deaths shown separately. Zero-death movies show a friendly "Everyone survives!" message
+- **Accessibility**: `prefers-reduced-motion` support, ARIA labels, semantic HTML
+- **Responsive**: Mobile-first layout — poster stacks above metadata, death grid collapses to single column
+
 ## Project Structure
 
 ```
 whodiesinthismovie-website/
-├── app/                        # Next.js App Router pages and API routes
-│   ├── page.tsx                # Home page (search + poster background)
-│   ├── movie/[tmdbId]/         # Movie detail page
-│   └── api/                    # API route handlers
-├── components/                 # Shared React components
-├── lib/                        # Utility modules (Prisma client, helpers)
-├── prisma/                     # Database schema and seed script
-├── data/                       # Seed data JSON files
-│   ├── seed-movies.json        # Movie metadata
+├── app/
+│   ├── layout.tsx              # Root layout (fonts, metadata)
+│   ├── page.tsx                # Welcome page (search + poster background)
+│   ├── globals.css             # Tailwind v4 theme + animation keyframes
+│   ├── movie/[tmdbId]/
+│   │   └── page.tsx            # Movie detail page (server component)
+│   └── api/
+│       ├── movies/
+│       │   ├── search/route.ts # GET — search movies by title
+│       │   └── [tmdbId]/route.ts # GET — movie + deaths
+│       └── smart-search/route.ts # POST — RAG easter egg (Phase 3)
+├── components/
+│   ├── search.tsx              # Search orchestrator (debounce + keyboard)
+│   ├── search-input.tsx        # Styled search input with auto-focus
+│   ├── autocomplete-dropdown.tsx # Search results dropdown
+│   ├── poster-background.tsx   # Animated poster crossfade grid
+│   ├── rotating-taglines.tsx   # Tagline rotation with 5 animation variants
+│   ├── movie-header.tsx        # Sticky header with logo
+│   ├── movie-metadata.tsx      # Poster + metadata layout
+│   ├── death-reveal.tsx        # Reveal toggle + skeleton + death cards
+│   ├── death-card.tsx          # Confirmed death card
+│   ├── ambiguous-death-card.tsx # Ambiguous death card
+│   └── skeleton-loader.tsx     # Pulsing skeleton grid
+├── lib/
+│   ├── prisma.ts               # Prisma client singleton
+│   ├── types.ts                # Shared TypeScript types
+│   └── utils.ts                # formatRuntime, getPosterUrl helpers
+├── prisma/
+│   ├── schema.prisma           # Database schema (Movie → Death)
+│   └── seed.ts                 # Seed script (upsert movies, recreate deaths)
+├── data/
+│   ├── seed-movies.json        # Movie metadata (117 movies)
 │   └── seed-deaths.json        # Character death data per movie
-├── docs/                       # Documentation
+├── docs/
 │   ├── PRD.md                  # Product requirements
 │   └── SPEC.md                 # Technical specification
 ├── figma-make-prototype/       # Figma prototype (visual reference only)
