@@ -61,6 +61,11 @@ npx prisma db seed        # Seeds movies and deaths from data/ JSON files
 
 ```bash
 npm run dev
+
+# If already running, kill with:
+pkill -f "next dev"
+
+# Then rerun `npm run dev`
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -154,17 +159,17 @@ The seed script uses upsert, so it's safe to run repeatedly.
 
 ## API Routes
 
-| Endpoint | Method | Description |
-| --- | --- | --- |
-| `/api/movies/search?q=` | GET | Search movies by title (3+ chars, max 8 results) |
-| `/api/movies/[tmdbId]` | GET | Get movie metadata with all deaths |
-| `/api/smart-search` | POST | Forward natural language query to RAG service (Phase 3) |
+| Endpoint                | Method | Description                                             |
+| ----------------------- | ------ | ------------------------------------------------------- |
+| `/api/movies/search?q=` | GET    | Search movies by title (3+ chars, max 8 results)        |
+| `/api/movies/[tmdbId]`  | GET    | Get movie metadata with all deaths                      |
+| `/api/smart-search`     | POST   | Forward natural language query to RAG service (Phase 3) |
 
 ## Environment Variables
 
-| Variable                      | Required | Description                  |
-| ----------------------------- | -------- | ---------------------------- |
-| `DATABASE_URL`                | Yes      | PostgreSQL connection string |
-| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL      |
+| Variable                      | Required | Description                      |
+| ----------------------------- | -------- | -------------------------------- |
+| `DATABASE_URL`                | Yes      | PostgreSQL connection string     |
+| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL          |
 | `RAG_SERVICE_URL`             | No       | Python RAG service URL (Phase 3) |
-| `SENTRY_DSN`                  | No       | Sentry DSN for error tracking |
+| `SENTRY_DSN`                  | No       | Sentry DSN for error tracking    |
