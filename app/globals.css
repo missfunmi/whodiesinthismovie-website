@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Color tokens from SPEC.md Section 2.1 */
+  --color-primary: #030213;
+  --color-primary-foreground: #ffffff;
+  --color-background: #ffffff;
+  --color-foreground: oklch(0.145 0 0);
+  --color-muted: #ececf0;
+  --color-muted-foreground: #717182;
+  --color-border: rgba(0, 0, 0, 0.1);
+  --color-destructive: #d4183d;
+
+  /* Component-specific colors */
+  --color-death-card: #1F1F1F;
+  --color-easter-egg-from: #8B5CF6;
+  --color-easter-egg-to: #6D28D9;
+
+  /* Border radius scale */
+  --radius: 0.625rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* Font families */
+  --font-heading: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-foreground);
+  background: var(--color-background);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}

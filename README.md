@@ -13,16 +13,16 @@ Look up a movie and find out which characters die — when, how, and by whose ha
 
 ## Prerequisites
 
-- **Node.js** 18+
-- **PostgreSQL** 15+
-- **npm** or **yarn**
+- **Node.js** 20+ (tested with v25)
+- **PostgreSQL** 15+ (running locally)
+- **npm** 10+
 
 ## Getting Started
 
 ### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/missfunmi/whodiesinthismovie-website.git
 cd whodiesinthismovie-website
 ```
 
@@ -38,28 +38,42 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env` with your values:
+Edit `.env` with your PostgreSQL credentials:
 
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/whodiesinthismovie"
-NEXT_PUBLIC_TMDB_IMAGE_BASE="https://image.tmdb.org/t/p"
-SENTRY_DSN=""                              # Optional: for error tracking
+DATABASE_URL="postgresql://your_user:your_password@localhost:5432/whodiesinthismovie"
 ```
 
-### 4. Set up the database
+### 4. Create the database
 
 ```bash
-npx prisma migrate dev
-npx prisma db seed
+createdb whodiesinthismovie
 ```
 
-### 5. Start the dev server
+### 5. Run migrations and seed
+
+```bash
+npx prisma migrate dev    # Creates tables
+npx prisma db seed        # Seeds movies and deaths from data/ JSON files
+```
+
+### 6. Start the dev server
 
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### 7. Verify the API
+
+```bash
+# Search for movies
+curl "http://localhost:3000/api/movies/search?q=star%20wars"
+
+# Get movie details with deaths
+curl "http://localhost:3000/api/movies/245891"
+```
 
 ## Available Scripts
 
@@ -138,9 +152,19 @@ Movie data lives in `data/` as JSON files. To add a new movie:
 
 The seed script uses upsert, so it's safe to run repeatedly.
 
+## API Routes
+
+| Endpoint | Method | Description |
+| --- | --- | --- |
+| `/api/movies/search?q=` | GET | Search movies by title (3+ chars, max 8 results) |
+| `/api/movies/[tmdbId]` | GET | Get movie metadata with all deaths |
+| `/api/smart-search` | POST | Forward natural language query to RAG service (Phase 3) |
+
 ## Environment Variables
 
 | Variable                      | Required | Description                  |
 | ----------------------------- | -------- | ---------------------------- |
 | `DATABASE_URL`                | Yes      | PostgreSQL connection string |
 | `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL      |
+| `RAG_SERVICE_URL`             | No       | Python RAG service URL (Phase 3) |
+| `SENTRY_DSN`                  | No       | Sentry DSN for error tracking |
