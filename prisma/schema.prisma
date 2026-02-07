@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Movie {
+  id         Int      @id @default(autoincrement())
+  tmdbId     Int      @unique
+  title      String
+  year       Int
+  director   String
+  tagline    String?
+  posterPath String?
+  runtime    Int
+  mpaaRating String
+  deaths     Death[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([title])
+}
+
+model Death {
+  id          Int     @id @default(autoincrement())
+  character   String
+  timeOfDeath String
+  cause       String
+  killedBy    String
+  context     String
+  isAmbiguous Boolean @default(false)
+  movie       Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId     Int
+
+  @@index([movieId])
+}

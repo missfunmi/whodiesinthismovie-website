@@ -9,9 +9,9 @@
 
 ## Tech Stack
 
-- **Framework**: Next.js 14+ with App Router, TypeScript
-- **Styling**: Tailwind CSS (utility-first, no CSS modules)
-- **Database**: PostgreSQL 15+ via Prisma ORM
+- **Framework**: Next.js 16 (App Router), TypeScript, React 19
+- **Styling**: Tailwind CSS v4 (utility-first, no CSS modules)
+- **Database**: PostgreSQL 15+ via Prisma ORM v7
 - **Images**: next/image with TMDB CDN (`image.tmdb.org`)
 - **LLM**: Ollama + Llama 3.2 3B (easter egg feature, via separate Python RAG service)
 - **Logging**: Sentry
@@ -67,10 +67,11 @@ npx prisma studio        # Visual database browser
 
 ## Database
 
-- **ORM**: Prisma with PostgreSQL
+- **ORM**: Prisma v7 with PostgreSQL via `@prisma/adapter-pg`
 - **Models**: `Movie` (1) → (many) `Death`, linked via `movieId` foreign key
 - **Seed data**: JSON files in `data/`. The seed script upserts by `tmdbId`, so it's safe to re-run after adding movies.
 - **Migrations**: Run `npx prisma migrate dev` after schema changes.
+- **Config**: Prisma v7 uses `prisma.config.ts` for CLI config (seed command, datasource URL). The seed command is `npx tsx prisma/seed.ts`.
 
 ## Design System
 
@@ -88,6 +89,23 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 | `/api/movies/search?q=` | GET | `q`: search string (3+ chars) | `Movie[]` (max 8) or `{ tooMany: true }` |
 | `/api/movies/[tmdbId]` | GET | — | `Movie` with `deaths: Death[]` |
 | `/api/smart-search` | POST | `{ query: string }` | `{ answer: string, movieTmdbId?: number }` |
+
+## Architectural Decisions (Phase 1)
+
+### Prisma v7 + Driver Adapter
+- SPEC.md references `prisma-client-js` (Prisma v5/v6), but we're on Prisma v7 which defaults to the `prisma-client` generator with Wasm-based query engine.
+- Prisma v7's `prisma-client` generator requires a driver adapter for direct PostgreSQL connections. We use `@prisma/adapter-pg` with the `pg` driver.
+- The generated client lives at `app/generated/prisma/` (Prisma v7 default). Import from `@/app/generated/prisma/client` in app code, and from relative path `../app/generated/prisma/client.js` in the seed script.
+- `PrismaClient` must be constructed with `{ adapter }` — passing `datasourceUrl` directly is not supported in v7.
+- CLI config (datasource URL, seed command) lives in `prisma.config.ts`, not in `package.json`.
+
+### Tailwind CSS v4
+- Uses `@theme` directive in `globals.css` instead of `tailwind.config.ts` for design tokens (Tailwind v4 approach).
+- PostCSS plugin is `@tailwindcss/postcss` (not the legacy `tailwindcss` plugin).
+
+### SPEC Deviations
+- `posterPath` in the Prisma schema is `String?` (nullable) instead of `String`, because some movies in the seed data have `null` posterPath.
+- Search results are ordered by `year: "desc"` to show newer movies first (not specified in SPEC but better UX).
 
 ## Important Notes
 
