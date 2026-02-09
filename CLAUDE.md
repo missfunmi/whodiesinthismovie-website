@@ -187,16 +187,26 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Queue-level deduplication** — API checks `IngestionQueue` for existing `pending`/`processing` entries with the same query (case-insensitive) before inserting. Prevents queue flooding from repeated requests. The worker (Phase 5) also deduplicates by tmdbId during processing
 - **CSRF protection** — Production-only `Origin` header validation. Parses origin URL and compares host against the `Host` header to prevent cross-site request forgery on the POST endpoint
 
-### Ingestion Worker (Phase 5) — Planned
-- **Worker as separate process**: `npm run worker` polls queue every 30 seconds in separate terminal
-- **TMDB metadata fetching**: 3 parallel API calls per movie:
+### Ingestion Worker (Phase 5) *(Complete)*
+- **Worker as separate process**: `npm run worker` runs `tsx scripts/ingestion-worker.ts`, polls queue every 30 seconds
+- **Prisma client setup**: Worker runs outside Next.js, so it creates its own PrismaClient with `import "dotenv/config"` and direct `PrismaPg` adapter (same pattern as `prisma/seed.ts`)
+- **TMDB metadata fetching**: 3 parallel API calls per movie via `Promise.all`:
   1. Base movie data (`GET /movie/{tmdbId}`)
   2. Credits for directors (`GET /movie/{tmdbId}/credits`)
   3. Release dates for MPAA rating (`GET /movie/{tmdbId}/release_dates`)
-- **Rate limiting**: 500ms delay between TMDB requests to respect API limits
-- **Deduplication by tmdbId**: If movie with same tmdbId is already 'processing', mark duplicate job as 'complete' without re-fetching
-- **Death scraping + LLM extraction**: Scrape List of Deaths wiki, use Ollama to extract structured JSON
-- **Error handling**: Exponential backoff for TMDB retries (2s, 4s, 8s), mark jobs 'failed' with reason, log to console (no user-facing errors)
+- **Rate limiting**: 500ms delay after TMDB calls before scraping
+- **Deduplication**: Checks both `IngestionQueue` (another job processing same tmdbId) and `Movie` table (movie already exists). Marks duplicate jobs as 'complete' without re-processing
+- **Death scraping uses MediaWiki APIs** (not HTML scraping):
+  1. List of Deaths fandom wiki (`listofdeaths.fandom.com/api.php`) — returns structured wikitext with Victims section
+  2. Wikipedia (`en.wikipedia.org/w/api.php`) — returns HTML extracts, parses Plot section
+  3. The Movie Spoiler (`themoviespoiler.com`) — HTML scraping fallback
+  - Year-specific page titles tried first (e.g., "Jaws (1975)") to avoid franchise pages
+  - If all sources fail, proceeds with empty deaths (not a hard failure)
+- **LLM extraction**: Ollama with 30s timeout, up to 3 retries, JSON repair for common LLM output quirks (mismatched brackets, HTML entities). Prompt includes example JSON to guide formatting
+- **Database insert follows seed.ts pattern**: Uses `movieId` (auto-increment PK) for Death FK, NOT `movieTmdbId`. Upsert movie by tmdbId, delete+recreate deaths
+- **Error handling**: TMDB exponential backoff (2s, 4s, 8s), scraping failures cascade to next source, LLM retries with JSON repair. All errors caught at processJob level — job marked 'failed' with reason, worker continues
+- **Graceful shutdown**: SIGINT/SIGTERM disconnects Prisma cleanly
+- **Schema deviation from SPEC**: SPEC code samples use `movieTmdbId` but actual schema uses `movieId` as the Death→Movie FK. Worker follows the actual schema (same as seed.ts)
 
 ### Notification System (Phase 6)
 - **Polling-based**: Frontend polls `/api/notifications/poll` every 60 seconds (no WebSocket/SSE)
