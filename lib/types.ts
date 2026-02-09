@@ -52,3 +52,13 @@ export type BrowseResponse = {
 export type SearchResponse =
   | MovieSearchResult[]
   | { tooMany: true; count: number };
+
+/** Response from POST /api/movies/request */
+export type MovieRequestResponse = {
+  success: boolean;
+  message: string;
+  existingMovie?: MovieSearchResult;
+};
+
+/** Request state machine for the search component's movie request flow */
+export type RequestStatus = "idle" | "loading" | "success" | "error";

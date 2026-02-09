@@ -38,3 +38,16 @@ model Death {
 
   @@index([movieId])
 }
+
+model IngestionQueue {
+  id            Int       @id @default(autoincrement())
+  query         String
+  status        String    // 'pending' | 'processing' | 'complete' | 'failed'
+  tmdbId        Int?
+  failureReason String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([tmdbId, status])
+}

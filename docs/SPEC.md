@@ -869,36 +869,36 @@ Navigate to /movie/[tmdbId]
 - [x] "Browse All Movies" button below search bar
 - [x] Navigates to `/browse`
 
-### Phase 4 — Movie Request System (UI)
+### Phase 4 — Movie Request System (UI) *(Complete)*
 
 **4.1** Update AutocompleteDropdown for zero results
-- [ ] Detect `results.length === 0 && !isTooMany`
-- [ ] Show "No movies found" message
-- [ ] Add text link: "We don't have that one yet! Want us to look it up?"
+- [x] Detect `results.length === 0 && !isTooMany`
+- [x] Show "No movies found" message
+- [x] Add text link: "We don't have that one yet! Want us to look it up?"
 
 **4.2** Implement request confirmation
-- [ ] On link click, show toast/modal: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
-- [ ] Call `POST /api/movies/request` with current search query
+- [x] On link click, show inline confirmation: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
+- [x] Call `POST /api/movies/request` with current search query
 
 **4.3** Create `POST /api/movies/request` endpoint
-- [ ] Validate request body: `{ query: string }`
-- [ ] Validate query: not empty, max 200 chars, sanitize (strip HTML, trim)
-- [ ] **LLM Validation**: Call Ollama with prompt "Is '{query}' a real movie title? Answer YES or NO."
+- [x] Validate request body: `{ query: string }`
+- [x] Validate query: not empty, max 200 chars, sanitize (strip HTML, trim)
+- [x] **LLM Validation**: Call Ollama with prompt "Is '{query}' a real movie title? Answer YES or NO."
   - Parse LLM response
   - If NO: still return success (don't expose validation to user)
-- [ ] Check if movie already exists: `await prisma.movie.findFirst({ where: { title: { contains: query, mode: 'insensitive' } } })`
+- [x] Check if movie already exists: `await prisma.movie.findFirst({ where: { title: { contains: query, mode: 'insensitive' } } })`
   - If found: return `{ success: true, existingMovie: movie }`
-- [ ] Insert into ingestion_queue: `status: 'pending'`
-- [ ] Return `{ success: true, message: "Request queued" }`
+- [x] Insert into ingestion_queue: `status: 'pending'`
+- [x] Return `{ success: true, message: "Request queued" }`
 
 **4.4** Add error handling
-- [ ] API errors: return structured error response with 400/500 status
-- [ ] Client errors: show error toast if request fails
+- [x] API errors: return structured error response with 400/500 status
+- [x] Client errors: show error state with retry option in dropdown
 
 ### Phase 5 — Ingestion Worker
 
-**5.1** Extend Prisma schema with ingestion_queue table
-- [ ] Fields: id, query, status, tmdbId, createdAt, completedAt, failureReason
+**5.1** Extend Prisma schema with ingestion_queue table *(Pulled forward to Phase 4)*
+- [x] Fields: id, query, status, tmdbId, createdAt, completedAt, failureReason
 - [ ] Run migration: `npx prisma migrate dev`
 
 **5.2** Create worker script: `scripts/ingestion-worker.ts`
