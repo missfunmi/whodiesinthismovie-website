@@ -33,10 +33,12 @@ type PosterBackgroundProps = {
  * Displays 8 poster slots in a grid with crossfade transitions.
  * One poster is swapped out every ~4.5s in a round-robin pattern.
  */
-export default function PosterBackground({ posterPaths }: PosterBackgroundProps) {
+export default function PosterBackground({
+  posterPaths,
+}: PosterBackgroundProps) {
   // Use first 8 deterministically to avoid hydration mismatch
   const [currentPosters, setCurrentPosters] = useState<string[]>(() =>
-    posterPaths.slice(0, SLOT_COUNT)
+    posterPaths.slice(0, SLOT_COUNT),
   );
   // Track which slot to replace next and which poster from the pool to use
   const nextSlotRef = useRef(0);
@@ -50,12 +52,13 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
   // Check for reduced motion preference
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+      "(prefers-reduced-motion: reduce)",
     ).matches;
   }, []);
 
   const swapPoster = useCallback(() => {
-    if (prefersReducedMotion.current || posterPaths.length <= SLOT_COUNT) return;
+    if (prefersReducedMotion.current || posterPaths.length <= SLOT_COUNT)
+      return;
 
     const slotIndex = nextSlotRef.current;
     const poolIndex = nextPoolIndexRef.current;
@@ -104,7 +107,7 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
         return (
           <div
             key={`slot-${index}`}
-            className="absolute w-[25%] h-[50%] transition-opacity duration-[4000ms] ease-in-out"
+            className="absolute w-[25%] h-[50%] transition-opacity duration-4000 ease-in-out"
             style={{
               top: position.top,
               left: position.left,

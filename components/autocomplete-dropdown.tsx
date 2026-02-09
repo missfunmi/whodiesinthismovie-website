@@ -43,7 +43,7 @@ export default function AutocompleteDropdown({
   return (
     <ul
       ref={listRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl max-h-[500px] overflow-y-auto z-50 list-none p-0 m-0"
+      className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl max-h-125 overflow-y-auto z-50 list-none p-0 m-0"
       role="listbox"
       aria-label="Search results"
     >
@@ -96,10 +96,10 @@ export default function AutocompleteDropdown({
                     alt=""
                     width={48}
                     height={64}
-                    className="w-12 h-16 object-cover rounded shadow-md flex-shrink-0"
+                    className="w-12 h-16 object-cover rounded shadow-md shrink-0"
                   />
                 ) : (
-                  <div className="w-12 h-16 rounded shadow-md flex-shrink-0 bg-gray-200 flex items-center justify-center">
+                  <div className="w-12 h-16 rounded shadow-md shrink-0 bg-gray-200 flex items-center justify-center">
                     <Film className="w-5 h-5 text-gray-400" />
                   </div>
                 )}

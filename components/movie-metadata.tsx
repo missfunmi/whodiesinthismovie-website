@@ -16,24 +16,32 @@ type MovieMetadataProps = {
  * Movie metadata section: poster alongside title, year, director, runtime, rating, tagline.
  * Responsive: side-by-side on desktop, stacked on mobile.
  */
-export default function MovieMetadata({ title, year, director, tagline, posterPath, runtime, mpaaRating }: MovieMetadataProps) {
+export default function MovieMetadata({
+  title,
+  year,
+  director,
+  tagline,
+  posterPath,
+  runtime,
+  mpaaRating,
+}: MovieMetadataProps) {
   const posterUrl = getPosterUrl(posterPath);
 
   return (
     <div className="flex flex-col md:flex-row gap-8 mb-12">
       {/* Poster */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         {posterUrl ? (
           <Image
             src={posterUrl}
             alt={`${title} poster`}
             width={300}
             height={450}
-            className="w-full md:w-[300px] rounded-lg shadow-2xl"
+            className="w-full md:w-75 rounded-lg shadow-2xl"
             priority
           />
         ) : (
-          <div className="w-full md:w-[300px] h-[450px] rounded-lg shadow-2xl bg-white/10 flex items-center justify-center">
+          <div className="w-full md:w-75 h-112.5 rounded-lg shadow-2xl bg-white/10 flex items-center justify-center">
             <Film className="w-16 h-16 text-gray-500" />
           </div>
         )}
