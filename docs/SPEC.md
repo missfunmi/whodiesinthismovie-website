@@ -518,7 +518,7 @@ Pagination controls:
 - Sort filter dropdown (Alphabetical / Recently Added)
 - Link from home page: "Browse All Movies" button below search
 
-### PHASE 4 — Movie Request System (UI)
+### PHASE 4 — Movie Request System (UI) *(Complete)*
 
 **Goal**: Users can request movies not in database. UI only, no backend processing yet.
 
@@ -536,7 +536,7 @@ Pagination controls:
   - Add to `ingestion_queue` table with status "pending"
   - Return `{ success: true, message: string }`
 
-### PHASE 5 — Ingestion Worker
+### PHASE 5 — Ingestion Worker *(Complete)*
 
 **Goal**: Background process that fetches movie data and adds to database.
 
@@ -557,11 +557,11 @@ Pagination controls:
   - Handle multiple directors: join with ", " (e.g., "Russo Brothers")
   - MPAA rating fallback: use "NR" (Not Rated) if no US theatrical release found
   - Store tmdbId in ingestion_queue record
-- **Death Scraping**:
-  - Search List of Deaths wiki for movie title
-  - Fallback to The Movie Spoiler if not found
-  - Parse HTML tables/sections for character deaths
-  - If no deaths found, set deaths = [] (valid zero-death movie)
+- **Death Scraping** (3 sources, tried in order):
+  1. List of Deaths fandom wiki: `https://listofdeaths.fandom.com/api.php` (MediaWiki API)
+  2. Wikipedia plot summary: `https://en.wikipedia.org/w/api.php` (MediaWiki API)
+  3. The Movie Spoiler: `https://themoviespoiler.com` (HTML scraping)
+  - If all sources fail, set deaths = [] (valid zero-death movie)
 - **LLM Extraction**:
   - Pass scraped HTML to Ollama (Llama 3.2 3B)
   - Prompt: "Extract character deaths from this HTML. Return ONLY a JSON array with these exact fields: character (string), timeOfDeath (string), cause (string), killedBy (string), context (string, 1-2 sentences max), isAmbiguous (boolean). Do not include any preamble or explanation."
@@ -570,7 +570,7 @@ Pagination controls:
   - Set `killedBy: "N/A"` if missing
 - **Database Insert**:
   - Upsert movie record by tmdbId: `prisma.movie.upsert({ where: { tmdbId }, create: {...}, update: {...} })`
-  - Delete existing deaths: `prisma.death.deleteMany({ where: { movieTmdbId } })`
+  - Delete existing deaths: `prisma.death.deleteMany({ where: { movieId: movie.id } })`
   - Bulk insert deaths: `prisma.death.createMany({ data: deathRecords })`
   - Update ingestion_queue status to 'complete', set completedAt timestamp
 - **Error Handling**:
@@ -895,154 +895,57 @@ Navigate to /movie/[tmdbId]
 - [x] API errors: return structured error response with 400/500 status
 - [x] Client errors: show error state with retry option in dropdown
 
-### Phase 5 — Ingestion Worker
+### Phase 5 — Ingestion Worker *(Complete)*
 
 **5.1** Extend Prisma schema with ingestion_queue table *(Pulled forward to Phase 4)*
 - [x] Fields: id, query, status, tmdbId, createdAt, completedAt, failureReason
-- [ ] Run migration: `npx prisma migrate dev`
+- [x] Run migration: `npx prisma migrate dev`
 
 **5.2** Create worker script: `scripts/ingestion-worker.ts`
-- [ ] Main loop: while(true) { processQueue(); await sleep(30000); }
-- [ ] processQueue function:
+- [x] Main loop: while(true) { processQueue(); await sleep(30000); }
+- [x] processQueue function:
   - SELECT job WHERE status='pending' ORDER BY createdAt ASC LIMIT 1
   - If no job, return
   - UPDATE status='processing'
   - Call processJob(job)
 
 **5.3** Implement TMDB metadata fetching in processJob
-- [ ] **Step 1: Search for tmdbId**
-  - API: `GET /search/movie?query=${job.query}&language=en-US`
-  - If results.length === 0, mark job 'failed' with reason "Not found in TMDB", return
-  - If multiple results, take `results[0]` (first match)
-  - Extract tmdbId: `results[0].id`
-  - Store tmdbId in ingestion_queue record
-- [ ] **Step 2: Check processing queue**
-  - Query ingestion_queue WHERE status='processing' AND tmdbId={tmdbId} AND id != {current job id}
-  - If found, log "Movie already processing", mark current job 'complete', return
-- [ ] **Step 3: Fetch full metadata via 3 parallel requests**
-  - Create helper function: `tmdbRequest(endpoint, tmdbId)` that handles bearer token auth
-  - Parallel fetch:
-    ```typescript
-    const [movie, credits, releases] = await Promise.all([
-      tmdbRequest('', tmdbId),              // Base movie data
-      tmdbRequest('/credits', tmdbId),       // Cast & crew
-      tmdbRequest('/release_dates', tmdbId)  // MPAA ratings
-    ]);
-    ```
-  - Handle 404/timeout on any endpoint: retry once, mark 'failed' if still fails
-- [ ] **Step 4: Extract director(s)**
-  - Filter credits.crew for `job === "Director"`
-  - Map to names: `directors = crew.filter(...).map(c => c.name)`
-  - Join with ", ": `director = directors.join(", ") || null`
-- [ ] **Step 5: Extract MPAA rating**
-  - Find US release: `usRelease = releases.results.find(r => r.iso_3166_1 === "US")`
-  - Find theatrical release: `usRelease?.release_dates.find(rd => rd.type === 3)` (type 3 = theatrical)
-  - Fallback to first release if no theatrical: `|| usRelease?.release_dates[0]`
-  - Extract rating: `mpaaRating = theatricalRelease?.certification || "NR"`
-- [ ] **Step 6: Transform to schema**
-  - Build movie object:
-    ```typescript
-    {
-      tmdbId: movie.id,
-      title: movie.title,
-      year: new Date(movie.release_date).getFullYear(),
-      director: director, // from step 4
-      tagline: movie.tagline || null,
-      posterPath: movie.poster_path,
-      runtime: movie.runtime,
-      mpaaRating: mpaaRating // from step 5
-    }
-    ```
-- [ ] **Step 7: Rate limiting**
-  - `await new Promise(resolve => setTimeout(resolve, 500))` (500ms delay)
+- [x] **Step 1: Search for tmdbId**
+- [x] **Step 2: Check processing queue** (deduplication by tmdbId)
+- [x] **Step 3: Fetch full metadata via 3 parallel requests**
+- [x] **Step 4: Extract director(s)**
+- [x] **Step 5: Extract MPAA rating**
+- [x] **Step 6: Transform to schema**
+- [x] **Step 7: Rate limiting** (500ms delay)
 
 **5.4** Implement death scraping
-- [ ] Search List of Deaths wiki: `${BASE_URL}/wiki/${encodeURIComponent(title)}`
-  - Use `https` or `fetch` to GET the page
-  - If 404, try The Movie Spoiler: `${SPOILER_BASE_URL}/search?q=${title}`
-- [ ] Parse HTML for death table/list
-  - Use cheerio or regex to extract death information
-  - Look for table rows, list items, or structured death sections
-- [ ] If no deaths found, set `scrapedHTML = ""` (will result in empty deaths array)
+- [x] Source 1: List of Deaths fandom wiki via MediaWiki API (`https://listofdeaths.fandom.com/api.php`)
+- [x] Source 2: Wikipedia plot summary via MediaWiki API (`https://en.wikipedia.org/w/api.php`)
+- [x] Source 3: The Movie Spoiler (`https://themoviespoiler.com`)
+- [x] If no deaths found, set `scrapedContent = ""` (will result in empty deaths array)
 
 **5.5** Implement LLM extraction
-- [ ] Call Ollama API at `${OLLAMA_ENDPOINT}/api/generate`
-  - Model: "llama3.2:3b"
-  - Prompt: 
-    ```
-    Extract character deaths from this HTML. Return ONLY a valid JSON array with these exact fields for each death:
-    - character (string): character name
-    - timeOfDeath (string): when they died (timestamp or scene description)
-    - cause (string): how they died
-    - killedBy (string): who killed them (use "N/A" for accidents/natural causes)
-    - context (string): brief 1-2 sentence summary of circumstances
-    - isAmbiguous (boolean): true if death is unclear/off-screen
-    
-    Do not include any preamble, explanation, or markdown. Return ONLY the JSON array.
-    
-    HTML:
-    ${scrapedHTML}
-    ```
-  - Timeout: 10 seconds
-- [ ] Parse LLM response:
-  - Strip any markdown code fences: `response.replace(/```json|```/g, "").trim()`
-  - Try to parse as JSON: `JSON.parse(cleaned)`
-  - If parse fails, log raw response, mark job 'failed' with reason "Invalid JSON from LLM"
-- [ ] Validate each death record:
-  - Has all required fields: character, timeOfDeath, cause, killedBy, context, isAmbiguous
-  - Set `killedBy = "N/A"` if missing or empty
-  - Convert `isAmbiguous` to boolean if string
-- [ ] If scraped HTML was empty, set `deaths = []` (valid zero-death movie)
+- [x] Call Ollama API at `${OLLAMA_ENDPOINT}/api/generate` with structured prompt + example JSON
+- [x] Parse LLM response: strip code fences, extract JSON array, repair common formatting errors
+- [x] Validate each death record with field defaults and HTML entity decoding
+- [x] If scraped content was empty, set `deaths = []` (valid zero-death movie)
 
 **5.6** Implement database insert
-- [ ] Upsert movie record:
-  ```typescript
-  await prisma.movie.upsert({
-    where: { tmdbId: movie.tmdbId },
-    create: movie,
-    update: movie
-  });
-  ```
-- [ ] Delete existing deaths (if any):
-  ```typescript
-  await prisma.death.deleteMany({
-    where: { movieTmdbId: movie.tmdbId }
-  });
-  ```
-- [ ] Bulk insert deaths:
-  ```typescript
-  if (deaths.length > 0) {
-    await prisma.death.createMany({
-      data: deaths.map(d => ({ ...d, movieTmdbId: movie.tmdbId }))
-    });
-  }
-  ```
-- [ ] Update ingestion queue:
-  ```typescript
-  await prisma.ingestionQueue.update({
-    where: { id: job.id },
-    data: { 
-      status: 'complete', 
-      completedAt: new Date(),
-      tmdbId: movie.tmdbId 
-    }
-  });
-  ```
+- [x] Upsert movie record by `tmdbId` unique constraint
+- [x] Delete existing deaths by `movieId` (actual FK, not `movieTmdbId` as in SPEC)
+- [x] Bulk insert deaths with `movieId` foreign key
+- [x] Update ingestion queue status to 'complete'
 
 **5.7** Error handling & retries
-- [ ] TMDB timeout/500 error: Exponential backoff retry
-  - Attempt 1: immediate
-  - Attempt 2: wait 2 seconds
-  - Attempt 3: wait 4 seconds
-  - If all fail: mark 'failed' with reason, log error, continue to next job
-- [ ] Scraping failure (404, timeout): Log error with URL, mark 'failed' with reason "Scraping failed"
-- [ ] LLM timeout: Retry once with fresh request, mark 'failed' if still timeout
-- [ ] All errors wrapped in try/catch: log details, mark job 'failed', continue loop (don't crash worker)
+- [x] TMDB: Exponential backoff retry (2s, 4s, 8s), max 3 attempts
+- [x] Scraping: Try all 3 sources sequentially; if all fail, proceed with empty deaths
+- [x] LLM: Retry up to 3 times with 30s timeout, JSON repair on each attempt
+- [x] All errors caught at processJob level; job marked 'failed', worker continues
 
 **5.8** Run worker as separate process
-- [ ] Add npm script in package.json: `"worker": "tsx scripts/ingestion-worker.ts"`
-- [ ] Document in README: "Run worker in separate terminal: `npm run worker`"
-- [ ] Add environment variable check at startup: exit if TMDB_API_KEY or OLLAMA_ENDPOINT missing
+- [x] npm script: `"worker": "tsx scripts/ingestion-worker.ts"`
+- [x] Environment variable validation at startup (DATABASE_URL, TMDB_API_KEY)
+- [x] Graceful shutdown on SIGINT/SIGTERM
 
 ### Phase 6 — Notification System
 
@@ -1121,36 +1024,35 @@ Navigate to /movie/[tmdbId]
 
 ```prisma
 model Movie {
-  tmdbId     Int      @id
+  id         Int      @id @default(autoincrement())
+  tmdbId     Int      @unique
   title      String
   year       Int
-  director   String?
+  director   String
   tagline    String?
   posterPath String?
-  runtime    Int?
-  mpaaRating String?
+  runtime    Int
+  mpaaRating String
+  deaths     Death[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  deaths     Death[]
 
   @@index([title])
   @@index([createdAt])
 }
 
 model Death {
-  id           Int     @id @default(autoincrement())
-  movieTmdbId  Int
-  character    String
-  timeOfDeath  String
-  cause        String
-  killedBy     String
-  context      String
-  isAmbiguous  Boolean @default(false)
+  id          Int     @id @default(autoincrement())
+  character   String
+  timeOfDeath String
+  cause       String
+  killedBy    String
+  context     String
+  isAmbiguous Boolean @default(false)
+  movie       Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId     Int
 
-  movie        Movie   @relation(fields: [movieTmdbId], references: [tmdbId], onDelete: Cascade)
-
-  @@index([movieTmdbId])
+  @@index([movieId])
 }
 
 model IngestionQueue {
@@ -1166,6 +1068,8 @@ model IngestionQueue {
   @@index([tmdbId, status])
 }
 ```
+
+> **Note**: The schema above matches the actual `prisma/schema.prisma` implementation. Key differences from the original spec draft: (1) `Movie.id` is an auto-increment PK with `tmdbId` as a `@unique` constraint, (2) `Death` links via `movieId` → `Movie.id` (not `movieTmdbId`), (3) `director`, `runtime`, and `mpaaRating` are required (not nullable).
 
 ### Seed Data Files
 

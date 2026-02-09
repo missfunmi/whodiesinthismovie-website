@@ -187,16 +187,31 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Queue-level deduplication** — API checks `IngestionQueue` for existing `pending`/`processing` entries with the same query (case-insensitive) before inserting. Prevents queue flooding from repeated requests. The worker (Phase 5) also deduplicates by tmdbId during processing
 - **CSRF protection** — Production-only `Origin` header validation. Parses origin URL and compares host against the `Host` header to prevent cross-site request forgery on the POST endpoint
 
-### Ingestion Worker (Phase 5) — Planned
-- **Worker as separate process**: `npm run worker` polls queue every 30 seconds in separate terminal
-- **TMDB metadata fetching**: 3 parallel API calls per movie:
+### Ingestion Worker (Phase 5) *(Complete)*
+- **Worker as separate process**: `npm run worker` runs `tsx scripts/ingestion-worker.ts`, polls queue every 30 seconds
+- **Prisma client setup**: Worker runs outside Next.js, so it creates its own PrismaClient with `import "dotenv/config"` and direct `PrismaPg` adapter (same pattern as `prisma/seed.ts`)
+- **LLM title validation**: Step 1 in the processing pipeline (per SPEC architecture diagram). Best-effort with 5s timeout — if Ollama is unavailable, validation is skipped and processing continues. Rejects queries the LLM identifies as not real movie titles
+- **TMDB authentication**: Supports both raw API key and "Bearer "-prefixed key in `TMDB_API_KEY`. Auto-detects format and adds `Bearer ` prefix if needed. Startup log confirms which format was detected
+- **TMDB metadata fetching**: 3 parallel API calls per movie via `Promise.all`:
   1. Base movie data (`GET /movie/{tmdbId}`)
   2. Credits for directors (`GET /movie/{tmdbId}/credits`)
   3. Release dates for MPAA rating (`GET /movie/{tmdbId}/release_dates`)
-- **Rate limiting**: 500ms delay between TMDB requests to respect API limits
-- **Deduplication by tmdbId**: If movie with same tmdbId is already 'processing', mark duplicate job as 'complete' without re-fetching
-- **Death scraping + LLM extraction**: Scrape List of Deaths wiki, use Ollama to extract structured JSON
-- **Error handling**: Exponential backoff for TMDB retries (2s, 4s, 8s), mark jobs 'failed' with reason, log to console (no user-facing errors)
+- **MPAA rating**: Extracts from US theatrical release (type=3), filters out TMDB's empty string and "0" values, falls back to "NR"
+- **Rate limiting**: 500ms delay after TMDB calls before scraping
+- **Deduplication**: Checks both `IngestionQueue` (another job processing same tmdbId) and `Movie` table (movie already exists). Marks duplicate jobs as 'complete' without re-processing
+- **Death scraping uses MediaWiki APIs** (not HTML scraping):
+  1. List of Deaths fandom wiki (`listofdeaths.fandom.com/api.php`) — returns structured wikitext with Victims section
+  2. Wikipedia (`en.wikipedia.org/w/api.php`) — returns HTML extracts, parses Plot section
+  3. The Movie Spoiler (`themoviespoiler.com`) — HTML scraping fallback
+  - Year-specific page titles tried first (e.g., "Jaws (1975)") to avoid franchise pages
+  - If all sources fail, proceeds with empty deaths (not a hard failure)
+  - User-Agent includes contact email per Wikipedia/Fandom policies
+- **Memory management**: HTML inputs are truncated before cheerio parsing (100KB for Wikipedia, 500KB for Movie Spoiler). Cheerio DOM instances are explicitly nullified after extraction to assist garbage collection in this long-running process
+- **LLM extraction**: Ollama with 30s timeout, up to 3 retries, JSON repair for common LLM output quirks (mismatched brackets, HTML entities). Prompt includes example JSON to guide formatting
+- **Atomic database insert**: Movie upsert + death delete + death insert + queue update are wrapped in `prisma.$transaction()` for atomicity. If the process crashes mid-write, PostgreSQL rolls back — no risk of a movie being left with zero deaths due to interrupted writes
+- **Error handling**: TMDB exponential backoff (2s, 4s, 8s), scraping failures cascade to next source, LLM retries with JSON repair. All errors caught at processJob level — job marked 'failed' with reason, worker continues
+- **Graceful shutdown**: SIGINT/SIGTERM disconnects Prisma cleanly
+- **Schema alignment**: SPEC.md Section 6 schema updated to match actual `prisma/schema.prisma` (uses `movieId` FK, not `movieTmdbId`). Prevents future LLM code generation from reverting to the incorrect FK
 
 ### Notification System (Phase 6)
 - **Polling-based**: Frontend polls `/api/notifications/poll` every 60 seconds (no WebSocket/SSE)
@@ -207,9 +222,9 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **"Mark all as read"**: Clears badge, updates localStorage with all current tmdbIds
 
 ### TMDB API Integration Details
-- **Bearer token authentication**: All TMDB requests use `Authorization: Bearer ${API_KEY}` header
+- **Bearer token authentication**: All TMDB requests use `Authorization: Bearer ${API_KEY}` header. The worker auto-detects whether `TMDB_API_KEY` includes the "Bearer " prefix and adds it if missing
 - **Director extraction**: Filter `credits.crew` for `job === "Director"`, join multiple names with ", "
-- **MPAA rating extraction**: Find US theatrical release (type=3) in release_dates, fallback to "NR" if not found
+- **MPAA rating extraction**: Find US theatrical release (type=3) in release_dates, filter out empty strings and "0" values, fallback to "NR" if not found
 - **Rate limiting**: 500ms delay between requests (200 movies/hour max)
 - **Poster URLs**: `https://image.tmdb.org/t/p/w300${posterPath}` for display, `w92` for thumbnails
 
@@ -225,4 +240,4 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
 - The ingestion worker requires Ollama running locally (`http://localhost:11434`) with Llama 3.2 3B model pulled
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
-- Environment variables must include TMDB_API_KEY (bearer token) and OLLAMA_ENDPOINT for Phases 4+
+- Environment variables must include TMDB_API_KEY (raw key or "Bearer ..." token both supported) and OLLAMA_ENDPOINT for Phases 4+
