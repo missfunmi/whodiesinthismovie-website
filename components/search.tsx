@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import SearchInput from "@/components/search-input";
 import AutocompleteDropdown from "@/components/autocomplete-dropdown";
-import type { MovieSearchResult } from "@/lib/types";
+import type { MovieSearchResult, RequestStatus } from "@/lib/types";
 
 /** Minimum characters before triggering search */
 const MIN_QUERY_LENGTH = 3;
@@ -50,21 +50,30 @@ export default function Search() {
   const [tooMany, setTooMany] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [requestStatus, setRequestStatus] = useState<RequestStatus>("idle");
 
   // Derive easter egg state from query (no setState needed)
   const isEasterEgg = useMemo(() => query.startsWith("!!"), [query]);
 
   // Handle query changes: update state and clear results immediately
-  // when the new query doesn't warrant a search (avoids setState in effect)
-  const handleQueryChange = useCallback((newQuery: string) => {
-    const sanitized = sanitizeQuery(newQuery);
-    setQuery(sanitized);
-    if (!shouldSearch(sanitized)) {
-      setResults(null);
-      setTooMany(false);
-      setShowDropdown(false);
-    }
-  }, []);
+  // when the new query doesn't warrant a search (avoids setState in effect).
+  // Only reset requestStatus when the query substantively changes (trimmed value differs),
+  // so accidental whitespace or minor edits don't wipe success/error messages.
+  const handleQueryChange = useCallback(
+    (newQuery: string) => {
+      const sanitized = sanitizeQuery(newQuery);
+      setQuery(sanitized);
+      if (sanitized.trim() !== query.trim()) {
+        setRequestStatus("idle");
+      }
+      if (!shouldSearch(sanitized)) {
+        setResults(null);
+        setTooMany(false);
+        setShowDropdown(false);
+      }
+    },
+    [query]
+  );
 
   // Debounced search: only the async fetch lives in the effect
   useEffect(() => {
@@ -139,6 +148,37 @@ export default function Search() {
     [router]
   );
 
+  // Handle movie request when user clicks "Want us to look it up?"
+  const handleRequestMovie = useCallback(async () => {
+    setRequestStatus("loading");
+    try {
+      const res = await fetch("/api/movies/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setRequestStatus("error");
+        return;
+      }
+
+      if (data.existingMovie) {
+        // Movie was already in the database — navigate to it
+        setShowDropdown(false);
+        setRequestStatus("idle");
+        router.push(`/movie/${data.existingMovie.tmdbId}`);
+        return;
+      }
+
+      setRequestStatus("success");
+    } catch {
+      setRequestStatus("error");
+    }
+  }, [query, router]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (isEasterEgg || !showDropdown || !results || results.length === 0) {
@@ -177,7 +217,11 @@ export default function Search() {
     if (tooMany) {
       setShowDropdown(true);
     }
-  }, [results, tooMany, isEasterEgg]);
+    // Show dropdown for zero results too (for request flow)
+    if (results !== null && results.length === 0 && shouldSearch(query)) {
+      setShowDropdown(true);
+    }
+  }, [results, tooMany, isEasterEgg, query]);
 
   return (
     <div ref={containerRef} className="relative">
@@ -202,6 +246,8 @@ export default function Search() {
         onSelect={handleSelect}
         onHover={setHighlightedIndex}
         visible={showDropdown && !isEasterEgg}
+        onRequestMovie={handleRequestMovie}
+        requestStatus={requestStatus}
       />
     </div>
   );

@@ -177,9 +177,17 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Empty state:** Shows Film icon + "No movies found" when database has zero movies
 - **"Browse All Movies" link** added to home page below search bar as a subtle white/60 text link
 
-### Movie Request & Ingestion System (Phases 4-5)
-- **Two-tier validation**: LLM validates query before adding to queue (rejects obvious fake queries immediately)
-- **Database-based queue**: `IngestionQueue` table with status tracking ('pending' → 'processing' → 'complete'/'failed')
+### Movie Request System (Phase 4) *(Complete)*
+- **IngestionQueue model pulled forward from Phase 5** — Phase 4 API route needs to insert into the queue, so the model was added in Phase 4 (SPEC Phase 5 task 5.1 marked done)
+- **LLM validation is best-effort** — Ollama call uses a 5-second timeout with AbortController. If Ollama is unavailable, timeout, or errors, validation is skipped and the request still succeeds. Per SPEC: "don't expose validation to user". AbortController timeout cleanup uses `finally` block to prevent timer leaks
+- **Ollama model is configurable** — `OLLAMA_MODEL` env var (defaults to `llama3.2:3b`). Allows using different Ollama models without code changes
+- **Inline confirmation instead of toast/modal** — SPEC says "toast/modal" but we use inline state in the autocomplete dropdown. Simpler, no toast infrastructure needed, feedback appears right where the user is looking
+- **RequestStatus state machine** — `"idle" | "loading" | "success" | "error"` union type in `lib/types.ts` drives the zero-results UI in the dropdown. State resets to `"idle"` only when the query substantively changes (trimmed value differs), preventing accidental whitespace from wiping success messages
+- **Existing movie check uses `equals` (not `contains`)** — Prevents false redirects where a broad query like "Alien" might match "Alien vs. Predator". SPEC prescribes `contains` but `equals` with `mode: "insensitive"` is more precise for the request flow
+- **Queue-level deduplication** — API checks `IngestionQueue` for existing `pending`/`processing` entries with the same query (case-insensitive) before inserting. Prevents queue flooding from repeated requests. The worker (Phase 5) also deduplicates by tmdbId during processing
+- **CSRF protection** — Production-only `Origin` header validation. Parses origin URL and compares host against the `Host` header to prevent cross-site request forgery on the POST endpoint
+
+### Ingestion Worker (Phase 5) — Planned
 - **Worker as separate process**: `npm run worker` polls queue every 30 seconds in separate terminal
 - **TMDB metadata fetching**: 3 parallel API calls per movie:
   1. Base movie data (`GET /movie/{tmdbId}`)

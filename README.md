@@ -13,7 +13,8 @@ Look up a movie and find out which characters die — when, how, and by whose ha
 - **Phase 1** (Foundation): ✅ Next.js + Prisma + PostgreSQL + seeding + search/detail APIs
 - **Phase 2** (Core UI): ✅ Welcome page, search with autocomplete, movie detail page, death reveal system
 - **Phase 3** (All Movies Browse): ✅ Paginated grid view of all movies
-- **Phases 4-6** (Dynamic Ingestion): 🚧 Request movies, background worker, real-time notifications
+- **Phase 4** (Movie Request UI): ✅ "Want us to look it up?" flow, POST API, ingestion queue
+- **Phases 5-6** (Ingestion Worker & Notifications): 🚧 Background worker, real-time notifications
 - **Future** (Easter Egg): RAG-powered natural language search (planned)
 
 ## Tech Stack
@@ -316,6 +317,7 @@ Worker respects TMDB rate limits (500ms between requests) and handles failures w
 | `TMDB_API_KEY`                | Yes      | TMDB bearer token for API access          |
 | `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL                   |
 | `OLLAMA_ENDPOINT`             | Yes*     | Ollama endpoint (required for ingestion)  |
+| `OLLAMA_MODEL`                | No       | Ollama model name (default: llama3.2:3b)  |
 | `SENTRY_DSN`                  | No       | Sentry DSN for error tracking             |
 | `NEXT_PUBLIC_SENTRY_DSN`      | No       | Sentry DSN for client-side error tracking |
 

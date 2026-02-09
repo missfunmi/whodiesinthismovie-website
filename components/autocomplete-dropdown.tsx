@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { AlertCircle, Film } from "lucide-react";
-import type { MovieSearchResult } from "@/lib/types";
+import type { MovieSearchResult, RequestStatus } from "@/lib/types";
 import { getPosterUrl } from "@/lib/utils";
 
 type AutocompleteDropdownProps = {
@@ -13,6 +13,8 @@ type AutocompleteDropdownProps = {
   onSelect: (tmdbId: number) => void;
   onHover: (index: number) => void;
   visible: boolean;
+  onRequestMovie: () => void;
+  requestStatus: RequestStatus;
 };
 
 /**
@@ -26,6 +28,8 @@ export default function AutocompleteDropdown({
   onSelect,
   onHover,
   visible,
+  onRequestMovie,
+  requestStatus,
 }: AutocompleteDropdownProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -57,10 +61,46 @@ export default function AutocompleteDropdown({
         </div>
       )}
 
-      {/* No results */}
+      {/* No results — show request flow states */}
       {!tooMany && results !== null && results.length === 0 && (
-        <div className="flex items-center justify-center p-8">
-          <p className="text-gray-500">No movies found</p>
+        <div className="flex flex-col items-center gap-3 p-8">
+          {requestStatus === "idle" && (
+            <>
+              <p className="text-gray-500">No movies found</p>
+              <button
+                onClick={onRequestMovie}
+                className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors cursor-pointer"
+              >
+                We don&apos;t have that one yet! Want us to look it up?
+              </button>
+            </>
+          )}
+          {requestStatus === "loading" && (
+            <p className="text-gray-500 animate-pulse">Sending request...</p>
+          )}
+          {requestStatus === "success" && (
+            <div className="text-center">
+              <p className="text-green-600 font-medium">
+                Okay, we&apos;ll check on that!
+              </p>
+              <p className="text-gray-400 text-sm mt-1">
+                We&apos;ll let you know when we find out who dies in this movie.
+              </p>
+            </div>
+          )}
+          {requestStatus === "error" && (
+            <>
+              <p className="text-red-500 text-sm">
+                Something went wrong. Please try again.
+              </p>
+              <button
+                onClick={onRequestMovie}
+                className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors cursor-pointer"
+              >
+                Try again?
+              </button>
+            </>
+          )}
         </div>
       )}
 
