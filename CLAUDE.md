@@ -13,7 +13,9 @@
 - **Styling**: Tailwind CSS v4 (utility-first, no CSS modules)
 - **Database**: PostgreSQL 15+ via Prisma ORM v7
 - **Images**: next/image with TMDB CDN (`image.tmdb.org`)
-- **LLM**: Ollama + Llama 3.2 3B (easter egg feature, via separate Python RAG service)
+- **LLM**: Ollama + Llama 3.2 3B (query validation & death extraction in ingestion worker)
+- **Queue**: Database-based polling queue (no Redis/BullMQ)
+- **Notifications**: Polling-based (60s interval) with localStorage persistence
 - **Logging**: Sentry
 - **Hosting**: Vercel
 
@@ -23,6 +25,7 @@
 npm run dev          # Start dev server (localhost:3000)
 npm run build        # Production build
 npm run lint         # ESLint
+npm run worker       # Start ingestion worker (separate terminal)
 npx prisma migrate dev   # Run database migrations
 npx prisma db seed       # Seed database from data/ JSON files
 npx prisma studio        # Visual database browser
@@ -32,16 +35,21 @@ npx prisma studio        # Visual database browser
 
 ```
 ├── app/
-│   ├── layout.tsx              # Root layout (fonts, metadata)
+│   ├── layout.tsx              # Root layout (fonts, metadata, notification bell)
 │   ├── page.tsx                # Welcome page (search + poster background)
+│   ├── browse/
+│   │   └── page.tsx            # All movies browse page (grid + pagination)
 │   ├── movie/
 │   │   └── [tmdbId]/
 │   │       └── page.tsx        # Movie detail page
 │   └── api/
 │       ├── movies/
 │       │   ├── search/route.ts # GET - search movies by title
-│       │   └── [tmdbId]/route.ts # GET - movie + deaths
-│       └── smart-search/route.ts # POST - RAG easter egg
+│       │   ├── [tmdbId]/route.ts # GET - movie + deaths
+│       │   ├── browse/route.ts # GET - paginated all movies
+│       │   └── request/route.ts # POST - add movie to ingestion queue
+│       └── notifications/
+│           └── poll/route.ts   # GET - movies added in last 24h
 ├── components/
 │   ├── search.tsx              # Search orchestrator (client, debounced fetch + keyboard nav)
 │   ├── search-input.tsx        # Styled search input with auto-focus
@@ -53,11 +61,15 @@ npx prisma studio        # Visual database browser
 │   ├── death-reveal.tsx        # Reveal toggle + skeleton + death cards (client)
 │   ├── death-card.tsx          # Confirmed death card (presentational)
 │   ├── ambiguous-death-card.tsx # Ambiguous death card (presentational)
-│   └── skeleton-loader.tsx     # Pulsing skeleton grid (presentational)
+│   ├── skeleton-loader.tsx     # Pulsing skeleton grid (presentational)
+│   ├── notification-bell.tsx   # Top-right notification bell with dropdown (client)
+│   └── browse-grid.tsx         # Movie grid with pagination (client)
 ├── lib/
 │   ├── prisma.ts               # Prisma client singleton
 │   ├── types.ts                # Shared TypeScript types (decoupled from Prisma)
 │   └── utils.ts                # formatRuntime, getPosterUrl helpers
+├── scripts/
+│   └── ingestion-worker.ts     # Background worker for movie ingestion
 ├── prisma/
 │   ├── schema.prisma           # Database schema
 │   └── seed.ts                 # Seed script
@@ -72,7 +84,7 @@ npx prisma studio        # Visual database browser
 
 ## Conventions
 
-- **App Router**: Use server components by default. Add `"use client"` only for interactivity (search input, death reveal toggle, animations).
+- **App Router**: Use server components by default. Add `"use client"` only for interactivity (search input, death reveal toggle, animations, notification bell).
 - **Styling**: Tailwind only. No CSS modules, no styled-components. Design tokens defined in `tailwind.config.ts` and `globals.css`.
 - **Naming**: PascalCase for components, camelCase for functions/variables, kebab-case for files.
 - **Components**: One component per file in `components/`. Co-locate component-specific types in the same file.
@@ -82,7 +94,9 @@ npx prisma studio        # Visual database browser
 ## Database
 
 - **ORM**: Prisma v7 with PostgreSQL via `@prisma/adapter-pg`
-- **Models**: `Movie` (1) → (many) `Death`, linked via `movieId` foreign key
+- **Models**: 
+  - `Movie` (1) → (many) `Death`, linked via `movieTmdbId` foreign key
+  - `IngestionQueue` for background movie ingestion tracking
 - **Seed data**: JSON files in `data/`. The seed script upserts by `tmdbId`, so it's safe to re-run after adding movies.
 - **Migrations**: Run `npx prisma migrate dev` after schema changes.
 - **Config**: Prisma v7 uses `prisma.config.ts` for CLI config (seed command, datasource URL). The seed command is `npx tsx prisma/seed.ts`.
@@ -92,17 +106,19 @@ npx prisma studio        # Visual database browser
 Full design system documented in `docs/SPEC.md` Section 2. Key points:
 
 - **Fonts**: Space Grotesk (headings), Inter (body) — loaded via Google Fonts in layout
-- **Colors**: Primary `#2c2b32`, death cards `#1F1F1F`, easter egg gradient `#8B5CF6` → `#6D28D9`
+- **Colors**: Primary `#2c2b32`, death cards `#1F1F1F`, notification badge `red-500`, "NEW!" badge `green-500`
 - **Background**: Movie posters with 60% black overlay + heavy blur
 - **Reference**: `figma-make-prototype/` is visual reference only. Rebuild all components from scratch using Next.js best practices.
 
 ## API Routes
 
-| Endpoint                | Method | Request                       | Response                                   |
-| ----------------------- | ------ | ----------------------------- | ------------------------------------------ |
-| `/api/movies/search?q=` | GET    | `q`: search string (3+ chars) | `Movie[]` (max 8) or `{ tooMany: true }`   |
-| `/api/movies/[tmdbId]`  | GET    | —                             | `Movie` with `deaths: Death[]`             |
-| `/api/smart-search`     | POST   | `{ query: string }`           | `{ answer: string, movieTmdbId?: number }` |
+| Endpoint                         | Method | Request                        | Response                                       |
+| -------------------------------- | ------ | ------------------------------ | ---------------------------------------------- |
+| `/api/movies/search?q=`          | GET    | `q`: search string (3+ chars)  | `Movie[]` (max 8) or `{ tooMany: true }`       |
+| `/api/movies/[tmdbId]`           | GET    | —                              | `Movie` with `deaths: Death[]`                 |
+| `/api/movies/browse?page=&sort=` | GET    | `page`: number, `sort`: string | `{ movies: Movie[], totalPages, currentPage }` |
+| `/api/movies/request`            | POST   | `{ query: string }`            | `{ success: boolean, message: string }`        |
+| `/api/notifications/poll`        | GET    | —                              | `Movie[]` (added in last 24h)                  |
 
 ## Architectural Decisions (Phase 1)
 
@@ -146,9 +162,52 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - Movies absent from `seed-deaths.json` have zero `Death` rows in the database (the seed script only creates deaths for movies present in the file).
 - The `DeathReveal` component checks `confirmedDeaths.length === 0 && ambiguousDeaths.length === 0` and renders a "No deaths! Everyone survives!" message directly — no reveal button is shown.
 
+## Architectural Decisions (Phase 3-6)
+
+### All Movies Browse Page (Phase 3)
+- Server component fetches paginated movies (100 per page) via Prisma
+- "NEW!" badge shown on movies where `createdAt > NOW() - INTERVAL '24 hours'`
+- Client component handles pagination controls and sort filter (alphabetical vs. recently added)
+- URL search params for navigation: `/browse?page=2&sort=recent`
+
+### Movie Request & Ingestion System (Phases 4-5)
+- **Two-tier validation**: LLM validates query before adding to queue (rejects obvious fake queries immediately)
+- **Database-based queue**: `IngestionQueue` table with status tracking ('pending' → 'processing' → 'complete'/'failed')
+- **Worker as separate process**: `npm run worker` polls queue every 30 seconds in separate terminal
+- **TMDB metadata fetching**: 3 parallel API calls per movie:
+  1. Base movie data (`GET /movie/{tmdbId}`)
+  2. Credits for directors (`GET /movie/{tmdbId}/credits`)
+  3. Release dates for MPAA rating (`GET /movie/{tmdbId}/release_dates`)
+- **Rate limiting**: 500ms delay between TMDB requests to respect API limits
+- **Deduplication by tmdbId**: If movie with same tmdbId is already 'processing', mark duplicate job as 'complete' without re-fetching
+- **Death scraping + LLM extraction**: Scrape List of Deaths wiki, use Ollama to extract structured JSON
+- **Error handling**: Exponential backoff for TMDB retries (2s, 4s, 8s), mark jobs 'failed' with reason, log to console (no user-facing errors)
+
+### Notification System (Phase 6)
+- **Polling-based**: Frontend polls `/api/notifications/poll` every 60 seconds (no WebSocket/SSE)
+- **localStorage persistence**: `seenNotifications` array stores tmdbIds user has already seen
+- **Badge count**: Shows number of unseen movies added in last 24 hours
+- **Notification bell**: Fixed top-right on all pages via root layout
+- **Auto-dismiss**: Clicking notification navigates to movie page and marks as read
+- **"Mark all as read"**: Clears badge, updates localStorage with all current tmdbIds
+
+### TMDB API Integration Details
+- **Bearer token authentication**: All TMDB requests use `Authorization: Bearer ${API_KEY}` header
+- **Director extraction**: Filter `credits.crew` for `job === "Director"`, join multiple names with ", "
+- **MPAA rating extraction**: Find US theatrical release (type=3) in release_dates, fallback to "NR" if not found
+- **Rate limiting**: 500ms delay between requests (200 movies/hour max)
+- **Poster URLs**: `https://image.tmdb.org/t/p/w300${posterPath}` for display, `w92` for thumbnails
+
+### Death Data Structure
+- CSV format matches script output: movieTitle, tmdbId, character, timeOfDeath, cause, killedBy, context, isAmbiguous
+- LLM prompt enforces exact JSON structure with validation
+- `killedBy` defaults to "N/A" if missing or empty
+- Zero-death movies insert movie record with empty deaths array (valid state)
+
 ## Important Notes
 
 - The Figma prototype in `figma-make-prototype/` is for visual reference only. Do NOT copy its code. Rebuild all components from scratch with proper Next.js patterns.
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
-- The RAG easter egg (triggered by `!!` prefix) requires a separate Python service on `localhost:8000`. The Next.js app only proxies requests to it.
+- The ingestion worker requires Ollama running locally (`http://localhost:11434`) with Llama 3.2 3B model pulled
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
+- Environment variables must include TMDB_API_KEY (bearer token) and OLLAMA_ENDPOINT for Phases 4+

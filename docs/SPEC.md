@@ -11,8 +11,10 @@
 1. [Architecture Overview](#1-architecture-overview)
 2. [Design System Reference](#2-design-system-reference)
 3. [Implementation Plan](#3-implementation-plan)
-4. [Specific Tasks](#4-specific-tasks)
-5. [Database Schema](#5-database-schema)
+4. [User Flow Diagrams](#4-user-flow-diagrams)
+5. [Specific Tasks](#5-specific-tasks)
+6. [Database Schema](#6-database-schema)
+7. [Edge Cases](#7-edge-cases)
 
 ---
 
@@ -20,40 +22,65 @@
 
 ### 1.1 Tech Stack
 
-| Layer     | Technology               | Purpose                                              |
-| --------- | ------------------------ | ---------------------------------------------------- |
-| Framework | Next.js 14+ (App Router) | SSR, routing, API routes                             |
-| Language  | TypeScript               | Type safety                                          |
-| Styling   | Tailwind CSS             | Utility-first CSS                                    |
-| Database  | PostgreSQL 15+           | Persistent data store                                |
-| ORM       | Prisma                   | Type-safe database queries                           |
-| Images    | next/image + TMDB CDN    | Optimized poster loading                             |
-| LLM       | Ollama + Llama 3.2 3B    | Easter egg RAG queries (via external Python service) |
-| Logging   | Sentry                   | Error tracking                                       |
-| Hosting   | Vercel                   | Deployment target                                    |
+| Layer         | Technology               | Purpose                                  |
+| ------------- | ------------------------ | ---------------------------------------- |
+| Framework     | Next.js 14+ (App Router) | SSR, routing, API routes                 |
+| Language      | TypeScript               | Type safety                              |
+| Styling       | Tailwind CSS             | Utility-first CSS                        |
+| Database      | PostgreSQL 15+           | Persistent data store                    |
+| ORM           | Prisma                   | Type-safe database queries               |
+| Images        | next/image + TMDB CDN    | Optimized poster loading                 |
+| LLM           | Ollama + Llama 3.2 3B    | Query validation & death data extraction |
+| Queue System  | Database-based (Prisma)  | Ingestion queue with polling worker      |
+| Notifications | Polling (60s interval)   | Check for new movies, localStorage       |
+| Logging       | Sentry                   | Error tracking                           |
+| Hosting       | Vercel                   | Deployment target                        |
 
 ### 1.2 System Architecture
 
 ```
-                    ┌─────────────────────────────────────────┐
-                    │              Browser                     │
-                    └──────────┬──────────────────┬───────────┘
-                               │                  │
-                    Standard Search          "!!" Easter Egg
-                               │                  │
-                    ┌──────────▼──────────┐ ┌─────▼───────────┐
-                    │  /api/movies/search  │ │ /api/smart-search│
-                    │  /api/movies/[tmdbId]│ └─────┬───────────┘
-                    └──────────┬──────────┘       │
-                               │            ┌─────▼───────────┐
-                    ┌──────────▼──────────┐ │ Python RAG Svc  │
-                    │    Prisma ORM        │ │ localhost:8000   │
-                    └──────────┬──────────┘ └─────┬───────────┘
-                               │                  │
-                    ┌──────────▼──────────┐ ┌─────▼───────────┐
-                    │    PostgreSQL        │ │ Ollama + Llama  │
-                    └─────────────────────┘ │ ChromaDB         │
-                                            └─────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        USER INTERFACE                        │
+│  (Next.js + React + Tailwind)                               │
+│                                                              │
+│  • Home Page (search + rotating taglines)                   │
+│  • Movie Detail Page (metadata + death cards)               │
+│  • All Movies Page (alphabetical grid + pagination)         │
+│  • Notification Bell (top-right, last 5 additions)          │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    NEXT.JS API ROUTES                        │
+│                                                              │
+│  • /api/movies/search - autocomplete search                 │
+│  • /api/movies/[id] - movie detail                          │
+│  • /api/movies/browse - paginated all movies list           │
+│  • /api/movies/request - add to ingestion queue             │
+│  • /api/notifications/poll - check for new additions        │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    POSTGRES DATABASE                         │
+│                                                              │
+│  • movies (metadata)                                         │
+│  • deaths (character deaths)                                 │
+│  • ingestion_queue (user requests with status tracking)     │
+└──────────────────┬──────────────────────────────────────────┘
+                   │
+                   ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  BACKGROUND WORKER                           │
+│  (Node.js polling ingestion_queue every 30s)                │
+│                                                              │
+│  1. LLM Validation (Llama 3.2 via Ollama)                   │
+│  2. TMDB API Lookup                                          │
+│  3. Death Scraping (List of Deaths wiki)                    │
+│  4. LLM Extraction (structured death data)                   │
+│  5. Database Insert                                          │
+│  6. Emit notification                                        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### 1.3 Route Structure
@@ -64,6 +91,7 @@
 | ----------------- | ----------------------------- | ------------------------------------------------------------------ |
 | `/`               | `app/page.tsx`                | Welcome page with search bar, poster background, rotating taglines |
 | `/movie/[tmdbId]` | `app/movie/[tmdbId]/page.tsx` | Movie detail with death reveal                                     |
+| `/browse`         | `app/browse/page.tsx`         | All movies alphabetical grid with pagination                       |
 
 **API Routes**
 
@@ -71,7 +99,9 @@
 | ------------------------------ | ------ | ------------------------------------------------------------------------------------------- |
 | `/api/movies/search?q={query}` | GET    | Search movies by title. Returns max 8 results. If >100 matches, returns `{ tooMany: true }` |
 | `/api/movies/[tmdbId]`         | GET    | Get movie metadata + all deaths                                                             |
-| `/api/smart-search`            | POST   | Forward natural language query to RAG service. Body: `{ query: string }`                    |
+| `/api/movies/browse?page={n}`  | GET    | Get paginated movies (100 per page), sorted A-Z                                             |
+| `/api/movies/request`          | POST   | Add movie request to ingestion queue. Body: `{ query: string }`                             |
+| `/api/notifications/poll`      | GET    | Get movies added in last 24 hours for notification bell                                     |
 
 ### 1.4 Data Flow
 
@@ -88,12 +118,39 @@
 3. Server component fetches movie + deaths via Prisma (single query with relation include)
 4. Renders movie metadata + hidden death section
 
-**Easter Egg Flow**
-1. User types `!!` prefix (e.g., `!! does jack die in titanic?`)
-2. Client detects prefix, suppresses autocomplete dropdown
-3. User presses Enter → client calls `POST /api/smart-search` with `{ query: "does jack die in titanic?" }`
-4. API route proxies to Python RAG service at `http://localhost:8000/query` (5s timeout)
-5. Returns natural language answer; client renders purple gradient card
+**Movie Request & Ingestion Flow**
+1. User searches for movie not in database → zero results
+2. "We don't have that one yet! Want us to look it up?" link appears
+3. User clicks → `POST /api/movies/request` with `{ query: string }`
+4. API validates query is not empty/malformed
+5. LLM validates query is a real movie name (rejects obvious fake queries)
+6. Check if movie already exists in main Movies DB → if yes, return existing movie
+7. Add to ingestion_queue with status "pending", return success message
+8. Background worker polls queue every 30s
+9. Worker picks up job, updates status to "processing"
+10. Worker calls TMDB API to get movie metadata + tmdbId
+11. If multiple matches, take first result
+12. Worker scrapes List of Deaths wiki / The Movie Spoiler for death data
+13. Worker uses LLM to extract structured death data from scraped HTML
+14. Worker inserts movie + deaths to main tables, updates queue status to "complete"
+15. Frontend polls `/api/notifications/poll` every 60s, detects new movie
+16. Notification appears in bell dropdown
+
+**Notification Flow**
+1. Frontend polls `/api/notifications/poll` every 60 seconds
+2. API returns movies added in last 24 hours
+3. Frontend compares with localStorage to find new additions
+4. New movies trigger notification badge update and dropdown addition
+5. User clicks bell → dropdown shows last 5 notifications
+6. Clicking notification link navigates to movie page and dismisses notification
+7. "Mark all as read" clears badge and localStorage entries
+
+**All Movies Browse Flow**
+1. User navigates to `/browse` or clicks "Browse All Movies" link
+2. Server component fetches first 100 movies alphabetically via Prisma
+3. Movies added in last 24 hours show "NEW!" badge
+4. Pagination controls shown if >100 total movies
+5. User can sort by "Recently Added" (changes sort to `ORDER BY createdAt DESC`)
 
 ### 1.5 Image Strategy
 
@@ -112,9 +169,10 @@
 ### 1.6 State Management
 
 React hooks only — no external state library needed:
-- `useState` for component-level state (search query, dropdown visibility, death reveal toggle)
-- `useEffect` for debounced search, tagline rotation, poster animation
-- `useRef` for input focus management, animation timers
+- `useState` for component-level state (search query, dropdown visibility, death reveal toggle, notification count)
+- `useEffect` for debounced search, tagline rotation, poster animation, notification polling
+- `useRef` for input focus management, animation timers, polling intervals
+- `localStorage` for notification persistence across page refreshes
 
 ---
 
@@ -140,37 +198,26 @@ React hooks only — no external state library needed:
 
 **Component-Specific Colors**
 
-| Element                | Value                    | Notes                        |
-| ---------------------- | ------------------------ | ---------------------------- |
-| Death card background  | `#1F1F1F`                | Dark cards on detail page    |
-| Ambiguous death card   | `#1F1F1F` at 50% opacity | Grayed-out appearance        |
-| Easter egg gradient    | `#8B5CF6` → `#6D28D9`    | `bg-gradient-to-br` (violet) |
-| Search focus ring      | Tailwind `blue-500`      | 4px ring width               |
-| Dropdown selected item | Tailwind `blue-500` bg   | White text on selected       |
-| Dropdown selected year | Tailwind `blue-100`      | Lighter on selected          |
-| Warning text           | Tailwind `orange-500`    | "Too many matches"           |
-| Search input bg        | `white` at 95% opacity   | `bg-white/95`                |
-| Tagline text           | Tailwind `gray-300`      | On dark background           |
-| Back button            | `white` at 80% opacity   | `hover:text-white`           |
+| Element                | Value                    | Notes                     |
+| ---------------------- | ------------------------ | ------------------------- |
+| Death card background  | `#1F1F1F`                | Dark cards on detail page |
+| Ambiguous death card   | `#1F1F1F` at 50% opacity | Grayed-out appearance     |
+| Search focus ring      | Tailwind `blue-500`      | 4px ring width            |
+| Dropdown selected item | Tailwind `blue-500` bg   | White text on selected    |
+| Warning text           | Tailwind `orange-500`    | "Too many matches"        |
+| Notification badge     | Tailwind `red-500`       | Unread count on bell      |
+| "NEW!" badge           | Tailwind `green-500`     | Recently added movies     |
 
 **Movie Detail Page (Dark Theme)**
 
-The movie detail page uses `bg-primary` (`#2c2b32`) as the page background. All text and UI elements on this page use light-on-dark colors instead of the core light-mode tokens:
+The movie detail page uses `bg-primary` (`#2c2b32`) as the page background. All text and UI elements on this page use light-on-dark colors:
 
-| Element                                 | Value                           | Contrast on `#2c2b32` / `#1F1F1F` |
-| --------------------------------------- | ------------------------------- | --------------------------------- |
-| Page background                         | `#2c2b32` (`bg-primary`)        | —                                 |
-| Primary text (titles, values)           | `white`                         | ≥15:1                             |
-| Secondary text (labels, icons, context) | Tailwind `gray-400` (`#9CA3AF`) | ≥5:1 (AA)                         |
-| Death card field values                 | Tailwind `gray-100` (`#F3F4F6`) | ≥12:1                             |
-| Ambiguous card character name           | Tailwind `gray-300` (`#D1D5DB`) | ≥8:1                              |
-| Borders (cards, header, dividers)       | `white` at 10% opacity          | Subtle on dark                    |
-| Header background                       | `#2c2b32` at 80% opacity        | Matches page bg                   |
-| Reveal button                           | `bg-white text-primary`         | High contrast                     |
-| Skeleton loader                         | `white` at 10% opacity          | Subtle pulse on dark              |
-| Poster placeholder                      | `white` at 10% opacity          | Matches dark theme                |
-| Ambiguous section wrapper               | `white` at 5% opacity           | Subtle grouping                   |
-| Question mark badge bg                  | `white` at 10% opacity          | Subtle on dark                    |
+| Element                                 | Value                           |
+| --------------------------------------- | ------------------------------- |
+| Page background                         | `#2c2b32` (`bg-primary`)        |
+| Primary text (titles, values)           | `white`                         |
+| Secondary text (labels, icons, context) | Tailwind `gray-400` (`#9CA3AF`) |
+| Death card field values                 | Tailwind `gray-100` (`#F3F4F6`) |
 
 ### 2.2 Typography
 
@@ -183,16 +230,13 @@ The movie detail page uses `bg-primary` (`#2c2b32`) as the page background. All 
 
 **Type Scale**
 
-| Element               | Size (Desktop)                | Size (Mobile)     | Weight | Line Height |
-| --------------------- | ----------------------------- | ----------------- | ------ | ----------- |
-| Hero heading          | 56px (`text-[56px]`)          | 48px (`text-5xl`) | 700    | 1.1         |
-| Movie title (detail)  | 48px (`text-5xl`)             | 36px (`text-4xl`) | 700    | 1.2         |
-| Taglines              | 18-20px (`text-lg`/`text-xl`) | Same              | 400    | 1.5         |
-| Character name (card) | 18px (`text-lg`)              | Same              | 700    | 1.4         |
-| Body text             | 16px (`text-base`)            | Same              | 400    | 1.5         |
-| Field labels (card)   | 14px (`text-sm`)              | Same              | 400    | 1.5         |
-| Search placeholder    | 16px                          | Same              | 500    | —           |
-| Year in dropdown      | 14px (`text-sm`)              | Same              | 400    | —           |
+| Element               | Size (Desktop)                | Size (Mobile)     | Weight |
+| --------------------- | ----------------------------- | ----------------- | ------ |
+| Hero heading          | 56px (`text-[56px]`)          | 48px (`text-5xl`) | 700    |
+| Movie title (detail)  | 48px (`text-5xl`)             | 36px (`text-4xl`) | 700    |
+| Taglines              | 18-20px (`text-lg`/`text-xl`) | Same              | 400    |
+| Character name (card) | 18px (`text-lg`)              | Same              | 700    |
+| Body text             | 16px (`text-base`)            | Same              | 400    |
 
 ### 2.3 Spacing & Layout
 
@@ -209,23 +253,21 @@ The movie detail page uses `bg-primary` (`#2c2b32`) as the page background. All 
 
 **Border Radius**
 
-| Element               | Value | Tailwind Class       |
-| --------------------- | ----- | -------------------- |
-| Base radius (CSS var) | 10px  | `--radius: 0.625rem` |
-| Search input          | 12px  | `rounded-xl`         |
-| Dropdown              | 12px  | `rounded-xl`         |
-| Easter egg card       | 12px  | `rounded-xl`         |
-| Death cards           | 8px   | `rounded-lg`         |
-| Buttons               | 6px   | `rounded-md`         |
-| Poster thumbnails     | 4px   | `rounded`            |
+| Element           | Value | Tailwind Class |
+| ----------------- | ----- | -------------- |
+| Search input      | 12px  | `rounded-xl`   |
+| Dropdown          | 12px  | `rounded-xl`   |
+| Death cards       | 8px   | `rounded-lg`   |
+| Buttons           | 6px   | `rounded-md`   |
+| Notification bell | 50%   | `rounded-full` |
 
 **Layout Containers**
 
-| Context                     | Max Width                   | Padding |
-| --------------------------- | --------------------------- | ------- |
-| Welcome/search page content | 768px (`max-w-3xl`)         | `px-4`  |
-| Movie detail page           | 1280px (`max-w-7xl`)        | `px-4`  |
-| Death card grid             | Full width within container | `gap-4` |
+| Context                     | Max Width            | Padding |
+| --------------------------- | -------------------- | ------- |
+| Welcome/search page content | 768px (`max-w-3xl`)  | `px-4`  |
+| Movie detail page           | 1280px (`max-w-7xl`) | `px-4`  |
+| Browse page                 | 1280px (`max-w-7xl`) | `px-4`  |
 
 **Responsive Breakpoint**: 768px (`md:` prefix) — single breakpoint for mobile/desktop
 
@@ -250,7 +292,6 @@ Input:
 **Behavior**:
 - Autocomplete triggers at 3+ characters as user types (no Enter required)
 - Bare "the" / "the " queries: suppress autocomplete, return nothing
-- `!!` prefix: set easter egg mode, suppress dropdown entirely
 - Debounce: 300ms before API call
 
 #### AutocompleteDropdown
@@ -275,14 +316,13 @@ Year: text-sm, in parentheses below title
 **States**:
 - Default: `hover:bg-gray-100 text-gray-900`, year `text-gray-500`
 - Keyboard selected: `bg-blue-500 text-white`, year `text-blue-100`
-- Too many matches (>100): centered AlertCircle icon (`orange-500`, `w-8 h-8`) + "Too many matches - keep typing!" (`text-gray-700`)
-- No results: centered "No movies found" (`text-gray-500`)
+- Too many matches (>100): centered AlertCircle icon + "Too many matches - keep typing!"
+- No results: centered "No movies found" with link "We don't have that one yet! Want us to look it up?"
 
 **Keyboard Navigation**:
 - ArrowDown: move selection down (stop at last item)
 - ArrowUp: move selection up (stop at first item)
 - Enter: select highlighted item and navigate to detail page
-- First item highlighted by default
 
 **Constraints**: Maximum 8 results displayed
 
@@ -297,7 +337,7 @@ Container:
 
 Character name: text-lg font-bold text-white mb-4
 
-Fields (3 rows, each with icon + label + value):
+Fields (4 rows, each with icon + label + value):
   - Icon: w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5
   - Layout: flex items-start gap-3
   - Label: text-sm text-gray-400
@@ -306,10 +346,7 @@ Fields (3 rows, each with icon + label + value):
   Row 1: Clock icon → "Time" → timeOfDeath
   Row 2: Skull icon → "Cause" → cause
   Row 3: Target icon → "By" → killedBy
-
-Context section:
-  - mt-4 pt-4 border-t border-white/10
-  - text-sm text-gray-400
+  Row 4: AlignLeft icon → "Context" → context (brief 1-2 sentences)
 ```
 
 **Grid Layout**: `grid grid-cols-1 md:grid-cols-2 gap-4`
@@ -331,35 +368,6 @@ Character name: text-lg font-bold text-gray-300 mb-2 pr-10
 Context: text-sm text-gray-400
 ```
 
-**Wrapper section**:
-```
-- rounded-lg border border-white/10 bg-white/5 p-6
-- Section header: HelpCircle icon (text-gray-400) + "Ambiguous Deaths" (text-xl font-bold text-white)
-- Same grid layout as confirmed deaths
-```
-
-#### EasterEggCard
-
-```
-Container:
-  - mt-4 p-6 rounded-xl
-  - bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9]
-  - backdrop-blur-md shadow-2xl
-
-Layout: flex items-start gap-3
-
-Icon: AlertCircle (lucide-react), w-6 h-6 text-white flex-shrink-0 mt-1
-Answer text: text-white text-lg
-Action link: mt-3 text-sm text-white hover:text-purple-100 underline
-  - "Show full details →"
-  - Links to /movie/[tmdbId] for the referenced movie
-```
-
-**Behavior**:
-- Shown below search input (not a dropdown)
-- Only appears after user presses Enter with `!!` prefix
-- Loading spinner shown while awaiting RAG response (3-5s typical)
-
 #### RevealButton
 
 ```
@@ -369,369 +377,799 @@ Before reveal:
   - text-lg px-8 py-6 shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all
   - Centered: flex justify-center mb-8
 
-Loading state (after click, before reveal):
-  - Skeleton grid: 4 skeleton cards in 2x2 grid
-  - Duration: 800ms
-
 After reveal:
   - Count header above cards: "X characters died" (e.g., "12 characters died")
   - Button changes to: "Hide Deaths" with ChevronUp icon
   - Death cards grid appears below
 
 Zero deaths:
-  - Message: "No deaths! Everyone survives!" with party emoji
-  - No button interaction needed (no cards to show)
+  - Message: "No deaths! Everyone survives! 🥳"
+  - No button (no cards to show/hide)
 ```
 
-#### MovieMetadata
-
-```
-Layout: flex flex-col md:flex-row gap-8 mb-12
-
-Poster:
-  - flex-shrink-0
-  - w-full md:w-[300px] rounded-lg shadow-2xl
-
-Metadata section:
-  - flex-1
-  - Title: text-4xl md:text-5xl font-bold mb-2 text-white
-  - Year: text-xl text-gray-400 mb-4
-  - Fields (space-y-3 mb-6):
-    - Label: text-gray-400
-    - Value: text-white
-    - Shows: Director, Runtime (formatted as "Xh Ym"), Rating
-  - Tagline: italic text-lg text-gray-400, in quotes
-```
-
-**Fields displayed**: poster, title, year, director, tagline, runtime, MPAA rating
-**Fields NOT displayed**: budget, box office, full cast (per PRD)
-
-#### PosterBackground
-
-```
-Container: absolute inset-0 overflow-hidden
-
-Poster images:
-  - 8 visible at a time
-  - Each: 300px x 450px, object-cover, rounded-lg, shadow-2xl
-  - NO rotation (posters stay upright) ← REFINEMENT
-  - Crossfade in/out with 4-5s transition duration
-  - opacity: 0.6
-  - Positioned in a distributed grid pattern
-
-Dark overlay:
-  - absolute inset-0
-  - bg-black/60 ← REFINEMENT (was bg-black/40 in Figma)
-  - backdrop-blur-sm ← REFINEMENT (reduced from backdrop-blur-lg so poster details are visible)
-```
-
-**Poster Rotation Logic**:
-- Maintain array of 8 currently-visible poster indices
-- Every 4-5 seconds, fade out oldest poster, fade in next one
-- Cycle through all available poster images
-
-#### Header (Movie Detail Page)
+#### NotificationBell
 
 ```
 Container:
-  - border-b border-white/10
-  - bg-primary/80 backdrop-blur-sm
-  - sticky top-0 z-50
+  - fixed top-4 right-4 z-50
+  - relative
 
-Inner:
-  - max-w-7xl mx-auto px-4 py-4
+Bell icon button:
+  - w-12 h-12 rounded-full bg-white shadow-lg
+  - hover:bg-gray-100 transition-colors
+  - Bell icon (lucide-react), w-6 h-6 text-gray-700
 
-Logo button:
-  - text-xl font-bold
-  - text-white hover:text-white/80
-  - transition-colors
-  - Navigates back to home/search
+Badge (if unread > 0):
+  - absolute -top-1 -right-1
+  - w-6 h-6 rounded-full bg-red-500
+  - text-white text-xs font-bold
+  - flex items-center justify-center
+  - Content: unread count (max display: "9+")
+
+Dropdown (when open):
+  - absolute top-full right-0 mt-2
+  - w-80 max-h-96 overflow-y-auto
+  - bg-white rounded-xl shadow-2xl p-4
+  - border border-gray-200
+
+Notification item:
+  - p-3 hover:bg-gray-50 rounded-lg cursor-pointer
+  - Movie title (font-medium) with "NEW!" badge (bg-green-500 text-white px-2 py-1 text-xs rounded)
+  - Timestamp (text-xs text-gray-500)
+
+"Mark all as read" button:
+  - text-sm text-blue-500 hover:text-blue-700 mt-2
+  - Clears badge and localStorage
 ```
 
-#### SkeletonLoader
+#### BrowseGrid
 
 ```
-Base: bg-white/10 rounded-lg animate-pulse
-Layout: grid grid-cols-1 md:grid-cols-2 gap-4
-Used in: death card loading (4x h-40 in 2x2 grid)
+Container:
+  - grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6
+
+Movie card:
+  - relative group cursor-pointer
+  - transition-transform hover:scale-105
+
+Poster: w-full aspect-[2/3] object-cover rounded-lg shadow-lg
+
+Title overlay (on hover):
+  - absolute bottom-0 left-0 right-0
+  - bg-black/80 p-3
+  - text-white text-sm font-medium
+
+"NEW!" badge (if added in last 24h):
+  - absolute top-2 right-2
+  - bg-green-500 text-white px-2 py-1 text-xs rounded font-bold
+
+Pagination controls:
+  - flex justify-center items-center gap-4 mt-8
+  - Previous/Next buttons: px-4 py-2 bg-white rounded-md shadow hover:bg-gray-50
+  - Page indicator: "Page X of Y"
 ```
 
 ### 2.5 Animations
 
-| Animation        | Trigger                | Duration    | Details                                                                                          |
-| ---------------- | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
-| Tagline rotation | Auto, every 4s         | 600ms       | 5 variants: slideLeft, slideRight, fadeScale, blur, typewriter. Random selection per transition. |
-| Poster crossfade | Auto, every 4-5s       | 4-5s        | Fade opacity 0→0.6→0. No rotation. Staggered across 8 poster slots.                              |
-| Death card hover | Mouse enter            | 200ms       | `translate-y-[-4px]` + `shadow-xl`. `transition-all duration-200`                                |
-| Reveal loading   | Click reveal button    | 800ms       | 4 skeleton cards pulse, then replaced by actual death cards                                      |
-| Dropdown appear  | Search results change  | CSS default | No explicit animation — instant show/hide                                                        |
-| Easter egg card  | Enter key in `!!` mode | CSS default | Appears below search input                                                                       |
-
-**Tagline Animation Keyframes** (defined in component `<style>` tag):
-
-```css
-/* slideLeft */
-@keyframes slideInLeft { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-
-/* slideRight */
-@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes slideOutLeft { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100%); opacity: 0; } }
-
-/* fadeScale */
-@keyframes fadeScaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes fadeScaleOut { from { transform: scale(1); opacity: 1; } to { transform: scale(0.8); opacity: 0; } }
-
-/* blur */
-@keyframes blurIn { from { filter: blur(10px); opacity: 0; } to { filter: blur(0); opacity: 1; } }
-@keyframes blurOut { from { filter: blur(0); opacity: 1; } to { filter: blur(10px); opacity: 0; } }
-
-/* typewriter */
-@keyframes typewriter { from { width: 0; } to { width: 100%; } }
-/* timing-function: steps(40) */
-```
-
-**Tagline Container**: Fixed height `h-20` (80px) to prevent layout shift during transitions.
+| Animation         | Trigger             | Duration | Details                                                        |
+| ----------------- | ------------------- | -------- | -------------------------------------------------------------- |
+| Tagline rotation  | Auto, every 4s      | 600ms    | 5 variants: slideLeft, slideRight, fadeScale, blur, typewriter |
+| Poster crossfade  | Auto, every 4-5s    | 4-5s     | Fade opacity 0→0.6→0. No rotation.                             |
+| Death card hover  | Mouse enter         | 200ms    | `translate-y-[-4px]` + `shadow-xl`                             |
+| Reveal loading    | Click reveal button | 800ms    | 4 skeleton cards pulse                                         |
+| Notification fade | New notification    | 300ms    | Fade in, slide down                                            |
 
 ### 2.6 Accessibility Requirements
 
-| Requirement         | Implementation                                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Color contrast      | WCAG AA (4.5:1 body text, 3:1 large text). All text/background combos verified.                            |
-| Keyboard navigation | Arrow keys for dropdown, Enter to select, Tab for focus traversal                                          |
-| Focus indicators    | `focus-visible:ring-[3px]` with `ring-ring/50` on interactive elements                                     |
-| Screen reader       | Semantic HTML (`<button>`, `<nav>`, `<main>`), ARIA labels on icon-only elements, `alt` text on all images |
-| Touch targets       | Minimum 44x44px on all interactive elements (search input 80px, buttons py-6, list items p-4)              |
-| Reduced motion      | Respect `prefers-reduced-motion` for tagline/poster animations                                             |
-| Form labels         | Search input has accessible label (visually hidden if needed)                                              |
-
-### 2.7 Technical Constraints vs. Figma
-
-| Figma Design                         | Constraint                                         | Resolution                                                                                               |
-| ------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Background poster rotation angles    | User refinement: remove rotation                   | Posters stay upright, crossfade only                                                                     |
-| 40% black overlay                    | User refinement: increase to 60%                   | `bg-black/60` + `backdrop-blur-lg` for text readability                                                  |
-| Autocomplete after Enter             | User refinement: trigger on typing                 | Debounced fetch at 3+ chars, no Enter required                                                           |
-| Reveal button shows count            | User refinement: hide count before reveal          | Button says "See who dies in this movie"; count shown as header after reveal                             |
-| No empty state for search            | User refinement: add message                       | "No movies found" in dropdown when 0 results                                                             |
-| Tagline typewriter animation         | `steps(40)` may cause jank on variable-length text | Use `ch` units for width if possible, or fall back to fadeScale for long taglines                        |
-| Heavy backdrop blur on home page     | User refinement: poster details invisible          | Reduced from `backdrop-blur-lg` to `backdrop-blur-sm` (4px) — poster imagery visible through 60% overlay |
-| White page background on detail page | User refinement: inconsistent with dark home page  | Movie detail page uses `bg-primary` (`#2c2b32`) dark background                                          |
-| Dark text on dark death cards        | User refinement: unreadable contrast               | All detail page text uses light-on-dark colors: `text-white`, `text-gray-100`, `text-gray-400`           |
+| Requirement         | Implementation                                                    |
+| ------------------- | ----------------------------------------------------------------- |
+| Color contrast      | WCAG AA (4.5:1 body text, 3:1 large text)                         |
+| Keyboard navigation | Arrow keys for dropdown, Enter to select, Tab for focus traversal |
+| Focus indicators    | `focus-visible:ring-4` on interactive elements                    |
+| Screen reader       | Semantic HTML, ARIA labels on icon-only elements                  |
+| Touch targets       | Minimum 44x44px on all interactive elements                       |
+| Reduced motion      | Respect `prefers-reduced-motion` for animations                   |
 
 ---
 
 ## 3. Implementation Plan
 
-### PHASE 1 — Foundation
+### PHASE 1 — Foundation *(Complete)*
 
 **Goal**: Working API with seeded database. Demo-able via curl/Postman.
 
 - Initialize Next.js project with TypeScript + Tailwind CSS (App Router)
 - Install dependencies: `prisma`, `@prisma/client`, `lucide-react`, `@sentry/nextjs`
-- Configure Tailwind with design tokens from Section 2 (colors, fonts, radius)
+- Configure Tailwind with design tokens from Section 2
 - Configure `next.config.ts` with TMDB image remote pattern
-- Define Prisma schema (`Movie`, `Death` models — see Section 5)
-- Run initial Prisma migration to create tables
-- Write database seed script (`prisma/seed.ts`):
-  - Reads `data/seed-movies.json` and `data/seed-deaths.json`
-  - Upserts movies by `tmdbId` (idempotent — safe to re-run when JSON files are updated)
-  - Creates/replaces death records for each movie
-  - Configure `prisma.seed` in `package.json`
-- Implement `GET /api/movies/search?q={query}`:
-  - Validates query param exists and is 3+ chars
-  - Case-insensitive partial match: `title: { contains: query, mode: 'insensitive' }`
-  - If >100 results: return `{ tooMany: true, count: N }`
-  - Otherwise: return max 8 results `{ tmdbId, title, year, posterPath }`
-- Implement `GET /api/movies/[tmdbId]`:
-  - Fetch movie with `include: { deaths: true }`
-  - 404 if not found
-  - Return full movie object with deaths array
-- Set up Sentry (basic `Sentry.init` in instrumentation hook)
-- Add Google Fonts (Space Grotesk + Inter) in `app/layout.tsx`
+- Define Prisma schema (`Movie`, `Death` models)
+- Run initial Prisma migration
+- Write database seed script reading `data/seed-movies.json` and `data/seed-deaths.json`
+- Implement `GET /api/movies/search?q={query}`
+- Implement `GET /api/movies/[tmdbId]`
+- Set up Sentry
+- Add Google Fonts (Space Grotesk + Inter)
 
-### PHASE 2 — Core UI
+### PHASE 2 — Core UI *(Complete)*
 
 **Goal**: Fully functional search-to-detail flow. Demo-able in browser.
 
-- **Welcome page** (`app/page.tsx`):
-  - Full-viewport poster background with crossfade animation (Section 2.4: PosterBackground)
-  - "Who Dies in This Movie?" hero heading (Space Grotesk, 56px desktop / 48px mobile)
-  - Rotating taglines below heading (10 taglines from PRD, Section 2.5 animations)
-  - Search bar centered below taglines (Section 2.4: SearchInput)
+- Welcome page with poster background + rotating taglines
+- Search autocomplete with keyboard navigation
+- Movie detail page with metadata + death reveal system
+- Death card grid (confirmed + ambiguous deaths sections)
+- "No deaths! Everyone survives!" message for zero-death movies
 
-- **Search autocomplete**:
-  - Client component with debounced API calls (300ms)
-  - Dropdown rendering per Section 2.4: AutocompleteDropdown
-  - Poster thumbnail + title + year in each result row
-  - Keyboard navigation (ArrowUp/Down/Enter)
-  - "Too many matches" and "No movies found" states
-  - `!!` prefix detection → suppress dropdown, enable easter egg mode
+### PHASE 3 — All Movies Browse Page
 
-- **Movie detail page** (`app/movie/[tmdbId]/page.tsx`):
-  - Server component for initial data fetch
-  - Header with logo/back button (Section 2.4: Header)
-  - Movie metadata layout (Section 2.4: MovieMetadata)
-  - Poster (300px on desktop, full-width on mobile) + metadata side-by-side on desktop
+**Goal**: Browsable catalog of all movies in database. Standalone feature.
 
-- **Death reveal system** (client component):
-  - "See who dies in this movie" button (Section 2.4: RevealButton)
-  - Click → 800ms skeleton loading → reveal death cards
-  - Count header: "X characters died" shown above cards after reveal
-  - Death card grid (Section 2.4: DeathCard)
-  - Ambiguous deaths section below confirmed deaths (Section 2.4: AmbiguousDeathCard)
-  - "No deaths! Everyone survives!" message for zero-death movies
+- Create `/browse` page route
+- Implement `GET /api/movies/browse?page={n}&sort={field}` endpoint
+  - Default sort: alphabetical (A-Z) by title
+  - Alternative sort: recently added (`createdAt DESC`)
+  - Pagination: 100 movies per page
+  - Returns: `{ movies: Movie[], totalPages: number, currentPage: number }`
+- Build BrowseGrid component (Section 2.4)
+  - Grid layout: 2 cols mobile, 4 cols tablet, 5 cols desktop
+  - "NEW!" badge on movies added in last 24 hours
+  - Hover effect with title overlay
+- Pagination controls (Previous/Next + page indicator)
+- Sort filter dropdown (Alphabetical / Recently Added)
+- Link from home page: "Browse All Movies" button below search
 
-### PHASE 3 — RAG Integration
+### PHASE 4 — Movie Request System (UI)
 
-**Goal**: Easter egg `!!` search works end-to-end. Demo-able with prepared queries.
+**Goal**: Users can request movies not in database. UI only, no backend processing yet.
 
-**Prerequisite**: Python RAG service running on `localhost:8000` (separate project, not built here)
+- Detect zero search results in autocomplete
+- Show "We don't have that one yet! Want us to look it up?" text link
+- On click, show confirmation: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
+- Implement `POST /api/movies/request` endpoint
+  - Validate query is not empty, max 200 chars
+  - Sanitize input (strip HTML, trim whitespace)
+  - **LLM Validation**: Call Ollama to validate query is a real movie name
+    - Prompt: "Is '{query}' a real movie title? Answer with only YES or NO."
+    - If NO: return success anyway (don't expose validation to user)
+  - Check if movie already exists in main `movies` table
+    - If yes: return existing movie data
+  - Add to `ingestion_queue` table with status "pending"
+  - Return `{ success: true, message: string }`
 
-- Detect `!!` prefix in search input component
-- When `!!` is detected: suppress autocomplete, show no dropdown
-- On Enter key with `!!` prefix:
-  - Strip `!!` from query
-  - Show loading spinner below search input
-  - Call `POST /api/smart-search` with `{ query: "stripped query text" }`
-- Implement `POST /api/smart-search`:
-  - Extract query from request body
-  - Forward to `http://localhost:8000/query` via `fetch` with 5-second `AbortController` timeout
-  - On success: return RAG response `{ answer: string, movieTmdbId?: number }`
-  - On timeout: return `{ error: "The oracle is thinking too hard... try again?" }`
-  - On connection refused: return `{ error: "Smart search is offline right now" }`
-- Render easter egg response card (Section 2.4: EasterEggCard)
-  - Purple gradient card with answer text
-  - "Show full details →" link if `movieTmdbId` is present → navigates to `/movie/[tmdbId]`
-- Error state: show friendly message in same card style but muted colors
+### PHASE 5 — Ingestion Worker
 
-### PHASE 4 — Polish
+**Goal**: Background process that fetches movie data and adds to database.
+
+- Extend Prisma schema with `ingestion_queue` table (Section 6)
+- Create worker script (`scripts/ingestion-worker.ts`)
+  - Poll `ingestion_queue` every 30 seconds
+  - SELECT jobs WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
+  - Update status to 'processing' (prevents duplicate work)
+- **TMDB Lookup**:
+  - Call TMDB search API: `GET /search/movie?query=${query}`
+  - If multiple results, take first match
+  - If no results, mark job 'failed' with reason, return
+  - Extract tmdbId from search result
+  - **Fetch full movie metadata** via 3 parallel API calls:
+    1. `GET /movie/${tmdbId}` → title, year, tagline, posterPath, runtime, release_date
+    2. `GET /movie/${tmdbId}/credits` → filter crew for job="Director", get names
+    3. `GET /movie/${tmdbId}/release_dates` → find US theatrical release (type=3) for MPAA rating
+  - Handle multiple directors: join with ", " (e.g., "Russo Brothers")
+  - MPAA rating fallback: use "NR" (Not Rated) if no US theatrical release found
+  - Store tmdbId in ingestion_queue record
+- **Death Scraping**:
+  - Search List of Deaths wiki for movie title
+  - Fallback to The Movie Spoiler if not found
+  - Parse HTML tables/sections for character deaths
+  - If no deaths found, set deaths = [] (valid zero-death movie)
+- **LLM Extraction**:
+  - Pass scraped HTML to Ollama (Llama 3.2 3B)
+  - Prompt: "Extract character deaths from this HTML. Return ONLY a JSON array with these exact fields: character (string), timeOfDeath (string), cause (string), killedBy (string), context (string, 1-2 sentences max), isAmbiguous (boolean). Do not include any preamble or explanation."
+  - Parse JSON response into structured death records
+  - Validate each record has all required fields
+  - Set `killedBy: "N/A"` if missing
+- **Database Insert**:
+  - Upsert movie record by tmdbId: `prisma.movie.upsert({ where: { tmdbId }, create: {...}, update: {...} })`
+  - Delete existing deaths: `prisma.death.deleteMany({ where: { movieTmdbId } })`
+  - Bulk insert deaths: `prisma.death.createMany({ data: deathRecords })`
+  - Update ingestion_queue status to 'complete', set completedAt timestamp
+- **Error Handling**:
+  - TMDB timeout: retry with exponential backoff (2s, 4s, 8s), max 3 attempts
+  - Scraping failure: log error with URL, mark job 'failed' with reason
+  - LLM timeout: retry once with 10-second timeout, mark 'failed' if still timing out
+  - Invalid JSON from LLM: log raw response, mark 'failed'
+  - All errors: console.log with details, don't throw (keep worker running)
+- Run worker as separate process: `npm run worker`
+- **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
+
+### PHASE 6 — Notification System
+
+**Goal**: Real-time notifications when movies are added.
+
+- Implement `GET /api/notifications/poll` endpoint
+  - Query movies WHERE createdAt > NOW() - INTERVAL '24 hours'
+  - Return array of `{ tmdbId, title, createdAt }`
+- Create NotificationBell component (Section 2.4)
+  - Fixed position top-right on all pages
+  - Poll `/api/notifications/poll` every 60 seconds
+  - Compare results with localStorage key `seenNotifications` (array of tmdbIds)
+  - New movies → increment badge count, add to dropdown
+  - onClick bell → show dropdown with last 5 notifications
+  - onClick notification → navigate to `/movie/[tmdbId]`, remove from localStorage, dismiss
+  - "Mark all as read" → clear badge, update localStorage with all current tmdbIds
+- Add NotificationBell to root layout (`app/layout.tsx`)
+- Persist notifications across page refreshes via localStorage
+
+### PHASE 7 — Polish
 
 **Goal**: Production-quality MVP. Demo-ready for friendly audience.
 
 - **Input validation & sanitization**:
   - Search query: max 200 chars, strip HTML tags, trim whitespace
   - API routes: validate query params, return proper 400/404/500 responses
-  - Prevent XSS via React's default escaping + explicit sanitization on API input
+  - Prevent XSS via React's default escaping + explicit sanitization
 
 - **Error handling**:
-  - API error boundaries: try/catch in all route handlers, structured error responses
-  - Client error boundaries: React Error Boundary component wrapping main content
+  - API error boundaries: try/catch in all route handlers
+  - Client error boundaries: React Error Boundary component
   - Network failure: show "Something went wrong" with retry option
   - Image load failure: fallback poster placeholder
 
 - **Loading states**:
   - Search: subtle loading indicator during debounce
-  - Movie detail: full-page skeleton while server component loads
-  - Death reveal: skeleton grid (already in Phase 2)
-  - Easter egg: spinner with "Consulting the oracle..." text
+  - Movie detail: full-page skeleton while loading
+  - Death reveal: skeleton grid (800ms)
+  - Notification polling: silent (no spinner)
 
 - **Responsive QA**:
   - Test at 375px (mobile), 768px (tablet), 1280px+ (desktop)
-  - Verify poster background readability at all widths
   - Verify death card grid collapses to single column on mobile
-  - Verify movie detail poster stacks above metadata on mobile
+  - Verify browse page grid adjusts columns responsively
 
-- **Visual QA against Figma**:
-  - Compare each component against Figma screenshots
+- **Visual QA**:
   - Verify all design token values match Section 2
-  - Check all refinements are applied (overlay, poster rotation, reveal button text)
-  - Verify animation timing and behavior
+  - Check all refinements are applied
 
 - **Accessibility testing**:
-  - Keyboard-only navigation through entire flow (Tab, Enter, Arrow keys)
-  - VoiceOver walkthrough on macOS
+  - Keyboard-only navigation through entire flow
   - Color contrast spot check with browser DevTools
 
 ---
 
-## 4. Specific Tasks
+## 4. User Flow Diagrams
 
-### Phase 1 — Foundation
+### 4.1 Standard Movie Search Flow
 
-- [ ] **P1.1**: Initialize Next.js project with `create-next-app` (TypeScript, Tailwind, App Router, ESLint). Configure `next.config.ts` with TMDB image domain. Add Google Fonts in layout.
-- [ ] **P1.2**: Configure Tailwind theme — add design tokens: custom colors (`primary`, `muted`, `border`), font families (Space Grotesk, Inter), border radius scale. Set up CSS variables in `globals.css`.
-- [ ] **P1.3**: Define Prisma schema with `Movie` and `Death` models (see Section 5). Run `npx prisma migrate dev --name init` to create tables.
-- [ ] **P1.4**: Write seed script (`prisma/seed.ts`) that reads both JSON files from `data/`, upserts movies by `tmdbId`, deletes + recreates deaths per movie. Add `prisma.seed` to `package.json`. Test with `npx prisma db seed`.
-- [ ] **P1.5**: Implement `GET /api/movies/search` — query validation, Prisma `findMany` with `contains`/`insensitive`, >100 check, max 8 limit. Test with curl.
-- [ ] **P1.6**: Implement `GET /api/movies/[tmdbId]` — Prisma `findUnique` with deaths included, 404 handling. Test with curl.
-- [ ] **P1.7**: Set up Sentry (`@sentry/nextjs`) — basic init in `instrumentation.ts`, test error capture.
+```
+User visits homepage
+  ↓
+Types 3+ characters in search bar
+  ↓
+Debounce (300ms) → GET /api/movies/search?q={query}
+  ↓
+<100 results: show autocomplete dropdown (max 8)
+>100 results: show "Too many matches - keep typing!"
+  ↓
+User selects movie (click or Enter)
+  ↓
+Navigate to /movie/[tmdbId]
+  ↓
+Server component fetches movie + deaths
+  ↓
+Render movie metadata + "See who dies" button
+  ↓
+User clicks reveal button
+  ↓
+800ms skeleton loading
+  ↓
+Death cards grid appears (or "No deaths!" message)
+```
 
-### Phase 2 — Core UI
+### 4.2 Movie Request & Ingestion Flow
 
-- [ ] **P2.1**: Build welcome page layout — full-viewport container, hero heading, tagline container (fixed 80px height). Build PosterBackground component with 8 upright poster slots, crossfade animation (4-5s), 60% black overlay + heavy blur.
-- [ ] **P2.2**: Build rotating taglines component — 10 taglines from PRD, 4s interval, 5 animation variants (slideLeft, slideRight, fadeScale, blur, typewriter), random variant selection per rotation.
-- [ ] **P2.3**: Build SearchInput component — styled per spec, autoFocus, 16px font to prevent iOS zoom. Wire up debounced API call (300ms) on input change at 3+ chars. Handle "the" exclusion.
-- [ ] **P2.4**: Build AutocompleteDropdown component — render up to 8 results with poster thumbnail + title + year. Implement keyboard navigation (ArrowUp/Down/Enter). Handle states: results, "too many matches", "no movies found". Wire click/Enter to navigate to `/movie/[tmdbId]`.
-- [ ] **P2.5**: Build movie detail page — server component data fetch, Header component with back navigation, MovieMetadata layout (poster left + metadata right on desktop, stacked on mobile). Display title, year, director, runtime, rating, tagline.
-- [ ] **P2.6**: Build death reveal system — "See who dies in this movie" button, 800ms skeleton loading, count header ("X characters died"), DeathCard grid (2-col desktop, 1-col mobile). Handle zero deaths with "No deaths! Everyone survives!" message.
-- [ ] **P2.7**: Build AmbiguousDeathCard component + section — grayed-out cards with `?` badge, separate "Ambiguous Deaths" section below confirmed deaths with HelpCircle icon header.
+```
+User searches for "Jaws"
+  ↓
+GET /api/movies/search?q=jaws → 0 results
+  ↓
+Show "We don't have that one yet! Want us to look it up?" link
+  ↓
+User clicks link
+  ↓
+POST /api/movies/request { query: "Jaws" }
+  ↓
+API: Validate query not empty/malformed
+  ↓
+API: LLM validation - is "Jaws" a real movie? (YES)
+  ↓
+API: Check if movie already in main DB → NO
+  ↓
+API: INSERT INTO ingestion_queue (query, status='pending')
+  ↓
+API: Return { success: true, message: "Okay, we'll check on that!" }
+  ↓
+[30 seconds later]
+  ↓
+Background worker polls ingestion_queue
+  ↓
+Worker picks up "Jaws" job, status → 'processing'
+  ↓
+Worker: TMDB search API → get first result tmdbId
+  ↓
+Worker: Parallel fetch of 3 TMDB endpoints:
+  - GET /movie/{tmdbId} → base metadata
+  - GET /movie/{tmdbId}/credits → directors
+  - GET /movie/{tmdbId}/release_dates → MPAA rating
+  ↓
+Worker: Transform to schema:
+  - Extract directors (filter crew for job="Director", join names)
+  - Extract MPAA rating (find US theatrical release type=3, fallback "NR")
+  - Build movie object with all fields
+  ↓
+Worker: Wait 500ms (rate limiting)
+  ↓
+Worker: Scrape List of Deaths wiki for "Jaws"
+  ↓
+Worker: LLM extraction → structured death JSON array
+  - Validate each death has required fields
+  - Set killedBy="N/A" if missing
+  ↓
+Worker: Upsert movie + bulk insert deaths to DB
+  ↓
+Worker: UPDATE ingestion_queue status='complete'
+  ↓
+[60 seconds later]
+  ↓
+Frontend polls GET /api/notifications/poll
+  ↓
+API returns movies added in last 24h (includes "Jaws")
+  ↓
+Frontend compares with localStorage → "Jaws" is new!
+  ↓
+Notification bell badge increments, dropdown adds "Jaws has been added!"
+  ↓
+User clicks notification → navigate to /movie/{tmdbId}
+```
 
-### Phase 3 — RAG Integration
+### 4.3 Notification Flow
 
-- [ ] **P3.1**: Add `!!` prefix detection in search input — suppress autocomplete dropdown, toggle easter egg mode state. Strip `!!` prefix on Enter press and prepare query.
-- [ ] **P3.2**: Implement `POST /api/smart-search` — request body validation, forward to `http://localhost:8000/query` with 5s AbortController timeout, handle timeout/connection errors with friendly messages.
-- [ ] **P3.3**: Build EasterEggCard component — purple gradient card, loading spinner state ("Consulting the oracle..."), answer display, "Show full details →" link. Wire to `/movie/[tmdbId]` navigation.
+```
+[On page load]
+  ↓
+NotificationBell component mounts
+  ↓
+Load seenNotifications from localStorage (array of tmdbIds)
+  ↓
+Start polling interval (every 60 seconds)
+  ↓
+[Every 60 seconds]
+  ↓
+GET /api/notifications/poll
+  ↓
+API: SELECT * FROM movies WHERE createdAt > NOW() - INTERVAL '24 hours'
+  ↓
+API: Return array of recent movies
+  ↓
+Frontend: Compare with seenNotifications
+  ↓
+New movies found?
+  ├─ YES → Add to notification list, increment badge
+  └─ NO → Do nothing
+  ↓
+[User clicks bell icon]
+  ↓
+Show dropdown with last 5 notifications
+  ↓
+[User clicks notification]
+  ↓
+Navigate to /movie/[tmdbId]
+Dismiss notification (add tmdbId to seenNotifications in localStorage)
+Decrement badge count
+  ↓
+[User clicks "Mark all as read"]
+  ↓
+Add all current notification tmdbIds to seenNotifications
+Clear badge count
+Empty notification dropdown
+```
 
-### Phase 4 — Polish
+### 4.4 All Movies Browse Flow
 
-- [ ] **P4.1**: Add input validation — search max 200 chars, HTML tag stripping, API route param validation with proper 400/404/500 responses. Add React Error Boundary wrapper.
-- [ ] **P4.2**: Add loading states — search indicator during debounce, movie detail page skeleton, image load fallback. Add error recovery UI ("Something went wrong, try again").
-- [ ] **P4.3**: Responsive QA — test at 375px/768px/1280px+. Fix any layout issues with poster background, death card grid, movie detail layout. Ensure touch targets ≥ 44px.
-- [ ] **P4.4**: Accessibility pass — keyboard-only navigation test (full flow), VoiceOver walkthrough, ARIA labels on icon buttons, color contrast check, `prefers-reduced-motion` support for animations.
-- [ ] **P4.5**: Visual QA — compare each page/component against Figma prototype. Verify all design refinements are applied. Fix any visual discrepancies.
+```
+User navigates to /browse (or clicks "Browse All Movies")
+  ↓
+Server component: GET /api/movies/browse?page=1&sort=alphabetical
+  ↓
+API: SELECT * FROM movies ORDER BY title ASC LIMIT 100 OFFSET 0
+  ↓
+API: COUNT total movies for pagination
+  ↓
+API: Return { movies: Movie[], totalPages: number, currentPage: 1 }
+  ↓
+Render BrowseGrid component
+  ↓
+Movies in grid with poster thumbnails
+Movies added in last 24h show "NEW!" badge
+  ↓
+[User changes sort to "Recently Added"]
+  ↓
+GET /api/movies/browse?page=1&sort=recent
+  ↓
+API: SELECT * FROM movies ORDER BY createdAt DESC LIMIT 100 OFFSET 0
+  ↓
+Grid re-renders with new order
+  ↓
+[User clicks "Next Page"]
+  ↓
+GET /api/movies/browse?page=2&sort=alphabetical
+  ↓
+API: OFFSET 100
+  ↓
+Grid updates with next 100 movies
+  ↓
+[User clicks movie poster]
+  ↓
+Navigate to /movie/[tmdbId]
+```
 
 ---
 
-## 5. Database Schema
+## 5. Specific Tasks
+
+### Phase 1 — Foundation *(Complete)*
+
+- [x] **P1.1**: Initialize Next.js project with `create-next-app` (TypeScript, Tailwind, App Router, ESLint). Configure `next.config.ts` with TMDB image domain. Add Google Fonts in layout.
+- [x] **P1.2**: Configure Tailwind theme — add design tokens: custom colors (`primary`, `muted`, `border`), font families (Space Grotesk, Inter), border radius scale. Set up CSS variables in `globals.css`.
+- [x] **P1.3**: Define Prisma schema with `Movie` and `Death` models (see Section 5). Run `npx prisma migrate dev --name init` to create tables.
+- [x] **P1.4**: Write seed script (`prisma/seed.ts`) that reads both JSON files from `data/`, upserts movies by `tmdbId`, deletes + recreates deaths per movie. Add `prisma.seed` to `package.json`. Test with `npx prisma db seed`.
+- [x] **P1.5**: Implement `GET /api/movies/search` — query validation, Prisma `findMany` with `contains`/`insensitive`, >100 check, max 8 limit. Test with curl.
+- [x] **P1.6**: Implement `GET /api/movies/[tmdbId]` — Prisma `findUnique` with deaths included, 404 handling. Test with curl.
+- [x] **P1.7**: Set up Sentry (`@sentry/nextjs`) — basic init in `instrumentation.ts`, test error capture.
+
+### Phase 2 — Core UI *(Complete)*
+
+- [x] **P2.1**: Build welcome page layout — full-viewport container, hero heading, tagline container (fixed 80px height). Build PosterBackground component with 8 upright poster slots, crossfade animation (4-5s), 60% black overlay + heavy blur.
+- [x] **P2.2**: Build rotating taglines component — 10 taglines from PRD, 4s interval, 5 animation variants (slideLeft, slideRight, fadeScale, blur, typewriter), random variant selection per rotation.
+- [x] **P2.3**: Build SearchInput component — styled per spec, autoFocus, 16px font to prevent iOS zoom. Wire up debounced API call (300ms) on input change at 3+ chars. Handle "the" exclusion.
+- [x] **P2.4**: Build AutocompleteDropdown component — render up to 8 results with poster thumbnail + title + year. Implement keyboard navigation (ArrowUp/Down/Enter). Handle states: results, "too many matches", "no movies found". Wire click/Enter to navigate to `/movie/[tmdbId]`.
+- [x] **P2.5**: Build movie detail page — server component data fetch, Header component with back navigation, MovieMetadata layout (poster left + metadata right on desktop, stacked on mobile). Display title, year, director, runtime, rating, tagline.
+- [x] **P2.6**: Build death reveal system — "See who dies in this movie" button, 800ms skeleton loading, count header ("X characters died"), DeathCard grid (2-col desktop, 1-col mobile). Handle zero deaths with "No deaths! Everyone survives!" message.
+- [x] **P2.7**: Build AmbiguousDeathCard component + section — grayed-out cards with `?` badge, separate "Ambiguous Deaths" section below confirmed deaths with HelpCircle icon header.
+
+### Phase 3 — All Movies Browse Page
+
+**3.1** Create `/app/browse/page.tsx` server component
+- [ ] Fetch movies from database with pagination (100 per page)
+- [ ] Default sort: alphabetical by title
+- [ ] Pass movies + pagination data to client component
+
+**3.2** Implement `GET /api/movies/browse` endpoint
+- [ ] Accept query params: `page` (default 1), `sort` (default 'alphabetical')
+- [ ] Query movies: `ORDER BY title ASC` or `ORDER BY createdAt DESC`
+- [ ] Use Prisma pagination: `take: 100, skip: (page - 1) * 100`
+- [ ] Count total movies for pagination calculation
+- [ ] Return `{ movies, totalPages, currentPage }`
+
+**3.3** Build BrowseGrid client component
+- [ ] Grid layout: `grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6`
+- [ ] Movie card: poster + title overlay on hover
+- [ ] "NEW!" badge if `createdAt > NOW() - 24 hours`
+- [ ] Click poster → navigate to `/movie/[tmdbId]`
+
+**3.4** Add pagination controls
+- [ ] Previous/Next buttons (disabled when at boundaries)
+- [ ] Page indicator: "Page X of Y"
+- [ ] URL search params: `/browse?page=2`
+
+**3.5** Add sort filter
+- [ ] Dropdown: "Alphabetical" | "Recently Added"
+- [ ] onChange → update URL param, trigger data refetch
+
+**3.6** Add navigation link from home page
+- [ ] "Browse All Movies" button below search bar
+- [ ] Navigates to `/browse`
+
+### Phase 4 — Movie Request System (UI)
+
+**4.1** Update AutocompleteDropdown for zero results
+- [ ] Detect `results.length === 0 && !isTooMany`
+- [ ] Show "No movies found" message
+- [ ] Add text link: "We don't have that one yet! Want us to look it up?"
+
+**4.2** Implement request confirmation
+- [ ] On link click, show toast/modal: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
+- [ ] Call `POST /api/movies/request` with current search query
+
+**4.3** Create `POST /api/movies/request` endpoint
+- [ ] Validate request body: `{ query: string }`
+- [ ] Validate query: not empty, max 200 chars, sanitize (strip HTML, trim)
+- [ ] **LLM Validation**: Call Ollama with prompt "Is '{query}' a real movie title? Answer YES or NO."
+  - Parse LLM response
+  - If NO: still return success (don't expose validation to user)
+- [ ] Check if movie already exists: `await prisma.movie.findFirst({ where: { title: { contains: query, mode: 'insensitive' } } })`
+  - If found: return `{ success: true, existingMovie: movie }`
+- [ ] Insert into ingestion_queue: `status: 'pending'`
+- [ ] Return `{ success: true, message: "Request queued" }`
+
+**4.4** Add error handling
+- [ ] API errors: return structured error response with 400/500 status
+- [ ] Client errors: show error toast if request fails
+
+### Phase 5 — Ingestion Worker
+
+**5.1** Extend Prisma schema with ingestion_queue table
+- [ ] Fields: id, query, status, tmdbId, createdAt, completedAt, failureReason
+- [ ] Run migration: `npx prisma migrate dev`
+
+**5.2** Create worker script: `scripts/ingestion-worker.ts`
+- [ ] Main loop: while(true) { processQueue(); await sleep(30000); }
+- [ ] processQueue function:
+  - SELECT job WHERE status='pending' ORDER BY createdAt ASC LIMIT 1
+  - If no job, return
+  - UPDATE status='processing'
+  - Call processJob(job)
+
+**5.3** Implement TMDB metadata fetching in processJob
+- [ ] **Step 1: Search for tmdbId**
+  - API: `GET /search/movie?query=${job.query}&language=en-US`
+  - If results.length === 0, mark job 'failed' with reason "Not found in TMDB", return
+  - If multiple results, take `results[0]` (first match)
+  - Extract tmdbId: `results[0].id`
+  - Store tmdbId in ingestion_queue record
+- [ ] **Step 2: Check processing queue**
+  - Query ingestion_queue WHERE status='processing' AND tmdbId={tmdbId} AND id != {current job id}
+  - If found, log "Movie already processing", mark current job 'complete', return
+- [ ] **Step 3: Fetch full metadata via 3 parallel requests**
+  - Create helper function: `tmdbRequest(endpoint, tmdbId)` that handles bearer token auth
+  - Parallel fetch:
+    ```typescript
+    const [movie, credits, releases] = await Promise.all([
+      tmdbRequest('', tmdbId),              // Base movie data
+      tmdbRequest('/credits', tmdbId),       // Cast & crew
+      tmdbRequest('/release_dates', tmdbId)  // MPAA ratings
+    ]);
+    ```
+  - Handle 404/timeout on any endpoint: retry once, mark 'failed' if still fails
+- [ ] **Step 4: Extract director(s)**
+  - Filter credits.crew for `job === "Director"`
+  - Map to names: `directors = crew.filter(...).map(c => c.name)`
+  - Join with ", ": `director = directors.join(", ") || null`
+- [ ] **Step 5: Extract MPAA rating**
+  - Find US release: `usRelease = releases.results.find(r => r.iso_3166_1 === "US")`
+  - Find theatrical release: `usRelease?.release_dates.find(rd => rd.type === 3)` (type 3 = theatrical)
+  - Fallback to first release if no theatrical: `|| usRelease?.release_dates[0]`
+  - Extract rating: `mpaaRating = theatricalRelease?.certification || "NR"`
+- [ ] **Step 6: Transform to schema**
+  - Build movie object:
+    ```typescript
+    {
+      tmdbId: movie.id,
+      title: movie.title,
+      year: new Date(movie.release_date).getFullYear(),
+      director: director, // from step 4
+      tagline: movie.tagline || null,
+      posterPath: movie.poster_path,
+      runtime: movie.runtime,
+      mpaaRating: mpaaRating // from step 5
+    }
+    ```
+- [ ] **Step 7: Rate limiting**
+  - `await new Promise(resolve => setTimeout(resolve, 500))` (500ms delay)
+
+**5.4** Implement death scraping
+- [ ] Search List of Deaths wiki: `${BASE_URL}/wiki/${encodeURIComponent(title)}`
+  - Use `https` or `fetch` to GET the page
+  - If 404, try The Movie Spoiler: `${SPOILER_BASE_URL}/search?q=${title}`
+- [ ] Parse HTML for death table/list
+  - Use cheerio or regex to extract death information
+  - Look for table rows, list items, or structured death sections
+- [ ] If no deaths found, set `scrapedHTML = ""` (will result in empty deaths array)
+
+**5.5** Implement LLM extraction
+- [ ] Call Ollama API at `${OLLAMA_ENDPOINT}/api/generate`
+  - Model: "llama3.2:3b"
+  - Prompt: 
+    ```
+    Extract character deaths from this HTML. Return ONLY a valid JSON array with these exact fields for each death:
+    - character (string): character name
+    - timeOfDeath (string): when they died (timestamp or scene description)
+    - cause (string): how they died
+    - killedBy (string): who killed them (use "N/A" for accidents/natural causes)
+    - context (string): brief 1-2 sentence summary of circumstances
+    - isAmbiguous (boolean): true if death is unclear/off-screen
+    
+    Do not include any preamble, explanation, or markdown. Return ONLY the JSON array.
+    
+    HTML:
+    ${scrapedHTML}
+    ```
+  - Timeout: 10 seconds
+- [ ] Parse LLM response:
+  - Strip any markdown code fences: `response.replace(/```json|```/g, "").trim()`
+  - Try to parse as JSON: `JSON.parse(cleaned)`
+  - If parse fails, log raw response, mark job 'failed' with reason "Invalid JSON from LLM"
+- [ ] Validate each death record:
+  - Has all required fields: character, timeOfDeath, cause, killedBy, context, isAmbiguous
+  - Set `killedBy = "N/A"` if missing or empty
+  - Convert `isAmbiguous` to boolean if string
+- [ ] If scraped HTML was empty, set `deaths = []` (valid zero-death movie)
+
+**5.6** Implement database insert
+- [ ] Upsert movie record:
+  ```typescript
+  await prisma.movie.upsert({
+    where: { tmdbId: movie.tmdbId },
+    create: movie,
+    update: movie
+  });
+  ```
+- [ ] Delete existing deaths (if any):
+  ```typescript
+  await prisma.death.deleteMany({
+    where: { movieTmdbId: movie.tmdbId }
+  });
+  ```
+- [ ] Bulk insert deaths:
+  ```typescript
+  if (deaths.length > 0) {
+    await prisma.death.createMany({
+      data: deaths.map(d => ({ ...d, movieTmdbId: movie.tmdbId }))
+    });
+  }
+  ```
+- [ ] Update ingestion queue:
+  ```typescript
+  await prisma.ingestionQueue.update({
+    where: { id: job.id },
+    data: { 
+      status: 'complete', 
+      completedAt: new Date(),
+      tmdbId: movie.tmdbId 
+    }
+  });
+  ```
+
+**5.7** Error handling & retries
+- [ ] TMDB timeout/500 error: Exponential backoff retry
+  - Attempt 1: immediate
+  - Attempt 2: wait 2 seconds
+  - Attempt 3: wait 4 seconds
+  - If all fail: mark 'failed' with reason, log error, continue to next job
+- [ ] Scraping failure (404, timeout): Log error with URL, mark 'failed' with reason "Scraping failed"
+- [ ] LLM timeout: Retry once with fresh request, mark 'failed' if still timeout
+- [ ] All errors wrapped in try/catch: log details, mark job 'failed', continue loop (don't crash worker)
+
+**5.8** Run worker as separate process
+- [ ] Add npm script in package.json: `"worker": "tsx scripts/ingestion-worker.ts"`
+- [ ] Document in README: "Run worker in separate terminal: `npm run worker`"
+- [ ] Add environment variable check at startup: exit if TMDB_API_KEY or OLLAMA_ENDPOINT missing
+
+### Phase 6 — Notification System
+
+**6.1** Implement `GET /api/notifications/poll` endpoint
+- [ ] Query: `await prisma.movie.findMany({ where: { createdAt: { gte: new Date(Date.now() - 24*60*60*1000) } }, select: { tmdbId, title, createdAt }, orderBy: { createdAt: 'desc' } })`
+- [ ] Return array of recent movies
+
+**6.2** Create NotificationBell component
+- [ ] Fixed position: `fixed top-4 right-4 z-50`
+- [ ] Bell icon button with badge (if unread > 0)
+- [ ] Dropdown with last 5 notifications
+- [ ] "Mark all as read" button
+
+**6.3** Implement polling logic
+- [ ] useEffect: start interval on mount (60 seconds)
+- [ ] On interval: call `/api/notifications/poll`
+- [ ] Compare results with localStorage `seenNotifications`
+- [ ] New movies → add to notification list, increment badge
+- [ ] Store in component state: `notifications: { tmdbId, title, createdAt, isRead }[]`
+
+**6.4** Implement notification interactions
+- [ ] Click notification → navigate to `/movie/[tmdbId]`, mark as read (add to localStorage), remove from list
+- [ ] "Mark all as read" → add all current tmdbIds to localStorage, clear badge, empty list
+
+**6.5** Add NotificationBell to root layout
+- [ ] Import in `app/layout.tsx`
+- [ ] Render above main content (fixed position)
+
+**6.6** localStorage persistence
+- [ ] Key: `seenNotifications` (array of tmdbIds)
+- [ ] Load on mount, update on mark as read
+
+### Phase 7 — Polish
+
+**7.1** Input validation & sanitization
+- [ ] Search query: max 200 chars, strip HTML (`DOMPurify` or regex), trim
+- [ ] API routes: validate all query/body params, return 400 if invalid
+- [ ] XSS prevention: rely on React's default escaping + sanitize on API input
+
+**7.2** Error handling
+- [ ] Wrap all API routes in try/catch, return structured errors
+- [ ] Add React Error Boundary component wrapping app content
+- [ ] Network failure toast: "Something went wrong. Please try again."
+- [ ] Image load failure: fallback gray placeholder with movie icon
+
+**7.3** Loading states
+- [ ] Search: show spinner icon in search input during debounce
+- [ ] Movie detail: full-page skeleton while server component loads
+- [ ] Death reveal: skeleton grid (already implemented in Phase 2)
+- [ ] Notification polling: silent (no visible loading)
+
+**7.4** Responsive QA
+- [ ] Test at 375px, 768px, 1280px
+- [ ] Verify death card grid: 1 col mobile, 2 cols desktop
+- [ ] Verify browse grid: 2-4-5 cols at different breakpoints
+- [ ] Verify search dropdown doesn't overflow viewport
+
+**7.5** Visual QA
+- [ ] Compare all components against Figma screenshots
+- [ ] Verify color tokens match Section 2.1
+- [ ] Verify typography matches Section 2.2
+- [ ] Check all animations work as specified
+
+**7.6** Accessibility testing
+- [ ] Keyboard navigation: Tab through all interactive elements
+- [ ] Arrow key navigation in autocomplete dropdown
+- [ ] Enter key selects dropdown item
+- [ ] Focus indicators visible on all interactive elements
+- [ ] Color contrast check: run axe DevTools
+
+---
+
+## 6. Database Schema
 
 ### Prisma Schema
 
 ```prisma
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
 model Movie {
-  id         Int      @id @default(autoincrement())
-  tmdbId     Int      @unique
+  tmdbId     Int      @id
   title      String
   year       Int
-  director   String
+  director   String?
   tagline    String?
-  posterPath String
-  runtime    Int
-  mpaaRating String
-  deaths     Death[]
+  posterPath String?
+  runtime    Int?
+  mpaaRating String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  deaths     Death[]
+
   @@index([title])
+  @@index([createdAt])
 }
 
 model Death {
-  id          Int     @id @default(autoincrement())
-  character   String
-  timeOfDeath String
-  cause       String
-  killedBy    String
-  context     String
-  isAmbiguous Boolean @default(false)
-  movie       Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
-  movieId     Int
+  id           Int     @id @default(autoincrement())
+  movieTmdbId  Int
+  character    String
+  timeOfDeath  String
+  cause        String
+  killedBy     String
+  context      String
+  isAmbiguous  Boolean @default(false)
 
-  @@index([movieId])
+  movie        Movie   @relation(fields: [movieTmdbId], references: [tmdbId], onDelete: Cascade)
+
+  @@index([movieTmdbId])
+}
+
+model IngestionQueue {
+  id            Int       @id @default(autoincrement())
+  query         String
+  status        String    // 'pending' | 'processing' | 'complete' | 'failed'
+  tmdbId        Int?
+  failureReason String?
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([tmdbId, status])
 }
 ```
 
-### Seed Data Format
+### Seed Data Files
 
-**`data/seed-movies.json`**
+**data/seed-movies.json** (provided by user, 100 movies)
 ```json
 [
   {
@@ -747,7 +1185,7 @@ model Death {
 ]
 ```
 
-**`data/seed-deaths.json`**
+**data/seed-deaths.json** (provided by user, manually curated)
 ```json
 [
   {
@@ -767,12 +1205,107 @@ model Death {
 ]
 ```
 
-### Environment Variables
+---
+
+## 7. Edge Cases
+
+### 7.1 Concurrent Movie Requests
+
+**Scenario**: Two users request the same movie simultaneously
+
+**Handling**:
+- Both requests add to ingestion_queue (allowed)
+- Worker picks up first request, updates status to 'processing', stores tmdbId
+- Worker picks up second request, checks for existing 'processing' job with same tmdbId
+- If found: logs "Movie already processing", marks second job 'complete', returns
+- Only one movie record created in database
+- Both users receive notification when movie is added
+
+### 7.2 TMDB Multiple Matches
+
+**Scenario**: TMDB search returns multiple movies (e.g., "The Batman" 1989 vs 2022)
+
+**Handling**:
+- Take first result from TMDB response
+- Log other matches to console for debugging
+- User can request specific version later if needed (e.g., "The Batman 2022")
+
+### 7.3 Worker Failures
+
+**Scenario**: TMDB API down, scraping fails, LLM timeout
+
+**Handling**:
+- TMDB failure: retry with exponential backoff (wait 2s, 4s, 8s), max 3 attempts
+- Scraping failure: log error with URL, mark job 'failed' with reason
+- LLM timeout: retry once with 10-second timeout, mark 'failed' if still timeout
+- All failures: console.log detailed error, keep worker running (don't crash)
+- Failed jobs stay in queue for manual inspection/retry
+
+### 7.4 Non-English Movie Titles
+
+**Scenario**: User searches for "Parasite" (Korean title: 기생충)
+
+**Handling**:
+- LLM validation: validate query as-is, no transliteration
+- TMDB lookup: search with user's query, TMDB handles internationalization
+- If no results: mark as 'failed'
+- User can try alternate title (e.g., "Parasite 2019")
+
+### 7.5 Movies in Queue vs Movies in Database
+
+**Scenario**: User searches for movie that's in ingestion_queue but not yet in main movies table
+
+**Handling**:
+- Autocomplete search only queries main `movies` table
+- Movies in queue don't appear in search results
+- User sees "No movies found" and can re-request (duplicate allowed)
+- Only show movies on browse page after they're in main `movies` table
+- This prevents showing incomplete/processing movies to users
+
+### 7.6 Zero Deaths Movies
+
+**Scenario**: Movie has no character deaths (e.g., "La La Land", "Soul")
+
+**Handling**:
+- Scraper finds no deaths → set `deaths = []`
+- Worker still inserts movie record with empty deaths array
+- Movie detail page shows "No deaths! Everyone survives! 🥳" message
+- No "Reveal Deaths" button shown (nothing to reveal)
+- Valid movie entry in database
+
+### 7.7 localStorage Quota Exceeded
+
+**Scenario**: User has too many notifications stored in localStorage
+
+**Handling**:
+- Only store tmdbIds in `seenNotifications` array (minimal data)
+- Auto-prune entries older than 7 days on each write
+- If quota still exceeded: catch exception, clear localStorage, continue
+- Notification system degrades gracefully (shows all recent movies as "new")
+
+### 7.8 Notification Polling Failure
+
+**Scenario**: `/api/notifications/poll` endpoint fails (network error, server down)
+
+**Handling**:
+- Catch fetch errors silently (don't show error to user)
+- Log error to console for debugging
+- Continue polling on next interval (60 seconds)
+- User may miss notifications temporarily, but system recovers on next successful poll
+
+## Environment Variables
 
 | Variable                      | Example                                                    | Required      |
 | ----------------------------- | ---------------------------------------------------------- | ------------- |
 | `DATABASE_URL`                | `postgresql://user:pass@localhost:5432/whodiesinthismovie` | Yes           |
+| `TMDB_API_KEY`                | `Bearer eyJhbGc...` (bearer token from TMDB)               | Yes           |
 | `NEXT_PUBLIC_TMDB_IMAGE_BASE` | `https://image.tmdb.org/t/p`                               | Yes           |
-| `RAG_SERVICE_URL`             | `http://localhost:8000`                                    | No (Phase 3)  |
+| `OLLAMA_ENDPOINT`             | `http://localhost:11434`                                   | Yes           |
 | `SENTRY_DSN`                  | `https://xxx@sentry.io/xxx`                                | No (optional) |
 | `NEXT_PUBLIC_SENTRY_DSN`      | Same as above for client-side                              | No (optional) |
+
+**Setup Notes:**
+- Get TMDB API key (bearer token): https://www.themoviedb.org/settings/api
+- Install Ollama: https://ollama.ai/download
+- Pull Llama 3.2 3B: `ollama pull llama3.2:3b`
+- Verify Ollama is running: `curl http://localhost:11434/api/tags`
