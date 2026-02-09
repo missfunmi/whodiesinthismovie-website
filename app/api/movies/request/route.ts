@@ -6,7 +6,30 @@ const OLLAMA_TIMEOUT_MS = 5000;
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Parse and validate request body
+    // 1. CSRF protection: verify Origin matches Host in production
+    const origin = request.headers.get("origin");
+    if (process.env.NODE_ENV === "production" && origin) {
+      const host = request.headers.get("host");
+      try {
+        const originHost = new URL(origin).host;
+        if (originHost !== host) {
+          console.warn(
+            `[request] CSRF blocked: origin=${origin}, host=${host}`
+          );
+          return NextResponse.json(
+            { success: false, message: "Unauthorized" },
+            { status: 403 }
+          );
+        }
+      } catch {
+        return NextResponse.json(
+          { success: false, message: "Unauthorized" },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 2. Parse and validate request body
     const body = await request.json();
     const rawQuery = body?.query;
 
@@ -17,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Sanitize: strip HTML, trim, enforce max length
+    // 3. Sanitize: strip HTML, trim, enforce max length
     const query = rawQuery
       .replace(/<[^>]*>/g, "")
       .trim()
@@ -32,9 +55,9 @@ export async function POST(request: NextRequest) {
 
     console.log(`[request] Received movie request: "${query}"`);
 
-    // 3. Check if movie already exists in main database
+    // 4. Check if movie already exists in main database (exact title match)
     const existingMovie = await prisma.movie.findFirst({
-      where: { title: { contains: query, mode: "insensitive" } },
+      where: { title: { equals: query, mode: "insensitive" } },
       select: { tmdbId: true, title: true, year: true, posterPath: true },
     });
 
@@ -49,25 +72,42 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 4. LLM validation (best-effort — if Ollama is unavailable, skip and proceed)
+    // 5. Prevent duplicate queue entries for the same query
+    const existingRequest = await prisma.ingestionQueue.findFirst({
+      where: {
+        query: { equals: query, mode: "insensitive" },
+        status: { in: ["pending", "processing"] },
+      },
+    });
+
+    if (existingRequest) {
+      console.log(
+        `[request] Duplicate request skipped: "${query}" (existing id=${existingRequest.id}, status=${existingRequest.status})`
+      );
+      return NextResponse.json({
+        success: true,
+        message: "Someone already requested this! We're on it.",
+      });
+    }
+
+    // 6. LLM validation (best-effort — if Ollama is unavailable, skip and proceed)
     const ollamaEndpoint =
       process.env.OLLAMA_ENDPOINT || "http://localhost:11434";
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
+    const ollamaModel = process.env.OLLAMA_MODEL || "llama3.2:3b";
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
 
+    try {
       const ollamaRes = await fetch(`${ollamaEndpoint}/api/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "llama3.2:3b",
+          model: ollamaModel,
           prompt: `Is '${query}' a real movie title? Answer with only YES or NO.`,
           stream: false,
         }),
         signal: controller.signal,
       });
-
-      clearTimeout(timeout);
 
       if (ollamaRes.ok) {
         const ollamaData = await ollamaRes.json();
@@ -81,9 +121,11 @@ export async function POST(request: NextRequest) {
     } catch {
       // Ollama unavailable, timeout, or parse error — skip validation
       console.log("[request] LLM validation skipped (Ollama unavailable)");
+    } finally {
+      clearTimeout(timeout);
     }
 
-    // 5. Insert into ingestion queue
+    // 7. Insert into ingestion queue
     const queueEntry = await prisma.ingestionQueue.create({
       data: {
         query,
@@ -95,7 +137,7 @@ export async function POST(request: NextRequest) {
       `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"`
     );
 
-    // 6. Return success
+    // 8. Return success
     return NextResponse.json({
       success: true,
       message: "Okay, we'll check on that!",

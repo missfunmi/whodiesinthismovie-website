@@ -56,17 +56,24 @@ export default function Search() {
   const isEasterEgg = useMemo(() => query.startsWith("!!"), [query]);
 
   // Handle query changes: update state and clear results immediately
-  // when the new query doesn't warrant a search (avoids setState in effect)
-  const handleQueryChange = useCallback((newQuery: string) => {
-    const sanitized = sanitizeQuery(newQuery);
-    setQuery(sanitized);
-    setRequestStatus("idle");
-    if (!shouldSearch(sanitized)) {
-      setResults(null);
-      setTooMany(false);
-      setShowDropdown(false);
-    }
-  }, []);
+  // when the new query doesn't warrant a search (avoids setState in effect).
+  // Only reset requestStatus when the query substantively changes (trimmed value differs),
+  // so accidental whitespace or minor edits don't wipe success/error messages.
+  const handleQueryChange = useCallback(
+    (newQuery: string) => {
+      const sanitized = sanitizeQuery(newQuery);
+      setQuery(sanitized);
+      if (sanitized.trim() !== query.trim()) {
+        setRequestStatus("idle");
+      }
+      if (!shouldSearch(sanitized)) {
+        setResults(null);
+        setTooMany(false);
+        setShowDropdown(false);
+      }
+    },
+    [query]
+  );
 
   // Debounced search: only the async fetch lives in the effect
   useEffect(() => {

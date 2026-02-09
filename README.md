@@ -317,6 +317,7 @@ Worker respects TMDB rate limits (500ms between requests) and handles failures w
 | `TMDB_API_KEY`                | Yes      | TMDB bearer token for API access          |
 | `NEXT_PUBLIC_TMDB_IMAGE_BASE` | Yes      | TMDB image CDN base URL                   |
 | `OLLAMA_ENDPOINT`             | Yes*     | Ollama endpoint (required for ingestion)  |
+| `OLLAMA_MODEL`                | No       | Ollama model name (default: llama3.2:3b)  |
 | `SENTRY_DSN`                  | No       | Sentry DSN for error tracking             |
 | `NEXT_PUBLIC_SENTRY_DSN`      | No       | Sentry DSN for client-side error tracking |
 
