@@ -19,5 +19,8 @@ export function getPosterUrl(
   size: "w92" | "w300" = "w300"
 ): string | null {
   if (!posterPath) return null;
-  return `https://image.tmdb.org/t/p/${size}${posterPath}`;
+  const raw =
+    process.env.NEXT_PUBLIC_TMDB_IMAGE_BASE || "https://image.tmdb.org/t/p";
+  const baseUrl = raw.endsWith("/") ? raw : `${raw}/`;
+  return `${baseUrl}${size}${posterPath}`;
 }

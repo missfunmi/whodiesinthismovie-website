@@ -33,36 +33,36 @@ export default function MovieMetadata({ title, year, director, tagline, posterPa
             priority
           />
         ) : (
-          <div className="w-full md:w-[300px] h-[450px] rounded-lg shadow-2xl bg-muted flex items-center justify-center">
-            <Film className="w-16 h-16 text-muted-foreground" />
+          <div className="w-full md:w-[300px] h-[450px] rounded-lg shadow-2xl bg-white/10 flex items-center justify-center">
+            <Film className="w-16 h-16 text-gray-500" />
           </div>
         )}
       </div>
 
       {/* Metadata */}
       <div className="flex-1">
-        <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">
+        <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">
           {title}
         </h1>
-        <p className="text-xl text-muted-foreground mb-4">{year}</p>
+        <p className="text-xl text-gray-400 mb-4">{year}</p>
 
         <div className="space-y-3 mb-6">
           <p>
-            <span className="text-muted-foreground">Director </span>
-            <span className="text-foreground">{director}</span>
+            <span className="text-gray-400">Director </span>
+            <span className="text-white">{director}</span>
           </p>
           <p>
-            <span className="text-muted-foreground">Runtime </span>
-            <span className="text-foreground">{formatRuntime(runtime)}</span>
+            <span className="text-gray-400">Runtime </span>
+            <span className="text-white">{formatRuntime(runtime)}</span>
           </p>
           <p>
-            <span className="text-muted-foreground">Rated </span>
-            <span className="text-foreground">{mpaaRating}</span>
+            <span className="text-gray-400">Rated </span>
+            <span className="text-white">{mpaaRating}</span>
           </p>
         </div>
 
         {tagline && (
-          <p className="italic text-lg text-muted-foreground">
+          <p className="italic text-lg text-gray-400">
             &ldquo;{tagline}&rdquo;
           </p>
         )}

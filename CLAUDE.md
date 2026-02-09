@@ -92,17 +92,17 @@ npx prisma studio        # Visual database browser
 Full design system documented in `docs/SPEC.md` Section 2. Key points:
 
 - **Fonts**: Space Grotesk (headings), Inter (body) — loaded via Google Fonts in layout
-- **Colors**: Primary `#030213`, death cards `#1F1F1F`, easter egg gradient `#8B5CF6` → `#6D28D9`
+- **Colors**: Primary `#2c2b32`, death cards `#1F1F1F`, easter egg gradient `#8B5CF6` → `#6D28D9`
 - **Background**: Movie posters with 60% black overlay + heavy blur
 - **Reference**: `figma-make-prototype/` is visual reference only. Rebuild all components from scratch using Next.js best practices.
 
 ## API Routes
 
-| Endpoint | Method | Request | Response |
-|----------|--------|---------|----------|
-| `/api/movies/search?q=` | GET | `q`: search string (3+ chars) | `Movie[]` (max 8) or `{ tooMany: true }` |
-| `/api/movies/[tmdbId]` | GET | — | `Movie` with `deaths: Death[]` |
-| `/api/smart-search` | POST | `{ query: string }` | `{ answer: string, movieTmdbId?: number }` |
+| Endpoint                | Method | Request                       | Response                                   |
+| ----------------------- | ------ | ----------------------------- | ------------------------------------------ |
+| `/api/movies/search?q=` | GET    | `q`: search string (3+ chars) | `Movie[]` (max 8) or `{ tooMany: true }`   |
+| `/api/movies/[tmdbId]`  | GET    | —                             | `Movie` with `deaths: Death[]`             |
+| `/api/smart-search`     | POST   | `{ query: string }`           | `{ answer: string, movieTmdbId?: number }` |
 
 ## Architectural Decisions (Phase 1)
 

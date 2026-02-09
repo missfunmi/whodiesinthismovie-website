@@ -2,7 +2,7 @@
 
 @theme {
   /* Color tokens from SPEC.md Section 2.1 */
-  --color-primary: #030213;
+  --color-primary: #2c2b32;
   --color-primary-foreground: #ffffff;
   --color-background: #ffffff;
   --color-foreground: oklch(0.145 0 0);
@@ -12,9 +12,9 @@
   --color-destructive: #d4183d;
 
   /* Component-specific colors */
-  --color-death-card: #1F1F1F;
-  --color-easter-egg-from: #8B5CF6;
-  --color-easter-egg-to: #6D28D9;
+  --color-death-card: #1f1f1f;
+  --color-easter-egg-from: #8b5cf6;
+  --color-easter-egg-to: #6d28d9;
 
   /* Border radius scale */
   --radius: 0.625rem;
@@ -34,7 +34,12 @@ body {
   background: var(--color-background);
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading);
 }
 
@@ -42,48 +47,100 @@ h1, h2, h3, h4, h5, h6 {
 
 /* slideLeft variant */
 @keyframes slideInLeft {
-  from { transform: translateX(-100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 @keyframes slideOutRight {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
 /* slideRight variant */
 @keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 @keyframes slideOutLeft {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(-100%); opacity: 0; }
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
 }
 
 /* fadeScale variant */
 @keyframes fadeScaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 @keyframes fadeScaleOut {
-  from { transform: scale(1); opacity: 1; }
-  to { transform: scale(0.8); opacity: 0; }
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.8);
+    opacity: 0;
+  }
 }
 
 /* blur variant */
 @keyframes blurIn {
-  from { filter: blur(10px); opacity: 0; }
-  to { filter: blur(0); opacity: 1; }
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
 }
 @keyframes blurOut {
-  from { filter: blur(0); opacity: 1; }
-  to { filter: blur(10px); opacity: 0; }
+  from {
+    filter: blur(0);
+    opacity: 1;
+  }
+  to {
+    filter: blur(10px);
+    opacity: 0;
+  }
 }
 
 /* typewriter variant */
 @keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 /* Respect reduced motion preference */

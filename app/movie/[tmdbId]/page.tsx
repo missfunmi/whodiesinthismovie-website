@@ -65,7 +65,7 @@ export default async function MovieDetailPage({ params }: Props) {
   );
 
   return (
-    <>
+    <div className="bg-primary min-h-screen">
       <MovieHeader />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <MovieMetadata
@@ -82,6 +82,6 @@ export default async function MovieDetailPage({ params }: Props) {
           ambiguousDeaths={ambiguousDeaths}
         />
       </main>
-    </>
+    </div>
   );
 }

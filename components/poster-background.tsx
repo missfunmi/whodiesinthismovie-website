@@ -44,6 +44,8 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
   // Track which slot is currently fading (opacity 0)
   const [fadingSlot, setFadingSlot] = useState<number | null>(null);
   const prefersReducedMotion = useRef(false);
+  // Track pending swap timeout so it can be cleared on unmount
+  const swapTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check for reduced motion preference
   useEffect(() => {
@@ -61,8 +63,11 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
     // Fade out the current poster in this slot
     setFadingSlot(slotIndex);
 
+    // Clear any existing timeout before setting a new one
+    if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+
     // After the fade-out transition completes, swap the poster and fade back in
-    setTimeout(() => {
+    swapTimeoutRef.current = setTimeout(() => {
       setCurrentPosters((prev) => {
         const updated = [...prev];
         updated[slotIndex] = posterPaths[poolIndex % posterPaths.length];
@@ -78,7 +83,10 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
 
   useEffect(() => {
     const interval = setInterval(swapPoster, SWAP_INTERVAL_MS);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+    };
   }, [swapPoster]);
 
   if (posterPaths.length === 0) return null;
@@ -116,7 +124,7 @@ export default function PosterBackground({ posterPaths }: PosterBackgroundProps)
       })}
 
       {/* Dark overlay with blur */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-lg" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
     </div>
   );
 }

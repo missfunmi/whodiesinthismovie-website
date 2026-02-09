@@ -10,8 +10,18 @@ import type { MovieSearchResult } from "@/lib/types";
 const MIN_QUERY_LENGTH = 3;
 /** Debounce delay in milliseconds */
 const DEBOUNCE_MS = 300;
+/** Maximum query length */
+const MAX_QUERY_LENGTH = 200;
 /** Queries to suppress (noise reduction) */
 const SUPPRESSED_QUERIES = ["the", "the "];
+
+/**
+ * Strip HTML tags and enforce character limit on user input.
+ * Defense-in-depth: the API route also sanitizes, but we catch it early.
+ */
+function sanitizeQuery(input: string): string {
+  return input.replace(/<[^>]*>?/gm, "").slice(0, MAX_QUERY_LENGTH);
+}
 
 /**
  * Determine if a query should trigger a search.
@@ -47,8 +57,9 @@ export default function Search() {
   // Handle query changes: update state and clear results immediately
   // when the new query doesn't warrant a search (avoids setState in effect)
   const handleQueryChange = useCallback((newQuery: string) => {
-    setQuery(newQuery);
-    if (!shouldSearch(newQuery)) {
+    const sanitized = sanitizeQuery(newQuery);
+    setQuery(sanitized);
+    if (!shouldSearch(sanitized)) {
       setResults(null);
       setTooMany(false);
       setShowDropdown(false);

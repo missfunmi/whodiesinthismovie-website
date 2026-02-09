@@ -78,6 +78,8 @@ export default function RotatingTaglines() {
   const [variant, setVariant] = useState<AnimationVariant>("fadeScale");
   const [isExiting, setIsExiting] = useState(false);
   const prefersReducedMotion = useRef(false);
+  // Track pending rotation timeout so it can be cleared on unmount
+  const rotateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
@@ -89,8 +91,11 @@ export default function RotatingTaglines() {
     // Start exit animation
     setIsExiting(true);
 
+    // Clear any existing timeout before setting a new one
+    if (rotateTimeoutRef.current) clearTimeout(rotateTimeoutRef.current);
+
     // After exit animation, swap tagline and enter
-    setTimeout(() => {
+    rotateTimeoutRef.current = setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % TAGLINES.length);
       setVariant(pickRandomVariant());
       setIsExiting(false);
@@ -99,7 +104,10 @@ export default function RotatingTaglines() {
 
   useEffect(() => {
     const interval = setInterval(rotate, ROTATION_INTERVAL_MS);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (rotateTimeoutRef.current) clearTimeout(rotateTimeoutRef.current);
+    };
   }, [rotate]);
 
   const isTypewriter = variant === "typewriter" && !isExiting;

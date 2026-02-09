@@ -20,17 +20,17 @@
 
 ### 1.1 Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Framework | Next.js 14+ (App Router) | SSR, routing, API routes |
-| Language | TypeScript | Type safety |
-| Styling | Tailwind CSS | Utility-first CSS |
-| Database | PostgreSQL 15+ | Persistent data store |
-| ORM | Prisma | Type-safe database queries |
-| Images | next/image + TMDB CDN | Optimized poster loading |
-| LLM | Ollama + Llama 3.2 3B | Easter egg RAG queries (via external Python service) |
-| Logging | Sentry | Error tracking |
-| Hosting | Vercel | Deployment target |
+| Layer     | Technology               | Purpose                                              |
+| --------- | ------------------------ | ---------------------------------------------------- |
+| Framework | Next.js 14+ (App Router) | SSR, routing, API routes                             |
+| Language  | TypeScript               | Type safety                                          |
+| Styling   | Tailwind CSS             | Utility-first CSS                                    |
+| Database  | PostgreSQL 15+           | Persistent data store                                |
+| ORM       | Prisma                   | Type-safe database queries                           |
+| Images    | next/image + TMDB CDN    | Optimized poster loading                             |
+| LLM       | Ollama + Llama 3.2 3B    | Easter egg RAG queries (via external Python service) |
+| Logging   | Sentry                   | Error tracking                                       |
+| Hosting   | Vercel                   | Deployment target                                    |
 
 ### 1.2 System Architecture
 
@@ -60,18 +60,18 @@
 
 **Pages (App Router)**
 
-| Route | Component | Description |
-|-------|-----------|-------------|
-| `/` | `app/page.tsx` | Welcome page with search bar, poster background, rotating taglines |
-| `/movie/[tmdbId]` | `app/movie/[tmdbId]/page.tsx` | Movie detail with death reveal |
+| Route             | Component                     | Description                                                        |
+| ----------------- | ----------------------------- | ------------------------------------------------------------------ |
+| `/`               | `app/page.tsx`                | Welcome page with search bar, poster background, rotating taglines |
+| `/movie/[tmdbId]` | `app/movie/[tmdbId]/page.tsx` | Movie detail with death reveal                                     |
 
 **API Routes**
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/movies/search?q={query}` | GET | Search movies by title. Returns max 8 results. If >100 matches, returns `{ tooMany: true }` |
-| `/api/movies/[tmdbId]` | GET | Get movie metadata + all deaths |
-| `/api/smart-search` | POST | Forward natural language query to RAG service. Body: `{ query: string }` |
+| Endpoint                       | Method | Description                                                                                 |
+| ------------------------------ | ------ | ------------------------------------------------------------------------------------------- |
+| `/api/movies/search?q={query}` | GET    | Search movies by title. Returns max 8 results. If >100 matches, returns `{ tooMany: true }` |
+| `/api/movies/[tmdbId]`         | GET    | Get movie metadata + all deaths                                                             |
+| `/api/smart-search`            | POST   | Forward natural language query to RAG service. Body: `{ query: string }`                    |
 
 ### 1.4 Data Flow
 
@@ -127,86 +127,105 @@ React hooks only — no external state library needed:
 
 **Core Tokens**
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--primary` | `#030213` | Buttons, primary actions |
-| `--primary-foreground` | `#ffffff` | Text on primary |
-| `--background` | `#ffffff` | Page background (light mode) |
-| `--foreground` | `oklch(0.145 0 0)` | Default text |
-| `--muted` | `#ececf0` | Muted backgrounds |
-| `--muted-foreground` | `#717182` | Secondary text, labels |
-| `--border` | `rgba(0, 0, 0, 0.1)` | Borders, dividers |
-| `--destructive` | `#d4183d` | Error states |
+| Token                  | Value                | Usage                        |
+| ---------------------- | -------------------- | ---------------------------- |
+| `--primary`            | `#2c2b32`            | Buttons, primary actions     |
+| `--primary-foreground` | `#ffffff`            | Text on primary              |
+| `--background`         | `#ffffff`            | Page background (light mode) |
+| `--foreground`         | `oklch(0.145 0 0)`   | Default text                 |
+| `--muted`              | `#ececf0`            | Muted backgrounds            |
+| `--muted-foreground`   | `#717182`            | Secondary text, labels       |
+| `--border`             | `rgba(0, 0, 0, 0.1)` | Borders, dividers            |
+| `--destructive`        | `#d4183d`            | Error states                 |
 
 **Component-Specific Colors**
 
-| Element | Value | Notes |
-|---------|-------|-------|
-| Death card background | `#1F1F1F` | Dark cards on detail page |
-| Ambiguous death card | `#1F1F1F` at 50% opacity | Grayed-out appearance |
-| Easter egg gradient | `#8B5CF6` → `#6D28D9` | `bg-gradient-to-br` (violet) |
-| Search focus ring | Tailwind `blue-500` | 4px ring width |
-| Dropdown selected item | Tailwind `blue-500` bg | White text on selected |
-| Dropdown selected year | Tailwind `blue-100` | Lighter on selected |
-| Warning text | Tailwind `orange-500` | "Too many matches" |
-| Search input bg | `white` at 95% opacity | `bg-white/95` |
-| Tagline text | Tailwind `gray-300` | On dark background |
-| Back button | `white` at 80% opacity | `hover:text-white` |
+| Element                | Value                    | Notes                        |
+| ---------------------- | ------------------------ | ---------------------------- |
+| Death card background  | `#1F1F1F`                | Dark cards on detail page    |
+| Ambiguous death card   | `#1F1F1F` at 50% opacity | Grayed-out appearance        |
+| Easter egg gradient    | `#8B5CF6` → `#6D28D9`    | `bg-gradient-to-br` (violet) |
+| Search focus ring      | Tailwind `blue-500`      | 4px ring width               |
+| Dropdown selected item | Tailwind `blue-500` bg   | White text on selected       |
+| Dropdown selected year | Tailwind `blue-100`      | Lighter on selected          |
+| Warning text           | Tailwind `orange-500`    | "Too many matches"           |
+| Search input bg        | `white` at 95% opacity   | `bg-white/95`                |
+| Tagline text           | Tailwind `gray-300`      | On dark background           |
+| Back button            | `white` at 80% opacity   | `hover:text-white`           |
+
+**Movie Detail Page (Dark Theme)**
+
+The movie detail page uses `bg-primary` (`#2c2b32`) as the page background. All text and UI elements on this page use light-on-dark colors instead of the core light-mode tokens:
+
+| Element                                 | Value                           | Contrast on `#2c2b32` / `#1F1F1F` |
+| --------------------------------------- | ------------------------------- | --------------------------------- |
+| Page background                         | `#2c2b32` (`bg-primary`)        | —                                 |
+| Primary text (titles, values)           | `white`                         | ≥15:1                             |
+| Secondary text (labels, icons, context) | Tailwind `gray-400` (`#9CA3AF`) | ≥5:1 (AA)                         |
+| Death card field values                 | Tailwind `gray-100` (`#F3F4F6`) | ≥12:1                             |
+| Ambiguous card character name           | Tailwind `gray-300` (`#D1D5DB`) | ≥8:1                              |
+| Borders (cards, header, dividers)       | `white` at 10% opacity          | Subtle on dark                    |
+| Header background                       | `#2c2b32` at 80% opacity        | Matches page bg                   |
+| Reveal button                           | `bg-white text-primary`         | High contrast                     |
+| Skeleton loader                         | `white` at 10% opacity          | Subtle pulse on dark              |
+| Poster placeholder                      | `white` at 10% opacity          | Matches dark theme                |
+| Ambiguous section wrapper               | `white` at 5% opacity           | Subtle grouping                   |
+| Question mark badge bg                  | `white` at 10% opacity          | Subtle on dark                    |
 
 ### 2.2 Typography
 
 **Font Families**
 
-| Role | Font | Weights | Source |
-|------|------|---------|--------|
+| Role             | Font          | Weights       | Source       |
+| ---------------- | ------------- | ------------- | ------------ |
 | Headings (h1-h6) | Space Grotesk | 400, 500, 700 | Google Fonts |
-| Body text | Inter | 400, 500, 600 | Google Fonts |
+| Body text        | Inter         | 400, 500, 600 | Google Fonts |
 
 **Type Scale**
 
-| Element | Size (Desktop) | Size (Mobile) | Weight | Line Height |
-|---------|---------------|---------------|--------|-------------|
-| Hero heading | 56px (`text-[56px]`) | 48px (`text-5xl`) | 700 | 1.1 |
-| Movie title (detail) | 48px (`text-5xl`) | 36px (`text-4xl`) | 700 | 1.2 |
-| Taglines | 18-20px (`text-lg`/`text-xl`) | Same | 400 | 1.5 |
-| Character name (card) | 18px (`text-lg`) | Same | 700 | 1.4 |
-| Body text | 16px (`text-base`) | Same | 400 | 1.5 |
-| Field labels (card) | 14px (`text-sm`) | Same | 400 | 1.5 |
-| Search placeholder | 16px | Same | 500 | — |
-| Year in dropdown | 14px (`text-sm`) | Same | 400 | — |
+| Element               | Size (Desktop)                | Size (Mobile)     | Weight | Line Height |
+| --------------------- | ----------------------------- | ----------------- | ------ | ----------- |
+| Hero heading          | 56px (`text-[56px]`)          | 48px (`text-5xl`) | 700    | 1.1         |
+| Movie title (detail)  | 48px (`text-5xl`)             | 36px (`text-4xl`) | 700    | 1.2         |
+| Taglines              | 18-20px (`text-lg`/`text-xl`) | Same              | 400    | 1.5         |
+| Character name (card) | 18px (`text-lg`)              | Same              | 700    | 1.4         |
+| Body text             | 16px (`text-base`)            | Same              | 400    | 1.5         |
+| Field labels (card)   | 14px (`text-sm`)              | Same              | 400    | 1.5         |
+| Search placeholder    | 16px                          | Same              | 500    | —           |
+| Year in dropdown      | 14px (`text-sm`)              | Same              | 400    | —           |
 
 ### 2.3 Spacing & Layout
 
 **Spacing Scale** (follows Tailwind defaults)
 
-| Token | Value |
-|-------|-------|
-| xs | 4px (1) |
-| sm | 8px (2) |
-| md | 16px (4) |
-| lg | 24px (6) |
-| xl | 32px (8) |
-| 2xl | 48px (12) |
+| Token | Value     |
+| ----- | --------- |
+| xs    | 4px (1)   |
+| sm    | 8px (2)   |
+| md    | 16px (4)  |
+| lg    | 24px (6)  |
+| xl    | 32px (8)  |
+| 2xl   | 48px (12) |
 
 **Border Radius**
 
-| Element | Value | Tailwind Class |
-|---------|-------|----------------|
-| Base radius (CSS var) | 10px | `--radius: 0.625rem` |
-| Search input | 12px | `rounded-xl` |
-| Dropdown | 12px | `rounded-xl` |
-| Easter egg card | 12px | `rounded-xl` |
-| Death cards | 8px | `rounded-lg` |
-| Buttons | 6px | `rounded-md` |
-| Poster thumbnails | 4px | `rounded` |
+| Element               | Value | Tailwind Class       |
+| --------------------- | ----- | -------------------- |
+| Base radius (CSS var) | 10px  | `--radius: 0.625rem` |
+| Search input          | 12px  | `rounded-xl`         |
+| Dropdown              | 12px  | `rounded-xl`         |
+| Easter egg card       | 12px  | `rounded-xl`         |
+| Death cards           | 8px   | `rounded-lg`         |
+| Buttons               | 6px   | `rounded-md`         |
+| Poster thumbnails     | 4px   | `rounded`            |
 
 **Layout Containers**
 
-| Context | Max Width | Padding |
-|---------|-----------|---------|
-| Welcome/search page content | 768px (`max-w-3xl`) | `px-4` |
-| Movie detail page | 1280px (`max-w-7xl`) | `px-4` |
-| Death card grid | Full width within container | `gap-4` |
+| Context                     | Max Width                   | Padding |
+| --------------------------- | --------------------------- | ------- |
+| Welcome/search page content | 768px (`max-w-3xl`)         | `px-4`  |
+| Movie detail page           | 1280px (`max-w-7xl`)        | `px-4`  |
+| Death card grid             | Full width within container | `gap-4` |
 
 **Responsive Breakpoint**: 768px (`md:` prefix) — single breakpoint for mobile/desktop
 
@@ -272,25 +291,25 @@ Year: text-sm, in parentheses below title
 ```
 Container:
   - bg-[#1F1F1F] rounded-lg p-6
-  - border border-border
+  - border border-white/10
   - hover:translate-y-[-4px] hover:shadow-xl
   - transition-all duration-200
 
-Character name: text-lg font-bold text-foreground mb-4
+Character name: text-lg font-bold text-white mb-4
 
 Fields (3 rows, each with icon + label + value):
-  - Icon: w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5
+  - Icon: w-5 h-5 text-gray-400 flex-shrink-0 mt-0.5
   - Layout: flex items-start gap-3
-  - Label: text-sm text-muted-foreground
-  - Value: text-base text-foreground
+  - Label: text-sm text-gray-400
+  - Value: text-base text-gray-100
 
   Row 1: Clock icon → "Time" → timeOfDeath
   Row 2: Skull icon → "Cause" → cause
   Row 3: Target icon → "By" → killedBy
 
 Context section:
-  - mt-4 pt-4 border-t border-border
-  - text-sm text-muted-foreground
+  - mt-4 pt-4 border-t border-white/10
+  - text-sm text-gray-400
 ```
 
 **Grid Layout**: `grid grid-cols-1 md:grid-cols-2 gap-4`
@@ -300,22 +319,22 @@ Context section:
 ```
 Container:
   - bg-[#1F1F1F]/50 rounded-lg p-6
-  - border border-border relative
+  - border border-white/10 relative
 
 Question mark badge:
   - absolute top-4 right-4
-  - w-8 h-8 rounded-full bg-muted
+  - w-8 h-8 rounded-full bg-white/10
   - flex items-center justify-center
-  - Content: "?" emoji (text-xl)
+  - Content: "?" text-xl text-gray-400
 
-Character name: text-lg font-bold text-gray-400 mb-2 pr-10
-Context: text-sm text-gray-500
+Character name: text-lg font-bold text-gray-300 mb-2 pr-10
+Context: text-sm text-gray-400
 ```
 
 **Wrapper section**:
 ```
-- rounded-lg border border-border bg-muted/30 p-6
-- Section header: HelpCircle icon + "Ambiguous Deaths" (text-xl font-bold)
+- rounded-lg border border-white/10 bg-white/5 p-6
+- Section header: HelpCircle icon (text-gray-400) + "Ambiguous Deaths" (text-xl font-bold text-white)
 - Same grid layout as confirmed deaths
 ```
 
@@ -345,9 +364,9 @@ Action link: mt-3 text-sm text-white hover:text-purple-100 underline
 
 ```
 Before reveal:
-  - Button (primary variant): "See who dies in this movie"
+  - Button: bg-white text-primary "See who dies in this movie"
   - ChevronDown icon, w-5 h-5 mr-2
-  - text-lg px-8 py-6 shadow-lg hover:shadow-xl transition-all
+  - text-lg px-8 py-6 shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all
   - Centered: flex justify-center mb-8
 
 Loading state (after click, before reveal):
@@ -375,13 +394,13 @@ Poster:
 
 Metadata section:
   - flex-1
-  - Title: text-4xl md:text-5xl font-bold mb-2 text-foreground
-  - Year: text-xl text-muted-foreground mb-4
+  - Title: text-4xl md:text-5xl font-bold mb-2 text-white
+  - Year: text-xl text-gray-400 mb-4
   - Fields (space-y-3 mb-6):
-    - Label: text-muted-foreground
-    - Value: text-foreground
+    - Label: text-gray-400
+    - Value: text-white
     - Shows: Director, Runtime (formatted as "Xh Ym"), Rating
-  - Tagline: italic text-lg text-muted-foreground, in quotes
+  - Tagline: italic text-lg text-gray-400, in quotes
 ```
 
 **Fields displayed**: poster, title, year, director, tagline, runtime, MPAA rating
@@ -403,7 +422,7 @@ Poster images:
 Dark overlay:
   - absolute inset-0
   - bg-black/60 ← REFINEMENT (was bg-black/40 in Figma)
-  - backdrop-blur-lg ← REFINEMENT (was backdrop-blur-md in Figma)
+  - backdrop-blur-sm ← REFINEMENT (reduced from backdrop-blur-lg so poster details are visible)
 ```
 
 **Poster Rotation Logic**:
@@ -415,8 +434,8 @@ Dark overlay:
 
 ```
 Container:
-  - border-b border-border
-  - bg-background/80 backdrop-blur-sm
+  - border-b border-white/10
+  - bg-primary/80 backdrop-blur-sm
   - sticky top-0 z-50
 
 Inner:
@@ -424,7 +443,7 @@ Inner:
 
 Logo button:
   - text-xl font-bold
-  - text-foreground hover:text-foreground/80
+  - text-white hover:text-white/80
   - transition-colors
   - Navigates back to home/search
 ```
@@ -432,21 +451,21 @@ Logo button:
 #### SkeletonLoader
 
 ```
-Base: bg-accent rounded-md animate-pulse
-Spacing: space-y-4 between items
+Base: bg-white/10 rounded-lg animate-pulse
+Layout: grid grid-cols-1 md:grid-cols-2 gap-4
 Used in: death card loading (4x h-40 in 2x2 grid)
 ```
 
 ### 2.5 Animations
 
-| Animation | Trigger | Duration | Details |
-|-----------|---------|----------|---------|
-| Tagline rotation | Auto, every 4s | 600ms | 5 variants: slideLeft, slideRight, fadeScale, blur, typewriter. Random selection per transition. |
-| Poster crossfade | Auto, every 4-5s | 4-5s | Fade opacity 0→0.6→0. No rotation. Staggered across 8 poster slots. |
-| Death card hover | Mouse enter | 200ms | `translate-y-[-4px]` + `shadow-xl`. `transition-all duration-200` |
-| Reveal loading | Click reveal button | 800ms | 4 skeleton cards pulse, then replaced by actual death cards |
-| Dropdown appear | Search results change | CSS default | No explicit animation — instant show/hide |
-| Easter egg card | Enter key in `!!` mode | CSS default | Appears below search input |
+| Animation        | Trigger                | Duration    | Details                                                                                          |
+| ---------------- | ---------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| Tagline rotation | Auto, every 4s         | 600ms       | 5 variants: slideLeft, slideRight, fadeScale, blur, typewriter. Random selection per transition. |
+| Poster crossfade | Auto, every 4-5s       | 4-5s        | Fade opacity 0→0.6→0. No rotation. Staggered across 8 poster slots.                              |
+| Death card hover | Mouse enter            | 200ms       | `translate-y-[-4px]` + `shadow-xl`. `transition-all duration-200`                                |
+| Reveal loading   | Click reveal button    | 800ms       | 4 skeleton cards pulse, then replaced by actual death cards                                      |
+| Dropdown appear  | Search results change  | CSS default | No explicit animation — instant show/hide                                                        |
+| Easter egg card  | Enter key in `!!` mode | CSS default | Appears below search input                                                                       |
 
 **Tagline Animation Keyframes** (defined in component `<style>` tag):
 
@@ -476,26 +495,29 @@ Used in: death card loading (4x h-40 in 2x2 grid)
 
 ### 2.6 Accessibility Requirements
 
-| Requirement | Implementation |
-|-------------|---------------|
-| Color contrast | WCAG AA (4.5:1 body text, 3:1 large text). All text/background combos verified. |
-| Keyboard navigation | Arrow keys for dropdown, Enter to select, Tab for focus traversal |
-| Focus indicators | `focus-visible:ring-[3px]` with `ring-ring/50` on interactive elements |
-| Screen reader | Semantic HTML (`<button>`, `<nav>`, `<main>`), ARIA labels on icon-only elements, `alt` text on all images |
-| Touch targets | Minimum 44x44px on all interactive elements (search input 80px, buttons py-6, list items p-4) |
-| Reduced motion | Respect `prefers-reduced-motion` for tagline/poster animations |
-| Form labels | Search input has accessible label (visually hidden if needed) |
+| Requirement         | Implementation                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Color contrast      | WCAG AA (4.5:1 body text, 3:1 large text). All text/background combos verified.                            |
+| Keyboard navigation | Arrow keys for dropdown, Enter to select, Tab for focus traversal                                          |
+| Focus indicators    | `focus-visible:ring-[3px]` with `ring-ring/50` on interactive elements                                     |
+| Screen reader       | Semantic HTML (`<button>`, `<nav>`, `<main>`), ARIA labels on icon-only elements, `alt` text on all images |
+| Touch targets       | Minimum 44x44px on all interactive elements (search input 80px, buttons py-6, list items p-4)              |
+| Reduced motion      | Respect `prefers-reduced-motion` for tagline/poster animations                                             |
+| Form labels         | Search input has accessible label (visually hidden if needed)                                              |
 
 ### 2.7 Technical Constraints vs. Figma
 
-| Figma Design | Constraint | Resolution |
-|--------------|-----------|------------|
-| Background poster rotation angles | User refinement: remove rotation | Posters stay upright, crossfade only |
-| 40% black overlay | User refinement: increase to 60% | `bg-black/60` + `backdrop-blur-lg` for text readability |
-| Autocomplete after Enter | User refinement: trigger on typing | Debounced fetch at 3+ chars, no Enter required |
-| Reveal button shows count | User refinement: hide count before reveal | Button says "See who dies in this movie"; count shown as header after reveal |
-| No empty state for search | User refinement: add message | "No movies found" in dropdown when 0 results |
-| Tagline typewriter animation | `steps(40)` may cause jank on variable-length text | Use `ch` units for width if possible, or fall back to fadeScale for long taglines |
+| Figma Design                         | Constraint                                         | Resolution                                                                                               |
+| ------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Background poster rotation angles    | User refinement: remove rotation                   | Posters stay upright, crossfade only                                                                     |
+| 40% black overlay                    | User refinement: increase to 60%                   | `bg-black/60` + `backdrop-blur-lg` for text readability                                                  |
+| Autocomplete after Enter             | User refinement: trigger on typing                 | Debounced fetch at 3+ chars, no Enter required                                                           |
+| Reveal button shows count            | User refinement: hide count before reveal          | Button says "See who dies in this movie"; count shown as header after reveal                             |
+| No empty state for search            | User refinement: add message                       | "No movies found" in dropdown when 0 results                                                             |
+| Tagline typewriter animation         | `steps(40)` may cause jank on variable-length text | Use `ch` units for width if possible, or fall back to fadeScale for long taglines                        |
+| Heavy backdrop blur on home page     | User refinement: poster details invisible          | Reduced from `backdrop-blur-lg` to `backdrop-blur-sm` (4px) — poster imagery visible through 60% overlay |
+| White page background on detail page | User refinement: inconsistent with dark home page  | Movie detail page uses `bg-primary` (`#2c2b32`) dark background                                          |
+| Dark text on dark death cards        | User refinement: unreadable contrast               | All detail page text uses light-on-dark colors: `text-white`, `text-gray-100`, `text-gray-400`           |
 
 ---
 
@@ -747,10 +769,10 @@ model Death {
 
 ### Environment Variables
 
-| Variable | Example | Required |
-|----------|---------|----------|
-| `DATABASE_URL` | `postgresql://user:pass@localhost:5432/whodiesinthismovie` | Yes |
-| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | `https://image.tmdb.org/t/p` | Yes |
-| `RAG_SERVICE_URL` | `http://localhost:8000` | No (Phase 3) |
-| `SENTRY_DSN` | `https://xxx@sentry.io/xxx` | No (optional) |
-| `NEXT_PUBLIC_SENTRY_DSN` | Same as above for client-side | No (optional) |
+| Variable                      | Example                                                    | Required      |
+| ----------------------------- | ---------------------------------------------------------- | ------------- |
+| `DATABASE_URL`                | `postgresql://user:pass@localhost:5432/whodiesinthismovie` | Yes           |
+| `NEXT_PUBLIC_TMDB_IMAGE_BASE` | `https://image.tmdb.org/t/p`                               | Yes           |
+| `RAG_SERVICE_URL`             | `http://localhost:8000`                                    | No (Phase 3)  |
+| `SENTRY_DSN`                  | `https://xxx@sentry.io/xxx`                                | No (optional) |
+| `NEXT_PUBLIC_SENTRY_DSN`      | Same as above for client-side                              | No (optional) |

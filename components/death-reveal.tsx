@@ -29,7 +29,7 @@ export default function DeathReveal({
   if (totalDeaths === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-2xl text-foreground">
+        <p className="text-2xl text-white">
           No deaths! Everyone survives! 🥳
         </p>
       </div>
@@ -56,7 +56,7 @@ export default function DeathReveal({
         <div className="flex justify-center mb-8">
           <button
             onClick={isRevealed ? handleHide : handleReveal}
-            className="flex items-center gap-2 text-lg px-8 py-6 bg-primary text-primary-foreground rounded-md shadow-lg hover:shadow-xl transition-all cursor-pointer"
+            className="flex items-center gap-2 text-lg px-8 py-6 bg-white text-primary rounded-md shadow-lg hover:shadow-xl hover:bg-gray-100 transition-all cursor-pointer"
           >
             {isRevealed ? (
               <>
@@ -80,7 +80,7 @@ export default function DeathReveal({
       {isRevealed && (
         <>
           {/* Count header */}
-          <p className="text-xl font-bold mb-6 text-foreground">
+          <p className="text-xl font-bold mb-6 text-white">
             {totalDeaths} character{totalDeaths !== 1 ? "s" : ""} died
           </p>
 
@@ -95,10 +95,10 @@ export default function DeathReveal({
 
           {/* Ambiguous deaths section */}
           {ambiguousDeaths.length > 0 && (
-            <div className="rounded-lg border border-border bg-muted/30 p-6">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-6">
               <div className="flex items-center gap-2 mb-4">
-                <HelpCircle className="w-6 h-6 text-muted-foreground" />
-                <h2 className="text-xl font-bold text-foreground">
+                <HelpCircle className="w-6 h-6 text-gray-400" />
+                <h2 className="text-xl font-bold text-white">
                   Ambiguous Deaths
                 </h2>
               </div>
