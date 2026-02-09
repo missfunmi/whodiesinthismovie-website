@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import PosterBackground from "@/components/poster-background";
 import RotatingTaglines from "@/components/rotating-taglines";
@@ -35,6 +36,13 @@ export default async function Home() {
         <div className="w-full mt-8">
           <Search />
         </div>
+
+        <Link
+          href="/browse"
+          className="mt-6 text-white/60 hover:text-white transition-colors text-sm font-medium"
+        >
+          Browse All Movies
+        </Link>
       </div>
     </main>
   );
