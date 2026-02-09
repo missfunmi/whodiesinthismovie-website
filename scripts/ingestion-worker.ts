@@ -138,11 +138,16 @@ async function tmdbFetch(
 ): Promise<Response> {
   const url = `${TMDB_BASE_URL}${path}`;
 
+  // Support both raw API key and "Bearer "-prefixed key from .env
+  const authHeader = tmdbApiKey.startsWith("Bearer ")
+    ? tmdbApiKey
+    : `Bearer ${tmdbApiKey}`;
+
   for (let attempt = 0; attempt < TMDB_MAX_RETRIES; attempt++) {
     try {
       const response = await fetch(url, {
         headers: {
-          Authorization: tmdbApiKey,
+          Authorization: authHeader,
           Accept: "application/json",
         },
       });
@@ -236,7 +241,8 @@ async function fetchTmdbMetadata(
     const theatrical = usRelease.release_dates.find((rd) => rd.type === 3);
     const fallback = usRelease.release_dates[0];
     const cert = theatrical?.certification || fallback?.certification;
-    if (cert) mpaaRating = cert;
+    // TMDB returns empty string or "0" for unrated content — treat as NR
+    if (cert && cert !== "0") mpaaRating = cert;
   }
 
   // Extract year from release_date
@@ -314,7 +320,7 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
 
     try {
       const response = await fetch(url, {
-        headers: { "User-Agent": "WDITMBot/1.0 (movie death data research)" },
+        headers: { "User-Agent": "WDITMBot/1.0 (contact@whodiesinthismovie.com; movie death data research)" },
       });
       if (!response.ok) {
         console.log(`[worker:scrape] Fandom API returned ${response.status}`);
@@ -368,7 +374,7 @@ async function scrapeWikipediaPlot(title: string): Promise<string | null> {
 
     try {
       const response = await fetch(url, {
-        headers: { "User-Agent": "WDITMBot/1.0 (movie death data research)" },
+        headers: { "User-Agent": "WDITMBot/1.0 (contact@whodiesinthismovie.com; movie death data research)" },
       });
       if (!response.ok) {
         console.log(`[worker:scrape] Wikipedia API returned ${response.status}`);
@@ -385,7 +391,9 @@ async function scrapeWikipediaPlot(title: string): Promise<string | null> {
       }
 
       // The extract is HTML — parse with cheerio to find the Plot section
-      const $ = cheerio.load(page.extract);
+      // Truncate early to cap memory usage in this long-running process
+      const extractHtml = (page.extract as string).slice(0, 100_000);
+      let $ = cheerio.load(extractHtml);
 
       let plotText = "";
       let inPlotSection = false;
@@ -411,11 +419,13 @@ async function scrapeWikipediaPlot(title: string): Promise<string | null> {
       });
 
       if (plotText.length > 100) {
+        ($ as unknown) = null; // Release cheerio DOM for GC
         return plotText.slice(0, 8000);
       }
 
       // Fallback: if no distinct "Plot" section, use the full extract
       const fullText = $("body").text().trim();
+      ($ as unknown) = null; // Release cheerio DOM for GC
       if (fullText.length > 200) {
         console.log(`[worker:scrape] Wikipedia: no Plot section, using full extract`);
         return fullText.slice(0, 8000);
@@ -446,7 +456,7 @@ async function scrapeMovieSpoiler(title: string): Promise<string | null> {
 
     try {
       const response = await fetch(url, {
-        headers: { "User-Agent": "WDITMBot/1.0 (movie death data research)" },
+        headers: { "User-Agent": "WDITMBot/1.0 (contact@whodiesinthismovie.com; movie death data research)" },
         redirect: "follow",
       });
       if (!response.ok) {
@@ -454,8 +464,9 @@ async function scrapeMovieSpoiler(title: string): Promise<string | null> {
         continue;
       }
 
-      const html = await response.text();
-      const $ = cheerio.load(html);
+      // Truncate HTML early to cap memory in this long-running process
+      const html = (await response.text()).slice(0, 500_000);
+      let $ = cheerio.load(html);
 
       // Remove non-content elements
       $("nav, header, footer, script, style, .sidebar, .comments").remove();
@@ -466,7 +477,10 @@ async function scrapeMovieSpoiler(title: string): Promise<string | null> {
         $("article").length ? $("article").first() :
         $(".post-content").length ? $(".post-content").first() : null;
 
-      if (!content) continue;
+      if (!content) {
+        ($ as unknown) = null;
+        continue;
+      }
 
       // Extract paragraphs
       const paragraphs: string[] = [];
@@ -474,6 +488,8 @@ async function scrapeMovieSpoiler(title: string): Promise<string | null> {
         const text = $(el).text().trim();
         if (text.length > 20) paragraphs.push(text);
       });
+
+      ($ as unknown) = null; // Release cheerio DOM for GC
 
       if (paragraphs.length === 0) continue;
 
@@ -669,6 +685,55 @@ function validateDeathRecord(d: Record<string, unknown>): ExtractedDeath {
 }
 
 // ---------------------------------------------------------------------------
+// LLM movie title validation (best-effort, per SPEC architecture diagram)
+// ---------------------------------------------------------------------------
+
+const LLM_VALIDATION_TIMEOUT_MS = 5_000; // Short timeout — validation is best-effort
+
+/**
+ * Ask the LLM whether the query is a real movie title.
+ * Returns true if valid or if Ollama is unavailable (best-effort — don't block ingestion).
+ */
+async function validateMovieTitleWithLlm(
+  query: string,
+  ollamaEndpoint: string,
+  ollamaModel: string,
+): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), LLM_VALIDATION_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${ollamaEndpoint}/api/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: ollamaModel,
+        prompt: `Is '${query}' a real movie title? Answer with only YES or NO.`,
+        stream: false,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      console.log(`[worker:llm] Validation: Ollama returned ${response.status}, skipping`);
+      return true; // Best-effort — proceed if Ollama errors
+    }
+
+    const data = await response.json();
+    const answer = ((data.response as string) || "").trim().toUpperCase();
+    const isRealMovie = answer.startsWith("YES");
+    console.log(`[worker:llm] Validation for "${query}": ${answer} (isRealMovie: ${isRealMovie})`);
+    return isRealMovie;
+  } catch {
+    // Ollama unavailable, timeout, or parse error — skip validation
+    console.log("[worker:llm] Validation skipped (Ollama unavailable or timeout)");
+    return true; // Best-effort — proceed if Ollama is down
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Job processing pipeline
 // ---------------------------------------------------------------------------
 
@@ -682,7 +747,17 @@ async function processJob(
 ): Promise<void> {
   console.log(`[worker] Processing job #${job.id}: "${job.query}"`);
 
-  // Step 1: Search TMDB for the movie
+  // Step 1: LLM validation (best-effort — if Ollama is down, proceed anyway)
+  const isValidTitle = await validateMovieTitleWithLlm(
+    job.query,
+    config.ollamaEndpoint,
+    config.ollamaModel,
+  );
+  if (!isValidTitle) {
+    throw new Error("LLM validation: not a real movie title");
+  }
+
+  // Step 2: Search TMDB for the movie
   console.log(`[worker:tmdb] Searching for "${job.query}"...`);
   const searchResult = await searchTmdb(job.query, config.tmdbApiKey);
 
@@ -701,7 +776,7 @@ async function processJob(
     data: { tmdbId },
   });
 
-  // Step 2: Deduplication checks
+  // Step 3: Deduplication checks
   // Check if another job is already processing this tmdbId
   const duplicateJob = await prisma.ingestionQueue.findFirst({
     where: {
@@ -738,7 +813,7 @@ async function processJob(
     return;
   }
 
-  // Step 3: Fetch full metadata from TMDB (3 parallel requests)
+  // Step 4: Fetch full metadata from TMDB (3 parallel requests)
   console.log(`[worker:tmdb] Fetching full metadata for tmdbId ${tmdbId}...`);
   const movieData = await fetchTmdbMetadata(tmdbId, config.tmdbApiKey);
   console.log(
@@ -748,11 +823,11 @@ async function processJob(
   // Rate limiting between TMDB and scraping
   await sleep(TMDB_RATE_LIMIT_MS);
 
-  // Step 4: Scrape death data from web sources
+  // Step 5: Scrape death data from web sources
   console.log(`[worker:scrape] Scraping death data for "${movieData.title}" (${movieData.year})...`);
   const scrapedContent = await scrapeDeathData(movieData.title, movieData.year);
 
-  // Step 5: Extract structured deaths via LLM
+  // Step 6: Extract structured deaths via LLM
   console.log(`[worker:llm] Extracting deaths from scraped content...`);
   const deaths = await extractDeathsWithLlm(
     movieData.title,
@@ -761,55 +836,61 @@ async function processJob(
     config.ollamaModel,
   );
 
-  // Step 6: Insert into database
+  // Step 7: Insert into database (atomic transaction)
+  // Wrapping upsert + delete + insert + queue update in a transaction ensures
+  // the movie is never left with zero deaths if the process crashes mid-write.
   console.log(`[worker:db] Inserting movie and ${deaths.length} deaths...`);
 
-  // Upsert movie (by tmdbId unique constraint)
-  const movie = await prisma.movie.upsert({
-    where: { tmdbId: movieData.tmdbId },
-    create: {
-      tmdbId: movieData.tmdbId,
-      title: movieData.title,
-      year: movieData.year,
-      director: movieData.director,
-      tagline: movieData.tagline,
-      posterPath: movieData.posterPath,
-      runtime: movieData.runtime,
-      mpaaRating: movieData.mpaaRating,
-    },
-    update: {
-      title: movieData.title,
-      year: movieData.year,
-      director: movieData.director,
-      tagline: movieData.tagline,
-      posterPath: movieData.posterPath,
-      runtime: movieData.runtime,
-      mpaaRating: movieData.mpaaRating,
-    },
-  });
-
-  // Delete existing deaths for this movie (replace strategy)
-  await prisma.death.deleteMany({ where: { movieId: movie.id } });
-
-  // Bulk insert new deaths
-  if (deaths.length > 0) {
-    await prisma.death.createMany({
-      data: deaths.map((d) => ({
-        movieId: movie.id,
-        character: d.character,
-        timeOfDeath: d.timeOfDeath,
-        cause: d.cause,
-        killedBy: d.killedBy,
-        context: d.context,
-        isAmbiguous: d.isAmbiguous,
-      })),
+  const movie = await prisma.$transaction(async (tx) => {
+    // Upsert movie (by tmdbId unique constraint)
+    const m = await tx.movie.upsert({
+      where: { tmdbId: movieData.tmdbId },
+      create: {
+        tmdbId: movieData.tmdbId,
+        title: movieData.title,
+        year: movieData.year,
+        director: movieData.director,
+        tagline: movieData.tagline,
+        posterPath: movieData.posterPath,
+        runtime: movieData.runtime,
+        mpaaRating: movieData.mpaaRating,
+      },
+      update: {
+        title: movieData.title,
+        year: movieData.year,
+        director: movieData.director,
+        tagline: movieData.tagline,
+        posterPath: movieData.posterPath,
+        runtime: movieData.runtime,
+        mpaaRating: movieData.mpaaRating,
+      },
     });
-  }
 
-  // Update queue entry to complete
-  await prisma.ingestionQueue.update({
-    where: { id: job.id },
-    data: { status: "complete", completedAt: new Date(), tmdbId },
+    // Delete existing deaths for this movie (replace strategy)
+    await tx.death.deleteMany({ where: { movieId: m.id } });
+
+    // Bulk insert new deaths
+    if (deaths.length > 0) {
+      await tx.death.createMany({
+        data: deaths.map((d) => ({
+          movieId: m.id,
+          character: d.character,
+          timeOfDeath: d.timeOfDeath,
+          cause: d.cause,
+          killedBy: d.killedBy,
+          context: d.context,
+          isAmbiguous: d.isAmbiguous,
+        })),
+      });
+    }
+
+    // Update queue entry to complete
+    await tx.ingestionQueue.update({
+      where: { id: job.id },
+      data: { status: "complete", completedAt: new Date(), tmdbId },
+    });
+
+    return m;
   });
 
   console.log(
@@ -875,7 +956,7 @@ async function main(): Promise<void> {
   console.log("[worker] Ingestion worker starting...");
   console.log(`[worker] Config:`);
   console.log(`  Database: ${config.databaseUrl.replace(/:[^@]+@/, ":***@")}`);
-  console.log(`  TMDB API: configured`);
+  console.log(`  TMDB API: configured (${config.tmdbApiKey.startsWith("Bearer ") ? "Bearer token" : "raw key, will add Bearer prefix"})`);
   console.log(`  Ollama: ${config.ollamaEndpoint} (model: ${config.ollamaModel})`);
   console.log(`  Poll interval: ${POLL_INTERVAL_MS / 1000}s`);
   console.log("[worker] Polling for jobs...\n");

@@ -518,7 +518,7 @@ Pagination controls:
 - Sort filter dropdown (Alphabetical / Recently Added)
 - Link from home page: "Browse All Movies" button below search
 
-### PHASE 4 — Movie Request System (UI)
+### PHASE 4 — Movie Request System (UI) *(Complete)*
 
 **Goal**: Users can request movies not in database. UI only, no backend processing yet.
 
@@ -570,7 +570,7 @@ Pagination controls:
   - Set `killedBy: "N/A"` if missing
 - **Database Insert**:
   - Upsert movie record by tmdbId: `prisma.movie.upsert({ where: { tmdbId }, create: {...}, update: {...} })`
-  - Delete existing deaths: `prisma.death.deleteMany({ where: { movieTmdbId } })`
+  - Delete existing deaths: `prisma.death.deleteMany({ where: { movieId: movie.id } })`
   - Bulk insert deaths: `prisma.death.createMany({ data: deathRecords })`
   - Update ingestion_queue status to 'complete', set completedAt timestamp
 - **Error Handling**:
@@ -1024,36 +1024,35 @@ Navigate to /movie/[tmdbId]
 
 ```prisma
 model Movie {
-  tmdbId     Int      @id
+  id         Int      @id @default(autoincrement())
+  tmdbId     Int      @unique
   title      String
   year       Int
-  director   String?
+  director   String
   tagline    String?
   posterPath String?
-  runtime    Int?
-  mpaaRating String?
+  runtime    Int
+  mpaaRating String
+  deaths     Death[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  deaths     Death[]
 
   @@index([title])
   @@index([createdAt])
 }
 
 model Death {
-  id           Int     @id @default(autoincrement())
-  movieTmdbId  Int
-  character    String
-  timeOfDeath  String
-  cause        String
-  killedBy     String
-  context      String
-  isAmbiguous  Boolean @default(false)
+  id          Int     @id @default(autoincrement())
+  character   String
+  timeOfDeath String
+  cause       String
+  killedBy    String
+  context     String
+  isAmbiguous Boolean @default(false)
+  movie       Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId     Int
 
-  movie        Movie   @relation(fields: [movieTmdbId], references: [tmdbId], onDelete: Cascade)
-
-  @@index([movieTmdbId])
+  @@index([movieId])
 }
 
 model IngestionQueue {
@@ -1069,6 +1068,8 @@ model IngestionQueue {
   @@index([tmdbId, status])
 }
 ```
+
+> **Note**: The schema above matches the actual `prisma/schema.prisma` implementation. Key differences from the original spec draft: (1) `Movie.id` is an auto-increment PK with `tmdbId` as a `@unique` constraint, (2) `Death` links via `movieId` → `Movie.id` (not `movieTmdbId`), (3) `director`, `runtime`, and `mpaaRating` are required (not nullable).
 
 ### Seed Data Files
 
