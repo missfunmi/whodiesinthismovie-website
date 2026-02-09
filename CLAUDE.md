@@ -170,7 +170,8 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **`BrowseMovie` type** extends `MovieSearchResult` with `createdAt: string` — serialized from Date on server, used client-side for "NEW!" badge check
 - **Client-side pagination/sort:** `BrowseGrid` manages state locally and fetches from `/api/movies/browse` API on page/sort changes, updating URL via `router.push()` with `{ scroll: false }`
 - **Page clamping:** Both API and server component clamp out-of-range pages to the last valid page (e.g., page=999 with 2 pages returns page 2)
-- **"NEW!" badge:** Client-side comparison `Date.now() - new Date(createdAt).getTime() < 24h` — lightweight, no extra DB query
+- **"NEW!" badge:** Client-side comparison `Date.now() - new Date(createdAt).getTime() < 24h` — gated behind `mounted` state flag to prevent SSR/hydration mismatch (server renders no badge, client adds badges post-mount)
+- **Sort validation:** Browse API returns 400 for invalid `sort` params (strict validation, not silent fallback) — surfaces frontend bugs early
 - **Sort dropdown options:** "Alphabetical" (default, `ORDER BY title ASC`) and "Recently Added" (`ORDER BY createdAt DESC`). Changing sort resets to page 1
 - **Loading state:** Grid dims to 50% opacity with `pointer-events-none` during fetches
 - **Empty state:** Shows Film icon + "No movies found" when database has zero movies

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -42,6 +42,12 @@ export default function BrowseGrid({
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [sort, setSort] = useState<SortOption>(initialSort);
   const [isLoading, setIsLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Gate time-dependent UI (NEW! badges) behind mount to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Fetch movies from the browse API and update state + URL
   const fetchMovies = useCallback(
@@ -125,7 +131,7 @@ export default function BrowseGrid({
         }`}
       >
         {movies.map((movie) => (
-          <MovieCard key={movie.tmdbId} movie={movie} />
+          <MovieCard key={movie.tmdbId} movie={movie} mounted={mounted} />
         ))}
       </div>
 
@@ -170,7 +176,7 @@ export default function BrowseGrid({
 }
 
 /** Individual movie card in the browse grid */
-function MovieCard({ movie }: { movie: BrowseMovie }) {
+function MovieCard({ movie, mounted }: { movie: BrowseMovie; mounted: boolean }) {
   const posterUrl = getPosterUrl(movie.posterPath);
 
   return (
@@ -185,16 +191,16 @@ function MovieCard({ movie }: { movie: BrowseMovie }) {
           alt={`${movie.title} (${movie.year})`}
           width={300}
           height={450}
-          className="w-full aspect-[2/3] object-cover rounded-lg shadow-lg"
+          className="w-full aspect-2/3 object-cover rounded-lg shadow-lg"
         />
       ) : (
-        <div className="w-full aspect-[2/3] rounded-lg shadow-lg bg-white/10 flex items-center justify-center">
+        <div className="w-full aspect-2/3 rounded-lg shadow-lg bg-white/10 flex items-center justify-center">
           <Film className="w-12 h-12 text-gray-500" />
         </div>
       )}
 
-      {/* "NEW!" badge */}
-      {isNew(movie.createdAt) && (
+      {/* "NEW!" badge — only rendered after mount to prevent hydration mismatch */}
+      {mounted && isNew(movie.createdAt) && (
         <span className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 text-xs rounded font-bold">
           NEW!
         </span>

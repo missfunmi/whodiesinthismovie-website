@@ -20,12 +20,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Parse sort (default to alphabetical, ignore invalid values)
+    // Parse and validate sort
     const sortParam = searchParams.get("sort");
-    const sort: SortOption =
-      sortParam && VALID_SORTS.includes(sortParam as SortOption)
-        ? (sortParam as SortOption)
-        : "alphabetical";
+    if (sortParam && !VALID_SORTS.includes(sortParam as SortOption)) {
+      return NextResponse.json(
+        { error: `Invalid sort parameter. Must be one of: ${VALID_SORTS.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    const sort: SortOption = (sortParam as SortOption) || "alphabetical";
 
     // Build orderBy based on sort
     const orderBy =
