@@ -164,11 +164,18 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 
 ## Architectural Decisions (Phase 3-6)
 
-### All Movies Browse Page (Phase 3)
-- Server component fetches paginated movies (100 per page) via Prisma
-- "NEW!" badge shown on movies where `createdAt > NOW() - INTERVAL '24 hours'`
-- Client component handles pagination controls and sort filter (alphabetical vs. recently added)
-- URL search params for navigation: `/browse?page=2&sort=recent`
+### All Movies Browse Page (Phase 3) *(Complete)*
+- **Server component** (`app/browse/page.tsx`) fetches initial paginated movies (100 per page) via Prisma, then passes to `BrowseGrid` client component
+- **Added `@@index([createdAt])` to Movie model** — required for efficient "Recently Added" sorting (SPEC Section 6 defines it but it was missing from the schema)
+- **`BrowseMovie` type** extends `MovieSearchResult` with `createdAt: string` — serialized from Date on server, used client-side for "NEW!" badge check
+- **Client-side pagination/sort:** `BrowseGrid` manages state locally and fetches from `/api/movies/browse` API on page/sort changes, updating URL via `router.push()` with `{ scroll: false }`
+- **Page clamping:** Both API and server component clamp out-of-range pages to the last valid page (e.g., page=999 with 2 pages returns page 2)
+- **"NEW!" badge:** Client-side comparison `Date.now() - new Date(createdAt).getTime() < 24h` — gated behind `mounted` state flag to prevent SSR/hydration mismatch (server renders no badge, client adds badges post-mount)
+- **Sort validation:** Browse API returns 400 for invalid `sort` params (strict validation, not silent fallback) — surfaces frontend bugs early
+- **Sort dropdown options:** "Alphabetical" (default, `ORDER BY title ASC`) and "Recently Added" (`ORDER BY createdAt DESC`). Changing sort resets to page 1
+- **Loading state:** Grid dims to 50% opacity with `pointer-events-none` during fetches
+- **Empty state:** Shows Film icon + "No movies found" when database has zero movies
+- **"Browse All Movies" link** added to home page below search bar as a subtle white/60 text link
 
 ### Movie Request & Ingestion System (Phases 4-5)
 - **Two-tier validation**: LLM validates query before adding to queue (rejects obvious fake queries immediately)

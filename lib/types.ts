@@ -36,6 +36,18 @@ export type DeathInfo = {
   isAmbiguous: boolean;
 };
 
+/** Movie entry for the browse grid (includes createdAt for "NEW!" badge) */
+export type BrowseMovie = MovieSearchResult & {
+  createdAt: string;
+};
+
+/** Paginated browse API response */
+export type BrowseResponse = {
+  movies: BrowseMovie[];
+  totalPages: number;
+  currentPage: number;
+};
+
 /** Union type for the search API response */
 export type SearchResponse =
   | MovieSearchResult[]

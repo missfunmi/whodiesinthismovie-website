@@ -500,7 +500,7 @@ Pagination controls:
 - Death card grid (confirmed + ambiguous deaths sections)
 - "No deaths! Everyone survives!" message for zero-death movies
 
-### PHASE 3 — All Movies Browse Page
+### PHASE 3 — All Movies Browse Page *(Complete)*
 
 **Goal**: Browsable catalog of all movies in database. Standalone feature.
 
@@ -836,38 +836,38 @@ Navigate to /movie/[tmdbId]
 - [x] **P2.6**: Build death reveal system — "See who dies in this movie" button, 800ms skeleton loading, count header ("X characters died"), DeathCard grid (2-col desktop, 1-col mobile). Handle zero deaths with "No deaths! Everyone survives!" message.
 - [x] **P2.7**: Build AmbiguousDeathCard component + section — grayed-out cards with `?` badge, separate "Ambiguous Deaths" section below confirmed deaths with HelpCircle icon header.
 
-### Phase 3 — All Movies Browse Page
+### Phase 3 — All Movies Browse Page *(Complete)*
 
 **3.1** Create `/app/browse/page.tsx` server component
-- [ ] Fetch movies from database with pagination (100 per page)
-- [ ] Default sort: alphabetical by title
-- [ ] Pass movies + pagination data to client component
+- [x] Fetch movies from database with pagination (100 per page)
+- [x] Default sort: alphabetical by title
+- [x] Pass movies + pagination data to client component
 
 **3.2** Implement `GET /api/movies/browse` endpoint
-- [ ] Accept query params: `page` (default 1), `sort` (default 'alphabetical')
-- [ ] Query movies: `ORDER BY title ASC` or `ORDER BY createdAt DESC`
-- [ ] Use Prisma pagination: `take: 100, skip: (page - 1) * 100`
-- [ ] Count total movies for pagination calculation
-- [ ] Return `{ movies, totalPages, currentPage }`
+- [x] Accept query params: `page` (default 1), `sort` (default 'alphabetical')
+- [x] Query movies: `ORDER BY title ASC` or `ORDER BY createdAt DESC`
+- [x] Use Prisma pagination: `take: 100, skip: (page - 1) * 100`
+- [x] Count total movies for pagination calculation
+- [x] Return `{ movies, totalPages, currentPage }`
 
 **3.3** Build BrowseGrid client component
-- [ ] Grid layout: `grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6`
-- [ ] Movie card: poster + title overlay on hover
-- [ ] "NEW!" badge if `createdAt > NOW() - 24 hours`
-- [ ] Click poster → navigate to `/movie/[tmdbId]`
+- [x] Grid layout: `grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6`
+- [x] Movie card: poster + title overlay on hover
+- [x] "NEW!" badge if `createdAt > NOW() - 24 hours`
+- [x] Click poster → navigate to `/movie/[tmdbId]`
 
 **3.4** Add pagination controls
-- [ ] Previous/Next buttons (disabled when at boundaries)
-- [ ] Page indicator: "Page X of Y"
-- [ ] URL search params: `/browse?page=2`
+- [x] Previous/Next buttons (disabled when at boundaries)
+- [x] Page indicator: "Page X of Y"
+- [x] URL search params: `/browse?page=2`
 
 **3.5** Add sort filter
-- [ ] Dropdown: "Alphabetical" | "Recently Added"
-- [ ] onChange → update URL param, trigger data refetch
+- [x] Dropdown: "Alphabetical" | "Recently Added"
+- [x] onChange → update URL param, trigger data refetch
 
 **3.6** Add navigation link from home page
-- [ ] "Browse All Movies" button below search bar
-- [ ] Navigates to `/browse`
+- [x] "Browse All Movies" button below search bar
+- [x] Navigates to `/browse`
 
 ### Phase 4 — Movie Request System (UI)
 
