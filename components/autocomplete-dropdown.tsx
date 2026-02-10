@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import Image from "next/image";
 import { AlertCircle, Film } from "lucide-react";
+import PosterImage from "@/components/poster-image";
 import type { MovieSearchResult, RequestStatus } from "@/lib/types";
 import { getPosterUrl } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ export default function AutocompleteDropdown({
   return (
     <ul
       ref={listRef}
-      className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl max-h-125 overflow-y-auto z-50 list-none p-0 m-0"
+      className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-xl shadow-2xl max-h-[60vh] sm:max-h-125 overflow-y-auto z-50 list-none p-0 m-0"
       role="listbox"
       aria-label="Search results"
     >
@@ -131,12 +131,14 @@ export default function AutocompleteDropdown({
               >
                 {/* Poster thumbnail */}
                 {posterUrl ? (
-                  <Image
+                  <PosterImage
                     src={posterUrl}
                     alt=""
                     width={48}
                     height={64}
                     className="w-12 h-16 object-cover rounded shadow-md shrink-0"
+                    fallbackClassName="w-12 h-16 rounded shadow-md shrink-0 bg-gray-200 flex items-center justify-center"
+                    fallbackIconClassName="w-5 h-5 text-gray-400"
                   />
                 ) : (
                   <div className="w-12 h-16 rounded shadow-md shrink-0 bg-gray-200 flex items-center justify-center">

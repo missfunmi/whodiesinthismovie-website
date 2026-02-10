@@ -121,6 +121,14 @@ export default function PosterBackground({
               className="object-cover"
               sizes="25vw"
               priority={index < 4}
+              onError={() => {
+                // Silently clear the failed poster so the slot becomes empty
+                setCurrentPosters((prev) => {
+                  const updated = [...prev];
+                  updated[index] = "";
+                  return updated;
+                });
+              }}
             />
           </div>
         );

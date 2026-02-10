@@ -141,8 +141,11 @@ export default function NotificationBell() {
 
       {isOpen && (
         <div
-          className="absolute top-full right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200"
+          className="absolute top-full right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200"
           role="menu"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setIsOpen(false);
+          }}
         >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Notifications</h3>
@@ -162,10 +165,10 @@ export default function NotificationBell() {
               </div>
             ) : (
               displayNotifications.map((movie) => (
-                <div
+                <button
                   key={movie.tmdbId}
                   onClick={() => handleNotificationClick(movie.tmdbId)}
-                  className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
                   role="menuitem"
                 >
                   <div className="flex items-start gap-3">
@@ -183,7 +186,7 @@ export default function NotificationBell() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>

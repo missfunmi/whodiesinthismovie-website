@@ -600,7 +600,7 @@ Pagination controls:
 - Add NotificationBell to root layout (`app/layout.tsx`)
 - Persist notifications across page refreshes via localStorage
 
-### PHASE 7 — Polish
+### PHASE 7 — Polish *(Complete)*
 
 **Goal**: Production-quality MVP. Demo-ready for friendly audience.
 
@@ -978,43 +978,43 @@ Navigate to /movie/[tmdbId]
 - [x] Key: `seenNotifications` (array of tmdbIds)
 - [x] Load on mount, update on mark as read
 
-### Phase 7 — Polish
+### Phase 7 — Polish *(Complete)*
 
 **7.1** Input validation & sanitization
-- [ ] Search query: max 200 chars, strip HTML (`DOMPurify` or regex), trim
-- [ ] API routes: validate all query/body params, return 400 if invalid
-- [ ] XSS prevention: rely on React's default escaping + sanitize on API input
+- [x] Search query: max 200 chars, strip HTML (`DOMPurify` or regex), trim
+- [x] API routes: validate all query/body params, return 400 if invalid
+- [x] XSS prevention: rely on React's default escaping + sanitize on API input
 
 **7.2** Error handling
-- [ ] Wrap all API routes in try/catch, return structured errors
-- [ ] Add React Error Boundary component wrapping app content
-- [ ] Network failure toast: "Something went wrong. Please try again."
-- [ ] Image load failure: fallback gray placeholder with movie icon
+- [x] Wrap all API routes in try/catch, return structured errors
+- [x] Add React Error Boundary component wrapping app content
+- [x] Network failure toast: "Something went wrong. Please try again."
+- [x] Image load failure: fallback gray placeholder with movie icon
 
 **7.3** Loading states
-- [ ] Search: show spinner icon in search input during debounce
-- [ ] Movie detail: full-page skeleton while server component loads
-- [ ] Death reveal: skeleton grid (already implemented in Phase 2)
-- [ ] Notification polling: silent (no visible loading)
+- [x] Search: show spinner icon in search input during debounce
+- [x] Movie detail: full-page skeleton while server component loads
+- [x] Death reveal: skeleton grid (already implemented in Phase 2)
+- [x] Notification polling: silent (no visible loading)
 
 **7.4** Responsive QA
-- [ ] Test at 375px, 768px, 1280px
-- [ ] Verify death card grid: 1 col mobile, 2 cols desktop
-- [ ] Verify browse grid: 2-4-5 cols at different breakpoints
-- [ ] Verify search dropdown doesn't overflow viewport
+- [x] Test at 375px, 768px, 1280px
+- [x] Verify death card grid: 1 col mobile, 2 cols desktop
+- [x] Verify browse grid: 2-4-5 cols at different breakpoints
+- [x] Verify search dropdown doesn't overflow viewport
 
 **7.5** Visual QA
-- [ ] Compare all components against Figma screenshots
-- [ ] Verify color tokens match Section 2.1
-- [ ] Verify typography matches Section 2.2
-- [ ] Check all animations work as specified
+- [x] Compare all components against Figma screenshots
+- [x] Verify color tokens match Section 2.1
+- [x] Verify typography matches Section 2.2
+- [x] Check all animations work as specified
 
 **7.6** Accessibility testing
-- [ ] Keyboard navigation: Tab through all interactive elements
-- [ ] Arrow key navigation in autocomplete dropdown
-- [ ] Enter key selects dropdown item
-- [ ] Focus indicators visible on all interactive elements
-- [ ] Color contrast check: run axe DevTools
+- [x] Keyboard navigation: Tab through all interactive elements
+- [x] Arrow key navigation in autocomplete dropdown
+- [x] Enter key selects dropdown item
+- [x] Focus indicators visible on all interactive elements
+- [x] Color contrast check: run axe DevTools
 
 ---
 
