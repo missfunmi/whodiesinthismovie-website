@@ -74,7 +74,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 	- Stack: Next.js / Node using TypeScript and Tailwind
 	- Database: Local Postgres with Prisma ORM
 	- Build/hosting: Vercel (entire stack runs on Next.js for MVP, no separate Python service)
-	- LLM: Ollama running Llama 3.2 3B (for query validation and death data extraction)
+	- LLM: Ollama running Mistral 7B (for query validation and death data extraction)
 	- Queue System: Database-based polling queue (no Redis/BullMQ for MVP)
 	- Notifications: Polling-based (60-second interval), localStorage persistence
 	- Logging: Sentry
