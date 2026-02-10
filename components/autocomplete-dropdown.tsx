@@ -76,7 +76,7 @@ export default function AutocompleteDropdown({
             </>
           )}
           {requestStatus === "loading" && (
-            <p className="text-gray-500 animate-pulse">Sending request...</p>
+            <p className="text-gray-500 animate-pulse">One moment...</p>
           )}
           {requestStatus === "success" && (
             <div className="text-center">
