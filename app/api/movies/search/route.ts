@@ -18,24 +18,28 @@ export async function GET(request: NextRequest) {
     if (query.length < MIN_QUERY_LENGTH) {
       return NextResponse.json(
         { error: "Query must be at least 3 characters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-
-    if (query.length > MAX_QUERY_LENGTH) {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length > MAX_QUERY_LENGTH) {
       return NextResponse.json(
-        { error: "Query must be 200 characters or fewer" },
-        { status: 400 }
+        { error: `Query must be ${MAX_QUERY_LENGTH} characters or fewer` },
+        { status: 400 },
       );
     }
 
     // Suppress bare "the" queries
-    if (SUPPRESSED_QUERIES.includes(query.toLowerCase())) {
+    if (SUPPRESSED_QUERIES.includes(trimmedQuery.toLowerCase())) {
       return NextResponse.json([]);
     }
 
     // Strip HTML tags for safety
-    const sanitizedQuery = query.replace(/<[^>]*>/g, "");
+    // TODO: Switch to using 'sanitize-html' or 'dompurify'
+    const sanitizedQuery = trimmedQuery
+      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+      .replace(/on\w+="[^"]*"/gim, "")
+      .replace(/<[^>]*>/g, "");
 
     // Count total matches first to check for "too many"
     const totalCount = await prisma.movie.count({
@@ -68,7 +72,7 @@ export async function GET(request: NextRequest) {
     console.error("Search API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
