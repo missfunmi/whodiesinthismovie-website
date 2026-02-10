@@ -947,36 +947,36 @@ Navigate to /movie/[tmdbId]
 - [x] Environment variable validation at startup (DATABASE_URL, TMDB_API_KEY)
 - [x] Graceful shutdown on SIGINT/SIGTERM
 
-### Phase 6 — Notification System
+### Phase 6 — Notification System *(Complete)*
 
 **6.1** Implement `GET /api/notifications/poll` endpoint
-- [ ] Query: `await prisma.movie.findMany({ where: { createdAt: { gte: new Date(Date.now() - 24*60*60*1000) } }, select: { tmdbId, title, createdAt }, orderBy: { createdAt: 'desc' } })`
-- [ ] Return array of recent movies
+- [x] Query: `await prisma.movie.findMany({ where: { createdAt: { gte: new Date(Date.now() - 24*60*60*1000) } }, select: { tmdbId, title, createdAt }, orderBy: { createdAt: 'desc' } })`
+- [x] Return array of recent movies
 
 **6.2** Create NotificationBell component
-- [ ] Fixed position: `fixed top-4 right-4 z-50`
-- [ ] Bell icon button with badge (if unread > 0)
-- [ ] Dropdown with last 5 notifications
-- [ ] "Mark all as read" button
+- [x] Fixed position: `fixed top-4 right-4 z-50`
+- [x] Bell icon button with badge (if unread > 0)
+- [x] Dropdown with last 5 notifications
+- [x] "Mark all as read" button
 
 **6.3** Implement polling logic
-- [ ] useEffect: start interval on mount (60 seconds)
-- [ ] On interval: call `/api/notifications/poll`
-- [ ] Compare results with localStorage `seenNotifications`
-- [ ] New movies → add to notification list, increment badge
-- [ ] Store in component state: `notifications: { tmdbId, title, createdAt, isRead }[]`
+- [x] useEffect: start interval on mount (60 seconds)
+- [x] On interval: call `/api/notifications/poll`
+- [x] Compare results with localStorage `seenNotifications`
+- [x] New movies → add to notification list, increment badge
+- [x] Store in component state: `notifications: { tmdbId, title, createdAt, isRead }[]`
 
 **6.4** Implement notification interactions
-- [ ] Click notification → navigate to `/movie/[tmdbId]`, mark as read (add to localStorage), remove from list
-- [ ] "Mark all as read" → add all current tmdbIds to localStorage, clear badge, empty list
+- [x] Click notification → navigate to `/movie/[tmdbId]`, mark as read (add to localStorage), remove from list
+- [x] "Mark all as read" → add all current tmdbIds to localStorage, clear badge, empty list
 
 **6.5** Add NotificationBell to root layout
-- [ ] Import in `app/layout.tsx`
-- [ ] Render above main content (fixed position)
+- [x] Import in `app/layout.tsx`
+- [x] Render above main content (fixed position)
 
 **6.6** localStorage persistence
-- [ ] Key: `seenNotifications` (array of tmdbIds)
-- [ ] Load on mount, update on mark as read
+- [x] Key: `seenNotifications` (array of tmdbIds)
+- [x] Load on mount, update on mark as read
 
 ### Phase 7 — Polish
 
