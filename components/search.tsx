@@ -44,6 +44,12 @@ export default function Search() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track whether a movie request is in progress so onBlur doesn't close the dropdown.
+  // When the user clicks "Want us to look it up?", React re-renders the dropdown
+  // (removing the focused button), causing document.activeElement to revert to body.
+  // Without this guard, the onBlur timer would close the dropdown before the
+  // API response arrives, hiding the success/error message.
+  const isRequestingRef = useRef(false);
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<MovieSearchResult[] | null>(null);
@@ -150,6 +156,7 @@ export default function Search() {
 
   // Handle movie request when user clicks "Want us to look it up?"
   const handleRequestMovie = useCallback(async () => {
+    isRequestingRef.current = true;
     setRequestStatus("loading");
     try {
       const res = await fetch("/api/movies/request", {
@@ -162,6 +169,7 @@ export default function Search() {
 
       if (!res.ok) {
         setRequestStatus("error");
+        setShowDropdown(true);
         return;
       }
 
@@ -174,8 +182,12 @@ export default function Search() {
       }
 
       setRequestStatus("success");
+      setShowDropdown(true);
     } catch {
       setRequestStatus("error");
+      setShowDropdown(true);
+    } finally {
+      isRequestingRef.current = false;
     }
   }, [query, router]);
 
@@ -233,6 +245,11 @@ export default function Search() {
         onBlur={() => {
           // Delay hiding to allow click events on dropdown items to fire
           setTimeout(() => {
+            // Don't close during a movie request — the button that had focus
+            // gets removed from the DOM by React's re-render, so activeElement
+            // reverts to body. Without this check, the dropdown would close
+            // before the success message can appear.
+            if (isRequestingRef.current) return;
             if (!containerRef.current?.contains(document.activeElement)) {
               setShowDropdown(false);
             }

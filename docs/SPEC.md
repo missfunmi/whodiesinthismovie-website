@@ -120,7 +120,7 @@
 
 **Movie Request & Ingestion Flow**
 1. User searches for movie not in database → zero results
-2. "We don't have that one yet! Want us to look it up?" link appears
+2. "Want us to look it up?" link appears
 3. User clicks → `POST /api/movies/request` with `{ query: string }`
 4. API validates query is not empty/malformed
 5. LLM validates query is a real movie name (rejects obvious fake queries)
@@ -317,7 +317,7 @@ Year: text-sm, in parentheses below title
 - Default: `hover:bg-gray-100 text-gray-900`, year `text-gray-500`
 - Keyboard selected: `bg-blue-500 text-white`, year `text-blue-100`
 - Too many matches (>100): centered AlertCircle icon + "Too many matches - keep typing!"
-- No results: centered "No movies found" with link "We don't have that one yet! Want us to look it up?"
+- No results: centered "We don't have that one yet!" with link "Want us to look it up?"
 
 **Keyboard Navigation**:
 - ArrowDown: move selection down (stop at last item)
@@ -523,7 +523,7 @@ Pagination controls:
 **Goal**: Users can request movies not in database. UI only, no backend processing yet.
 
 - Detect zero search results in autocomplete
-- Show "We don't have that one yet! Want us to look it up?" text link
+- Show "Want us to look it up?" text link
 - On click, show confirmation: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
 - Implement `POST /api/movies/request` endpoint
   - Validate query is not empty, max 200 chars
@@ -672,7 +672,7 @@ User searches for "Jaws"
   ↓
 GET /api/movies/search?q=jaws → 0 results
   ↓
-Show "We don't have that one yet! Want us to look it up?" link
+Show "Want us to look it up?" link
   ↓
 User clicks link
   ↓
@@ -873,8 +873,8 @@ Navigate to /movie/[tmdbId]
 
 **4.1** Update AutocompleteDropdown for zero results
 - [x] Detect `results.length === 0 && !isTooMany`
-- [x] Show "No movies found" message
-- [x] Add text link: "We don't have that one yet! Want us to look it up?"
+- [x] Show "We don't have that one yet!" message
+- [x] Add text link: "Want us to look it up?"
 
 **4.2** Implement request confirmation
 - [x] On link click, show inline confirmation: "Okay, we'll check on that! We'll let you know when we find out who dies in this movie"
@@ -1162,7 +1162,7 @@ model IngestionQueue {
 **Handling**:
 - Autocomplete search only queries main `movies` table
 - Movies in queue don't appear in search results
-- User sees "No movies found" and can re-request (duplicate allowed)
+- User sees "We don't have that one yet!" and can re-request (duplicate allowed)
 - Only show movies on browse page after they're in main `movies` table
 - This prevents showing incomplete/processing movies to users
 

@@ -66,12 +66,12 @@ export default function AutocompleteDropdown({
         <div className="flex flex-col items-center gap-3 p-8">
           {requestStatus === "idle" && (
             <>
-              <p className="text-gray-500">No movies found</p>
+              <p className="text-gray-500">We don&apos;t have that one yet!</p>
               <button
                 onClick={onRequestMovie}
                 className="text-blue-500 hover:text-blue-600 text-sm font-medium transition-colors cursor-pointer"
               >
-                We don&apos;t have that one yet! Want us to look it up?
+                Want us to look it up?
               </button>
             </>
           )}

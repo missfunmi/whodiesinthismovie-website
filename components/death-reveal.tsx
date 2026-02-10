@@ -25,17 +25,6 @@ export default function DeathReveal({
 
   const totalDeaths = confirmedDeaths.length + ambiguousDeaths.length;
 
-  // Zero deaths — show message directly, no button needed
-  if (totalDeaths === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-2xl text-white">
-          No deaths! Everyone survives! 🥳
-        </p>
-      </div>
-    );
-  }
-
   const handleReveal = () => {
     setIsLoading(true);
     // 800ms skeleton loading before revealing cards
@@ -79,10 +68,21 @@ export default function DeathReveal({
       {/* Revealed death cards */}
       {isRevealed && (
         <>
+          {/* Zero deaths message */}
+          {totalDeaths === 0 && (
+            <div className="text-center py-12">
+              <p className="text-2xl text-white">
+                No deaths! Everyone survives! 🥳
+              </p>
+            </div>
+          )}
+
           {/* Count header */}
+          {totalDeaths > 0 && (
           <p className="text-xl font-bold mb-6 text-white">
             {totalDeaths} character{totalDeaths !== 1 ? "s" : ""} died
           </p>
+          )}
 
           {/* Confirmed deaths grid */}
           {confirmedDeaths.length > 0 && (
