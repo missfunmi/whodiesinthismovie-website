@@ -342,12 +342,13 @@ async function scrapeDeathData(title: string, year: number): Promise<ScrapedDeat
 function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
   const deaths: ExtractedDeath[] = [];
 
-  // Match bullet lines: "* content" (may span multiple lines if no next bullet)
-  const bulletLines = wikitext.split("\n").filter((line) =>
-    line.trim().startsWith("*"),
-  );
+  const allLines = wikitext.split("\n");
 
-  for (const rawLine of bulletLines) {
+  for (let i = 0; i < allLines.length; i++) {
+    const rawLine = allLines[i];
+    // Only process top-level bullets (single *)
+    if (!rawLine.trim().startsWith("*") || rawLine.trim().startsWith("**")) continue;
+
     // Strip leading "* " and wiki markup
     let line = rawLine.replace(/^\*+\s*/, "");
     // Strip wiki formatting: bold ''', italic '', underline <u></u>, links [[]]
@@ -369,6 +370,25 @@ function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
 
     if (!character || !description) continue;
 
+    // Collect sub-bullet context (** lines following this entry)
+    const subBulletParts: string[] = [];
+    for (let j = i + 1; j < allLines.length; j++) {
+      const nextLine = allLines[j].trim();
+      if (nextLine.startsWith("**")) {
+        let sub = nextLine.replace(/^\*+\s*/, "");
+        sub = sub
+          .replace(/<\/?u>/gi, "")
+          .replace(/'{2,3}/g, "")
+          .replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g, (_m, _link, display) => display || _link)
+          .replace(/<[^>]+>/g, "")
+          .trim();
+        if (sub) subBulletParts.push(sub);
+      } else {
+        break; // Stop at next top-level bullet or non-bullet line
+      }
+    }
+    const subContext = subBulletParts.join("; ");
+
     // Determine if death is ambiguous (off-screen, mentioned, uncertain)
     const lowerDesc = description.toLowerCase();
     const isAmbiguous =
@@ -378,11 +398,11 @@ function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
       lowerDesc.includes("debatable") ||
       lowerDesc.includes("unknown if");
 
-    // Try to extract "killed by" from description patterns like "eaten by X", "shot by X"
-    // Allows intervening words: "bitten in half by a shark" → "a shark"
+    // Try to extract "killed by" from description
+    // Handles: "eaten by X", "shot by X", "bitten in half by X", "at the hands of X"
     let killedBy = "N/A";
     const killedByMatch = description.match(
-      /(?:killed|eaten|shot|stabbed|murdered|bitten|dragged|torn apart|blown up|attacked)\b.*?\bby\s+([^,.;]+)/i,
+      /(?:killed|eaten|shot|stabbed|murdered|bitten|dragged|torn apart|blown up|attacked|beheaded|strangled|crushed|drowned|poisoned|mauled|devoured|impaled|decapitated)\b.*?\b(?:by|at the hands of)\s+([^,.;(]+)/i,
     );
     if (killedByMatch) {
       killedBy = killedByMatch[1].trim();
@@ -399,7 +419,7 @@ function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
       timeOfDeath: "Unknown",
       cause: description,
       killedBy,
-      context: "",
+      context: subContext,
       isAmbiguous,
     });
   }

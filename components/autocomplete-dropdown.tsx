@@ -79,7 +79,7 @@ export default function AutocompleteDropdown({
             <p className="text-gray-500 animate-pulse">One moment...</p>
           )}
           {requestStatus === "success" && (
-            <div className="text-center">
+            <div className="text-center p-4 bg-green-500/10 rounded-lg border border-green-500/20">
               <p className="text-green-600 font-medium">
                 Okay, we&apos;ll check on that!
               </p>

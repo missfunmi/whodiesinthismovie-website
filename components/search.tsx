@@ -187,7 +187,12 @@ export default function Search() {
       setRequestStatus("error");
       setShowDropdown(true);
     } finally {
-      isRequestingRef.current = false;
+      // Keep the guard active briefly so the 150ms onBlur timer
+      // (which may already be queued) doesn't close the dropdown
+      // before React re-renders with the success/error message.
+      setTimeout(() => {
+        isRequestingRef.current = false;
+      }, 200);
     }
   }, [query, router]);
 
