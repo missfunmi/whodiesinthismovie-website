@@ -18,23 +18,31 @@ type SeenNotification = {
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationMovie[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false); // Prevents badge flicker
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Helper to manage localStorage with pruning
+  // Helper to manage localStorage with pruning and legacy support
   const getProcessedSeenIds = useCallback((): number[] => {
     if (typeof window === "undefined") return [];
     try {
       const stored = localStorage.getItem("seenNotifications");
       if (!stored) return [];
 
-      const parsed: SeenNotification[] = JSON.parse(stored);
+      const parsed = JSON.parse(stored);
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-      // Prune old entries
-      const validEntries = parsed.filter((item) => item.addedAt > sevenDaysAgo);
+      // Resilience: Handle legacy array of numbers vs new array of objects
+      if (Array.isArray(parsed) && typeof parsed[0] === "number") {
+        const migrated = parsed.map((id) => ({ id, addedAt: Date.now() }));
+        localStorage.setItem("seenNotifications", JSON.stringify(migrated));
+        return parsed;
+      }
 
-      // Update storage if pruning occurred
+      const validEntries: SeenNotification[] = parsed.filter(
+        (item: any) => item.addedAt && item.addedAt > sevenDaysAgo,
+      );
+
       if (validEntries.length !== parsed.length) {
         localStorage.setItem("seenNotifications", JSON.stringify(validEntries));
       }
@@ -46,12 +54,16 @@ export default function NotificationBell() {
   }, []);
 
   const saveSeenId = useCallback((tmdbId: number) => {
-    const stored = localStorage.getItem("seenNotifications");
-    const current: SeenNotification[] = stored ? JSON.parse(stored) : [];
+    try {
+      const stored = localStorage.getItem("seenNotifications");
+      const current: SeenNotification[] = stored ? JSON.parse(stored) : [];
 
-    if (!current.some((item) => item.id === tmdbId)) {
-      const updated = [...current, { id: tmdbId, addedAt: Date.now() }];
-      localStorage.setItem("seenNotifications", JSON.stringify(updated));
+      if (!current.some((item) => item.id === tmdbId)) {
+        const updated = [...current, { id: tmdbId, addedAt: Date.now() }];
+        localStorage.setItem("seenNotifications", JSON.stringify(updated));
+      }
+    } catch (e) {
+      // Silent catch for potential storage quota issues
     }
   }, []);
 
@@ -68,6 +80,8 @@ export default function NotificationBell() {
         setNotifications(unread);
       } catch (error) {
         // Silent failure as per SPEC 7.8
+      } finally {
+        setIsInitialized(true);
       }
     };
 
@@ -76,7 +90,6 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, [getProcessedSeenIds]);
 
-  // Click outside to close
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -115,9 +128,11 @@ export default function NotificationBell() {
         onClick={() => setIsOpen(!isOpen)}
         className="relative w-12 h-12 rounded-full bg-white shadow-lg hover:bg-gray-100 transition-colors flex items-center justify-center text-gray-700"
         aria-label="Notifications"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
         <Bell className="w-6 h-6" />
-        {notifications.length > 0 && (
+        {isInitialized && notifications.length > 0 && (
           <span className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white text-xs font-bold flex items-center justify-center animate-in fade-in zoom-in duration-300">
             {notifications.length > 9 ? "9+" : notifications.length}
           </span>
@@ -125,7 +140,10 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200">
+        <div
+          className="absolute top-full right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-200 animate-in slide-in-from-top-2 duration-200"
+          role="menu"
+        >
           <div className="p-4 border-b border-gray-100 flex justify-between items-center">
             <h3 className="font-bold text-gray-900">Notifications</h3>
             {notifications.length > 0 && (
@@ -148,6 +166,7 @@ export default function NotificationBell() {
                   key={movie.tmdbId}
                   onClick={() => handleNotificationClick(movie.tmdbId)}
                   className="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
+                  role="menuitem"
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-1">
