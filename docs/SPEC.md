@@ -582,7 +582,7 @@ Pagination controls:
 - Run worker as separate process: `npm run worker`
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 
-### PHASE 6 — Notification System
+### PHASE 6 — Notification System *(Complete)*
 
 **Goal**: Real-time notifications when movies are added.
 
