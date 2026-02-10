@@ -15,7 +15,7 @@
 - **Images**: next/image with TMDB CDN (`image.tmdb.org`)
 - **LLM**: Ollama + Mistral 7B (query validation & death extraction in ingestion worker; configurable via `OLLAMA_MODEL` env var)
 - **Queue**: Database-based polling queue (no Redis/BullMQ)
-- **Notifications**: Polling-based (60s interval) with localStorage persistence
+- **Notifications**: Polling-based (60s interval) with localStorage persistence for read state
 - **Logging**: Sentry
 - **Hosting**: Vercel
 
@@ -214,15 +214,15 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Graceful shutdown**: SIGINT/SIGTERM disconnects Prisma cleanly
 - **Schema alignment**: SPEC.md Section 6 schema updated to match actual `prisma/schema.prisma` (uses `movieId` FK, not `movieTmdbId`). Prevents future LLM code generation from reverting to the incorrect FK
 
-### Notification System (Phase 6)
-- **Polling-based**: Frontend polls `/api/notifications/poll` every 60 seconds (no WebSocket/SSE)
-- **localStorage persistence**: `seenNotifications` array stores tmdbIds user has already seen
-- **Badge count**: Shows number of unseen movies added in last 24 hours
-- **Notification bell**: Fixed top-right on all pages via root layout
-- **Auto-dismiss**: Clicking notification navigates to movie page and marks as read
-- **"Mark all as read"**: Clears badge, updates localStorage with all current tmdbIds
+### Notification System (Phase 6) *(Complete)*
+- **Polling-based**: Frontend polls `/api/notifications/poll` every 60 seconds (no WebSocket/SSE).
+- **localStorage persistence**: `seenNotifications` array stores tmdbIds user has already seen.
+- **Badge count**: Shows number of unseen movies added in last 24 hours.
+- **Notification bell**: Fixed top-right on all pages via root layout.
+- **Auto-dismiss**: Clicking notification navigates to movie page and marks as read.
+- **"Mark all as read"**: Clears badge, updates localStorage with all current tmdbIds.
 
-### Bug Fixes & Hardening (Pre-Phase 6)
+### Bug Fixes & Hardening (Pre-Phase 6) *(Complete)*
 - **Tagline visibility fix**: `flex flex-col items-center` on parent caused taglines container to have zero intrinsic width (only contains `absolute` children). Fixed by adding `w-full` to the container div
 - **Unmount safety in rotating-taglines**: Added `isMountedRef` guard to prevent state updates after component unmount. The `rotateTimeoutRef` is also cleaned up in the interval effect's teardown
 - **onBlur race condition in search**: `isRequestingRef` is now cleared with a 200ms delay (via `setTimeout`) so the 150ms onBlur timer doesn't race ahead and close the dropdown before the success/error message renders
