@@ -10,21 +10,48 @@ type NotificationMovie = {
   createdAt: string;
 };
 
+type SeenNotification = {
+  id: number;
+  addedAt: number;
+};
+
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationMovie[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Load seen notifications from localStorage
-  const getSeenIds = useCallback((): number[] => {
+  // Helper to manage localStorage with pruning
+  const getProcessedSeenIds = useCallback((): number[] => {
     if (typeof window === "undefined") return [];
     try {
       const stored = localStorage.getItem("seenNotifications");
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+
+      const parsed: SeenNotification[] = JSON.parse(stored);
+      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+      // Prune old entries
+      const validEntries = parsed.filter((item) => item.addedAt > sevenDaysAgo);
+
+      // Update storage if pruning occurred
+      if (validEntries.length !== parsed.length) {
+        localStorage.setItem("seenNotifications", JSON.stringify(validEntries));
+      }
+
+      return validEntries.map((item) => item.id);
     } catch (e) {
-      console.error("Failed to parse seenNotifications", e);
       return [];
+    }
+  }, []);
+
+  const saveSeenId = useCallback((tmdbId: number) => {
+    const stored = localStorage.getItem("seenNotifications");
+    const current: SeenNotification[] = stored ? JSON.parse(stored) : [];
+
+    if (!current.some((item) => item.id === tmdbId)) {
+      const updated = [...current, { id: tmdbId, addedAt: Date.now() }];
+      localStorage.setItem("seenNotifications", JSON.stringify(updated));
     }
   }, []);
 
@@ -35,20 +62,19 @@ export default function NotificationBell() {
         if (!res.ok) return;
 
         const movies: NotificationMovie[] = await res.json();
-        const seenIds = getSeenIds();
+        const seenIds = getProcessedSeenIds();
 
-        // Filter out movies we've already seen
         const unread = movies.filter((m) => !seenIds.includes(m.tmdbId));
         setNotifications(unread);
       } catch (error) {
-        console.error("Error polling notifications:", error);
+        // Silent failure as per SPEC 7.8
       }
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Poll every 60s
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
-  }, [getSeenIds]);
+  }, [getProcessedSeenIds]);
 
   // Click outside to close
   useEffect(() => {
@@ -65,13 +91,7 @@ export default function NotificationBell() {
   }, []);
 
   const markAsRead = (tmdbId: number) => {
-    const seenIds = getSeenIds();
-    if (!seenIds.includes(tmdbId)) {
-      const newSeenIds = [...seenIds, tmdbId];
-      localStorage.setItem("seenNotifications", JSON.stringify(newSeenIds));
-    }
-
-    // Update local state immediately
+    saveSeenId(tmdbId);
     setNotifications((prev) => prev.filter((n) => n.tmdbId !== tmdbId));
   };
 
@@ -82,16 +102,11 @@ export default function NotificationBell() {
   };
 
   const handleMarkAllRead = () => {
-    const seenIds = getSeenIds();
-    const newIds = notifications.map((n) => n.tmdbId);
-    const uniqueIds = Array.from(new Set([...seenIds, ...newIds]));
-
-    localStorage.setItem("seenNotifications", JSON.stringify(uniqueIds));
+    notifications.forEach((n) => saveSeenId(n.tmdbId));
     setNotifications([]);
     setIsOpen(false);
   };
 
-  // Only show last 5
   const displayNotifications = notifications.slice(0, 5);
 
   return (
@@ -122,7 +137,6 @@ export default function NotificationBell() {
               </button>
             )}
           </div>
-
           <div className="py-2">
             {displayNotifications.length === 0 ? (
               <div className="p-4 text-center text-gray-500 text-sm">
