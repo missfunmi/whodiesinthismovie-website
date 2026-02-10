@@ -15,7 +15,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 	- "Your therapist will thank us! 🧠"
 	- "Plot armor? Not in our database! 🛡️"
 	- "We do the hard watching so you don't have to! 👀"
-- **A single search bar:** Where the user can type a movie name, and autocomplete suggestions in the search results are returned that match as they type. User can press enter or click to select the top choice or use their arrow keys to navigate up/down through the autocomplete suggestions. Autocomplete shows max 8 suggestions. If query matches >100 movies (e.g. "the"), show message "Too many matches - keep typing!" Searches match anywhere in title (partial word matching enabled). Movie names in the autocomplete search results should be prefixed with the poster image and suffixed with the year in parentheses. For example, "\<poster> Sinners (2025)"
+- **A single search bar:** Where the user can type a movie name, and autocomplete suggestions in the search results are returned that match as they type. User can press enter or click to select the top choice or use their arrow keys to navigate up/down through the autocomplete suggestions. Autocomplete shows max 8 suggestions. If query matches >100 movies (e.g. "the"), show message "Too many matches - keep typing!" Searches match anywhere in title (partial word matching enabled). Movie names in the autocomplete search results should be prefixed with the poster image and suffixed with the year in parentheses. For example, "<poster> Sinners (2025)"
 - **Movie Detail Page**: Upon selecting a movie name, a page is shown with the movie metadata and character deaths list. 
 	- Movie detail page shows: poster image, title, year, director, tagline (if available), runtime, and MPAA rating. Do not include budget, box office, or full cast list
 	- Character death cards containing Character Name | Time of Death (timestamp or act/scene) | Cause of Death | Killed By (person/entity or "N/A" for accidents/natural causes) | Surrounding Context (brief summary of the situation that led to character's death)
@@ -40,11 +40,11 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 - **Easter Egg - Natural Language Query (RAG-based)**: Prefacing search with "!!" lets users bypass movie search and type a plain text query. For example, "!! do the twins die in sinners". Pressing enter triggers a call to a local LLM with RAG to extract meaning from the query, retrieve information from the database, and return a natural language answer (Yes/No/"The movie leaves us hanging!"). This feature lets users find out if a specific character dies without getting spoilers about other characters' deaths.
 	- User: "!! do the twins die in sinners?"
 	- RAG retrieves: death data for the twins from Sinners
-	- LLM generates and returns some variation of: "Elijah (Smoke) dies, but Elias (Stack) turns into a vampire and lives forever. \[Show more details?]"
+	- LLM generates and returns some variation of: "Elijah (Smoke) dies, but Elias (Stack) turns into a vampire and lives forever. [Show more details?]"
 	- Additional RAG response examples for tone consistency:
-		- "Yep, \[Character] kicks the bucket in Act 2 around the 51 minute mark. Shot by \[Killer]. \[Show details?]"
-		- "Nope! \[Character] makes it to the credits unscathed."
-		- "The movie leaves us hanging - \[Character]'s fate is ambiguous. \[Show details?]"
+		- "Yep, [Character] kicks the bucket in Act 2 around the 51 minute mark. Shot by [Killer]. [Show details?]"
+		- "Nope! [Character] makes it to the credits unscathed."
+		- "The movie leaves us hanging - [Character]'s fate is ambiguous. [Show details?]"
 - Site hosting on Vercel at the purchased domain: i.e. whodiesinthismovie.com
 - Site is responsive and built as a progressive web app
 - More comprehensive input validation and sanitization
