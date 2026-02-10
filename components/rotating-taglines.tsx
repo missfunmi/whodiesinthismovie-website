@@ -80,8 +80,8 @@ export default function RotatingTaglines() {
   // Skip animation on the very first render so the tagline is immediately visible.
   // Without this, the fadeScaleIn animation starts at opacity: 0, and reduced-motion
   // overrides (0.01ms duration) can prevent the animation from completing, leaving
-  // the tagline invisible.
-  const hasRotated = useRef(false);
+  // the tagline invisible. Uses state (not ref) because it affects render output.
+  const [hasRotated, setHasRotated] = useState(false);
   const prefersReducedMotion = useRef(false);
   // Track pending rotation timeout so it can be cleared on unmount
   const rotateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,7 +97,7 @@ export default function RotatingTaglines() {
 
   const rotate = useCallback(() => {
     if (!isMountedRef.current) return;
-    hasRotated.current = true;
+    setHasRotated(true);
 
     // Start exit animation
     setIsExiting(true);
@@ -132,7 +132,7 @@ export default function RotatingTaglines() {
         style={{
           // Skip animation on the very first render — tagline just appears.
           // Subsequent rotations animate normally.
-          ...(hasRotated.current
+          ...(hasRotated
             ? {
                 animation: getAnimation(variant, isExiting),
                 // Typewriter needs hidden overflow and no-wrap to animate width

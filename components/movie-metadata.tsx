@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Film } from "lucide-react";
+import PosterImage from "@/components/poster-image";
 import { formatRuntime, getPosterUrl } from "@/lib/utils";
 
 type MovieMetadataProps = {
@@ -32,12 +32,14 @@ export default function MovieMetadata({
       {/* Poster */}
       <div className="shrink-0">
         {posterUrl ? (
-          <Image
+          <PosterImage
             src={posterUrl}
             alt={`${title} poster`}
             width={300}
             height={450}
             className="w-full md:w-75 rounded-lg shadow-2xl"
+            fallbackClassName="w-full md:w-75 h-112.5 rounded-lg shadow-2xl bg-white/10 flex items-center justify-center"
+            fallbackIconClassName="w-16 h-16 text-gray-500"
             priority
           />
         ) : (

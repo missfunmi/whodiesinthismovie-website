@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || "http://localhost:8000";
 const RAG_TIMEOUT_MS = 5000;
+const MAX_QUERY_LENGTH = 200;
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (query.length > MAX_QUERY_LENGTH) {
+      return NextResponse.json(
+        { error: "Query must be 200 characters or fewer" },
+        { status: 400 }
+      );
+    }
+
+    // Strip HTML tags for safety before forwarding
+    const sanitizedQuery = query.replace(/<[^>]*>/g, "");
+
     // Forward to Python RAG service with timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), RAG_TIMEOUT_MS);
@@ -23,7 +34,7 @@ export async function POST(request: NextRequest) {
       const response = await fetch(`${RAG_SERVICE_URL}/query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query: sanitizedQuery }),
         signal: controller.signal,
       });
 

@@ -143,6 +143,14 @@ h6 {
   }
 }
 
+/* Global focus-visible ring for keyboard navigation (SPEC Section 2.6) */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,

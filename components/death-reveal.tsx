@@ -63,7 +63,12 @@ export default function DeathReveal({
       )}
 
       {/* Skeleton loading state */}
-      {isLoading && <SkeletonLoader />}
+      {isLoading && (
+        <>
+          <SkeletonLoader />
+          <span className="sr-only">Loading death information...</span>
+        </>
+      )}
 
       {/* Revealed death cards */}
       {isRevealed && (

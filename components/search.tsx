@@ -57,6 +57,7 @@ export default function Search() {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>("idle");
+  const [isSearching, setIsSearching] = useState(false);
 
   // Derive easter egg state from query (no setState needed)
   const isEasterEgg = useMemo(() => query.startsWith("!!"), [query]);
@@ -88,8 +89,12 @@ export default function Search() {
       debounceRef.current = null;
     }
 
-    if (!shouldSearch(query)) return;
+    if (!shouldSearch(query)) {
+      setIsSearching(false);
+      return;
+    }
 
+    setIsSearching(true);
     const trimmed = query.trim();
 
     debounceRef.current = setTimeout(async () => {
@@ -122,6 +127,8 @@ export default function Search() {
         setResults([]);
         setTooMany(false);
         setShowDropdown(true);
+      } finally {
+        setIsSearching(false);
       }
     }, DEBOUNCE_MS);
 
@@ -247,6 +254,7 @@ export default function Search() {
         onChange={handleQueryChange}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
+        isLoading={isSearching}
         onBlur={() => {
           // Delay hiding to allow click events on dropdown items to fire
           setTimeout(() => {
@@ -271,6 +279,18 @@ export default function Search() {
         onRequestMovie={handleRequestMovie}
         requestStatus={requestStatus}
       />
+      {/* Screen reader announcements for search results */}
+      <div aria-live="polite" className="sr-only">
+        {showDropdown && results !== null && results.length > 0 && (
+          <span>{results.length} search result{results.length !== 1 ? "s" : ""} available</span>
+        )}
+        {showDropdown && results !== null && results.length === 0 && !tooMany && (
+          <span>No results found</span>
+        )}
+        {showDropdown && tooMany && (
+          <span>Too many results. Keep typing to narrow your search.</span>
+        )}
+      </div>
     </div>
   );
 }

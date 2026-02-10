@@ -37,11 +37,16 @@ npx prisma studio        # Visual database browser
 ├── app/
 │   ├── layout.tsx              # Root layout (fonts, metadata, notification bell)
 │   ├── page.tsx                # Welcome page (search + poster background)
+│   ├── error.tsx               # Root error boundary (client)
 │   ├── browse/
-│   │   └── page.tsx            # All movies browse page (grid + pagination)
+│   │   ├── page.tsx            # All movies browse page (grid + pagination)
+│   │   ├── loading.tsx         # Browse page loading skeleton
+│   │   └── error.tsx           # Browse error boundary (client)
 │   ├── movie/
 │   │   └── [tmdbId]/
-│   │       └── page.tsx        # Movie detail page
+│   │       ├── page.tsx        # Movie detail page
+│   │       ├── loading.tsx     # Movie detail loading skeleton
+│   │       └── error.tsx       # Movie detail error boundary (client)
 │   └── api/
 │       ├── movies/
 │       │   ├── search/route.ts # GET - search movies by title
@@ -62,6 +67,7 @@ npx prisma studio        # Visual database browser
 │   ├── death-card.tsx          # Confirmed death card (presentational)
 │   ├── ambiguous-death-card.tsx # Ambiguous death card (presentational)
 │   ├── skeleton-loader.tsx     # Pulsing skeleton grid (presentational)
+│   ├── poster-image.tsx        # Image with onError fallback to Film icon (client)
 │   ├── notification-bell.tsx   # Top-right notification bell with dropdown (client)
 │   └── browse-grid.tsx         # Movie grid with pagination (client)
 ├── lib/
@@ -228,6 +234,21 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **onBlur race condition in search**: `isRequestingRef` is now cleared with a 200ms delay (via `setTimeout`) so the 150ms onBlur timer doesn't race ahead and close the dropdown before the success/error message renders
 - **Fandom wiki parser hardening**: `parseFandomDeaths` now processes only top-level bullets (`*`), collects `**` sub-bullets as additional context, and uses an extended killedBy regex with more cause-of-death verbs (beheaded, strangled, crushed, drowned, poisoned, mauled, devoured, impaled, decapitated) plus "at the hands of" pattern
 - **Success message UX**: Movie request success confirmation now uses a green-tinted background (`bg-green-500/10` + `border-green-500/20`) for visual distinction
+
+### Polish (Phase 7) *(Complete)*
+- **Error boundaries**: Three `error.tsx` files (root, movie detail, browse) using Next.js App Router convention. All use `"use client"`, `bg-primary` dark background, white text, "Try Again" button calling `reset()`, and optional "Back to Search" link. Error boundaries catch server component errors and rendering crashes
+- **PosterImage client component**: Reusable `components/poster-image.tsx` wraps `next/image` with `onError` → Film icon fallback. Prevents broken image icons when TMDB CDN is down. Used in `movie-metadata.tsx`, `autocomplete-dropdown.tsx`, `browse-grid.tsx`. Server component `movie-metadata.tsx` can use it because PosterImage is a client component child (client boundary is at the component, not the parent)
+- **Loading skeletons**: `app/movie/[tmdbId]/loading.tsx` and `app/browse/loading.tsx` render `<MovieHeader>` immediately + `animate-pulse` skeleton layouts matching the actual page structure. Next.js automatically wraps pages in `<Suspense>` with these as fallbacks
+- **Search loading spinner**: `isSearching` state in `search.tsx` drives `isLoading` prop on `SearchInput`, which swaps `<Search>` icon for `<Loader2 className="animate-spin">`. Set true on debounce start, false in `finally` after fetch
+- **Browse grid fetch error state**: `fetchError` boolean state shows inline error message with "Try again" button. Resets on each new fetch attempt
+- **Smart search validation**: Added max 200 char limit + HTML strip regex to `/api/smart-search/route.ts`, matching search/request route patterns
+- **Global focus-visible rings**: CSS rule in `globals.css` for `a:focus-visible`, `button:focus-visible`, `select:focus-visible` with `outline: 2px solid #3B82F6; outline-offset: 2px`. Consistent blue ring on keyboard navigation without affecting mouse clicks
+- **Notification items as buttons**: Changed notification `<div role="menuitem">` to `<button>` elements for native keyboard accessibility (Enter/Space activation, focusable). Added Escape key handler on dropdown container
+- **aria-live search announcements**: `<div aria-live="polite" className="sr-only">` in search component announces result counts and status changes to screen readers
+- **sr-only loading text**: Added `<span className="sr-only">` for loading states in search, browse grid, and death reveal
+- **Responsive overflow fixes**: Autocomplete dropdown uses `max-h-[60vh] sm:max-h-125` to prevent overflow on small screens. Notification dropdown uses `max-w-[calc(100vw-2rem)]` to constrain width on 375px viewports
+- **hasRotated ref → state**: `rotating-taglines.tsx` used `hasRotated.current` during render which violated `react-hooks/refs` lint rule. Converted to `useState` since it controls render output (whether to apply animation CSS)
+- **SPEC deviation**: SPEC says "Network failure toast" but we use inline error states (browse grid) and error boundaries (page-level) instead. No toast library needed; error feedback appears contextually where the user is looking
 
 ### TMDB API Integration Details
 - **Bearer token authentication**: All TMDB requests use `Authorization: Bearer ${API_KEY}` header. The worker auto-detects whether `TMDB_API_KEY` includes the "Bearer " prefix and adds it if missing

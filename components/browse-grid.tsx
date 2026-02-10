@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Film, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
+import PosterImage from "@/components/poster-image";
 import { getPosterUrl } from "@/lib/utils";
 import type { BrowseMovie, BrowseResponse } from "@/lib/types";
 
@@ -43,6 +43,7 @@ export default function BrowseGrid({
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [sort, setSort] = useState<SortOption>(initialSort);
   const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [layout, setLayout] = useState<LayoutOption>("grid");
 
@@ -55,6 +56,7 @@ export default function BrowseGrid({
   const fetchMovies = useCallback(
     async (page: number, sortBy: SortOption) => {
       setIsLoading(true);
+      setFetchError(false);
       try {
         const params = new URLSearchParams();
         if (page > 1) params.set("page", String(page));
@@ -66,6 +68,7 @@ export default function BrowseGrid({
 
         if (!res.ok) {
           console.error("Browse fetch failed:", res.status);
+          setFetchError(true);
           return;
         }
 
@@ -80,6 +83,7 @@ export default function BrowseGrid({
         router.push(newUrl, { scroll: false });
       } catch (error) {
         console.error("Browse fetch error:", error);
+        setFetchError(true);
       } finally {
         setIsLoading(false);
       }
@@ -153,6 +157,22 @@ export default function BrowseGrid({
           </div>
         </div>
       </div>
+
+      {/* Fetch error state */}
+      {fetchError && (
+        <div className="text-center py-8 mb-4">
+          <p className="text-red-400 mb-3">Something went wrong loading movies.</p>
+          <button
+            onClick={() => fetchMovies(currentPage, sort)}
+            className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Screen reader loading announcement */}
+      {isLoading && <span className="sr-only">Loading movies...</span>}
 
       {/* Movie grid or list */}
       {layout === "grid" ? (
@@ -236,12 +256,14 @@ function MovieCard({
     >
       {/* Poster or fallback */}
       {posterUrl ? (
-        <Image
+        <PosterImage
           src={posterUrl}
           alt={`${movie.title} (${movie.year})`}
           width={300}
           height={450}
           className="w-full aspect-2/3 object-cover rounded-lg shadow-lg"
+          fallbackClassName="w-full aspect-2/3 rounded-lg shadow-lg bg-white/10 flex items-center justify-center"
+          fallbackIconClassName="w-12 h-12 text-gray-500"
         />
       ) : (
         <div className="w-full aspect-2/3 rounded-lg shadow-lg bg-white/10 flex items-center justify-center">
@@ -282,12 +304,14 @@ function MovieListItem({
     >
       {/* Poster thumbnail */}
       {posterUrl ? (
-        <Image
+        <PosterImage
           src={posterUrl}
           alt=""
           width={40}
           height={60}
           className="w-10 h-15 object-cover rounded shadow-md shrink-0"
+          fallbackClassName="w-10 h-15 rounded shadow-md shrink-0 bg-white/10 flex items-center justify-center"
+          fallbackIconClassName="w-4 h-4 text-gray-500"
         />
       ) : (
         <div className="w-10 h-15 rounded shadow-md shrink-0 bg-white/10 flex items-center justify-center">
