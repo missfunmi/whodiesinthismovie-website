@@ -22,7 +22,8 @@ const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_RATE_LIMIT_MS = 500; // Delay between TMDB call batches
 const TMDB_MAX_RETRIES = 3;
 const TMDB_RETRY_DELAYS = [2_000, 4_000, 8_000]; // Exponential backoff
-const LLM_TIMEOUT_MS = 60_000; // 60 seconds for death extraction (30s was too tight for enrichment prompts)
+const LLM_INACTIVITY_TIMEOUT_MS = 30_000; // 30s with no new tokens → abort
+const LLM_MAX_TOTAL_MS = 180_000; // 180s hard ceiling per attempt
 const LLM_MAX_RETRIES = 3;
 
 const FANDOM_API_BASE =
@@ -647,6 +648,97 @@ function repairLlmJson(json: string): string {
 }
 
 /**
+ * Call Ollama with streaming enabled.
+ * Uses an inactivity timeout (no new tokens for N seconds) rather than a fixed
+ * total timeout. This handles cold model loading gracefully — the model may
+ * take 30-60s to load into VRAM, then stream tokens steadily.
+ */
+async function callOllamaStreaming(
+  ollamaEndpoint: string,
+  ollamaModel: string,
+  prompt: string,
+): Promise<string> {
+  const controller = new AbortController();
+  const startTime = Date.now();
+
+  // Hard ceiling: abort no matter what after LLM_MAX_TOTAL_MS
+  const totalTimeout = setTimeout(() => controller.abort(), LLM_MAX_TOTAL_MS);
+
+  // Inactivity timer: reset every time we receive a chunk
+  let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+  const resetInactivityTimer = () => {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => controller.abort(), LLM_INACTIVITY_TIMEOUT_MS);
+  };
+
+  try {
+    resetInactivityTimer();
+
+    const response = await fetch(`${ollamaEndpoint}/api/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: ollamaModel,
+        prompt,
+        stream: true,
+        options: {
+          // Explicitly set context window. Many models default to 2048 tokens
+          // which is too small for enrichment prompts (death list + plot summary).
+          num_ctx: 8192,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama returned ${response.status}: ${response.statusText}`);
+    }
+
+    if (!response.body) {
+      throw new Error("Ollama response has no body (streaming not supported?)");
+    }
+
+    let accumulated = "";
+    const decoder = new TextDecoder();
+
+    for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
+      resetInactivityTimer();
+      const text = decoder.decode(chunk, { stream: true });
+
+      // Ollama streams NDJSON: one JSON object per line
+      for (const line of text.split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.response) {
+            accumulated += parsed.response;
+          }
+          if (parsed.done) {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`[worker:llm] Streaming complete in ${elapsed}s (${accumulated.length} chars)`);
+            return accumulated.trim();
+          }
+        } catch {
+          // Partial JSON line — will be completed in next chunk
+        }
+      }
+    }
+
+    return accumulated.trim();
+  } catch (error) {
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("aborted") || msg.includes("abort")) {
+      throw new Error(`Ollama inactivity/total timeout after ${elapsed}s`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(totalTimeout);
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+  }
+}
+
+/**
  * Use Ollama to extract/enrich structured death data.
  *
  * Two modes:
@@ -728,31 +820,12 @@ ${content.slice(0, 6000)}`;
   }
 
   for (let attempt = 0; attempt < LLM_MAX_RETRIES; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
-
     try {
       console.log(
         `[worker:llm] Calling Ollama (attempt ${attempt + 1}/${LLM_MAX_RETRIES}, model: ${ollamaModel})`,
       );
 
-      const response = await fetch(`${ollamaEndpoint}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: ollamaModel,
-          prompt,
-          stream: false,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Ollama returned ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawResponse = (data.response || "").trim();
+      const rawResponse = await callOllamaStreaming(ollamaEndpoint, ollamaModel, prompt);
       console.log(
         `[worker:llm] Raw response (first 300 chars): ${rawResponse.slice(0, 300)}`,
       );
@@ -788,8 +861,8 @@ ${content.slice(0, 6000)}`;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
 
-      if (msg.includes("aborted") || msg.includes("abort")) {
-        console.warn(`[worker:llm] Timeout after ${LLM_TIMEOUT_MS}ms (attempt ${attempt + 1})`);
+      if (msg.includes("aborted") || msg.includes("abort") || msg.includes("inactivity")) {
+        console.warn(`[worker:llm] Timeout (attempt ${attempt + 1}): ${msg}`);
       } else if (msg.includes("JSON")) {
         console.warn(`[worker:llm] Invalid JSON from LLM (attempt ${attempt + 1}): ${msg}`);
       } else {
@@ -800,7 +873,7 @@ ${content.slice(0, 6000)}`;
         // Fall back to parsed deaths if available (better than failing entirely)
         if (hasParsedDeaths) {
           console.warn(
-            `[worker:llm] LLM enrichment failed, falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
+            `[worker:llm] LLM failed, falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
           );
           return scraped.parsedDeaths;
         }
@@ -809,8 +882,6 @@ ${content.slice(0, 6000)}`;
 
       // Brief wait before retry
       await sleep(2_000);
-    } finally {
-      clearTimeout(timeout);
     }
   }
 
