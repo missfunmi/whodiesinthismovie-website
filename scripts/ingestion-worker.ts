@@ -22,7 +22,8 @@ const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_RATE_LIMIT_MS = 500; // Delay between TMDB call batches
 const TMDB_MAX_RETRIES = 3;
 const TMDB_RETRY_DELAYS = [2_000, 4_000, 8_000]; // Exponential backoff
-const LLM_TIMEOUT_MS = 30_000; // 30 seconds for death extraction
+const LLM_INACTIVITY_TIMEOUT_MS = 30_000; // 30s with no new tokens → abort
+const LLM_MAX_TOTAL_MS = 180_000; // 180s hard ceiling per attempt
 const LLM_MAX_RETRIES = 3;
 
 const FANDOM_API_BASE =
@@ -102,7 +103,7 @@ function validateEnv(): {
   const tmdbApiKey = process.env.TMDB_API_KEY;
   const ollamaEndpoint =
     process.env.OLLAMA_ENDPOINT || "http://localhost:11434";
-  const ollamaModel = process.env.OLLAMA_MODEL || "llama3.2:3b";
+  const ollamaModel = process.env.OLLAMA_MODEL || "mistral";
 
   if (!databaseUrl) {
     console.error("[worker] Missing DATABASE_URL environment variable");
@@ -266,40 +267,164 @@ async function fetchTmdbMetadata(
 // Death data scraping
 // ---------------------------------------------------------------------------
 
+/** Scraped content from multiple sources, used together for best extraction */
+interface ScrapedDeathData {
+  /** Pre-parsed deaths from the Fandom wiki (programmatic, reliable) */
+  parsedDeaths: ExtractedDeath[];
+  /** Raw wikitext from Fandom (for LLM if needed) */
+  fandomContent: string;
+  /** Plot summary from Wikipedia or Movie Spoiler (for context enrichment) */
+  plotSummary: string;
+}
+
 /**
- * Try to scrape death data from multiple web sources. Returns raw text content
- * suitable for LLM extraction, or empty string if all sources fail.
+ * Scrape death data from multiple web sources.
+ * Strategy: parse the Fandom wiki programmatically for the death list (reliable),
+ * then also fetch Wikipedia's plot summary for narrative context.
+ * Both are passed to the LLM for enrichment.
  */
-async function scrapeDeathData(title: string, year: number): Promise<string> {
-  // Source 1: List of Deaths fandom wiki
+async function scrapeDeathData(title: string, year: number): Promise<ScrapedDeathData> {
+  // Source 1: List of Deaths fandom wiki (primary — structured death list)
   const fandomContent = await scrapeFandomWiki(title, year);
+  let parsedDeaths: ExtractedDeath[] = [];
+
   if (fandomContent) {
     console.log(
       `[worker:scrape] Found content on List of Deaths wiki (${fandomContent.length} chars)`,
     );
-    return fandomContent;
+    // Parse the structured wikitext to reliably extract ALL deaths
+    parsedDeaths = parseFandomDeaths(fandomContent);
+    console.log(
+      `[worker:scrape] Parsed ${parsedDeaths.length} deaths from wikitext`,
+    );
   }
 
-  // Source 2: Wikipedia plot summary
-  const wikiContent = await scrapeWikipediaPlot(title);
+  // Source 2: Wikipedia plot summary (supplementary — narrative context)
+  const wikiContent = await scrapeWikipediaPlot(title, year);
   if (wikiContent) {
     console.log(
-      `[worker:scrape] Found content on Wikipedia (${wikiContent.length} chars)`,
+      `[worker:scrape] Found Wikipedia plot summary (${wikiContent.length} chars)`,
     );
-    return wikiContent;
   }
 
-  // Source 3: The Movie Spoiler
-  const spoilerContent = await scrapeMovieSpoiler(title);
-  if (spoilerContent) {
-    console.log(
-      `[worker:scrape] Found content on The Movie Spoiler (${spoilerContent.length} chars)`,
-    );
-    return spoilerContent;
+  // Source 3: The Movie Spoiler (fallback for plot summary)
+  let spoilerContent: string | null = null;
+  if (!wikiContent) {
+    spoilerContent = await scrapeMovieSpoiler(title);
+    if (spoilerContent) {
+      console.log(
+        `[worker:scrape] Found Movie Spoiler content (${spoilerContent.length} chars)`,
+      );
+    }
   }
 
-  console.log(`[worker:scrape] No death data found from any source for "${title}"`);
-  return "";
+  const plotSummary = wikiContent || spoilerContent || "";
+
+  if (!fandomContent && !plotSummary) {
+    console.log(`[worker:scrape] No death data found from any source for "${title}"`);
+  }
+
+  return {
+    parsedDeaths,
+    fandomContent: fandomContent || "",
+    plotSummary,
+  };
+}
+
+/**
+ * Parse the Fandom wiki's Victims section wikitext into structured death records.
+ * The wikitext follows a bullet-list format:
+ *   * Character Name - Description of death
+ *   * <u>''Character''</u> - Description
+ *
+ * This is far more reliable than LLM extraction for getting the complete death list.
+ */
+function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
+  const deaths: ExtractedDeath[] = [];
+
+  const allLines = wikitext.split("\n");
+
+  for (let i = 0; i < allLines.length; i++) {
+    const rawLine = allLines[i];
+    // Only process top-level bullets (single *)
+    if (!rawLine.trim().startsWith("*") || rawLine.trim().startsWith("**")) continue;
+
+    // Strip leading "* " and wiki markup
+    let line = rawLine.replace(/^\*+\s*/, "");
+    // Strip wiki formatting: bold ''', italic '', underline <u></u>, links [[]]
+    line = line
+      .replace(/<\/?u>/gi, "")
+      .replace(/'{2,3}/g, "")
+      .replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g, (_m, _link, display) => display || _link)
+      .replace(/<[^>]+>/g, "")
+      .trim();
+
+    if (!line || line.length < 5) continue;
+
+    // Split on " - " to get character name and death description
+    const dashIndex = line.indexOf(" - ");
+    if (dashIndex === -1) continue;
+
+    const character = line.slice(0, dashIndex).trim();
+    const description = line.slice(dashIndex + 3).trim();
+
+    if (!character || !description) continue;
+
+    // Collect sub-bullet context (** lines following this entry)
+    const subBulletParts: string[] = [];
+    for (let j = i + 1; j < allLines.length; j++) {
+      const nextLine = allLines[j].trim();
+      if (nextLine.startsWith("**")) {
+        let sub = nextLine.replace(/^\*+\s*/, "");
+        sub = sub
+          .replace(/<\/?u>/gi, "")
+          .replace(/'{2,3}/g, "")
+          .replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g, (_m, _link, display) => display || _link)
+          .replace(/<[^>]+>/g, "")
+          .trim();
+        if (sub) subBulletParts.push(sub);
+      } else {
+        break; // Stop at next top-level bullet or non-bullet line
+      }
+    }
+    const subContext = subBulletParts.join("; ");
+
+    // Determine if death is ambiguous (off-screen, mentioned, uncertain)
+    const lowerDesc = description.toLowerCase();
+    const isAmbiguous =
+      lowerDesc.includes("off-screen") ||
+      lowerDesc.includes("mentioned") ||
+      lowerDesc.includes("uncertain") ||
+      lowerDesc.includes("debatable") ||
+      lowerDesc.includes("unknown if");
+
+    // Try to extract "killed by" from description
+    // Handles: "eaten by X", "shot by X", "bitten in half by X", "at the hands of X"
+    let killedBy = "N/A";
+    const killedByMatch = description.match(
+      /(?:killed|eaten|shot|stabbed|murdered|bitten|dragged|torn apart|blown up|attacked|beheaded|strangled|crushed|drowned|poisoned|mauled|devoured|impaled|decapitated)\b.*?\b(?:by|at the hands of)\s+([^,.;(]+)/i,
+    );
+    if (killedByMatch) {
+      killedBy = killedByMatch[1].trim();
+      // Clean up trailing noise
+      killedBy = killedBy
+        .replace(/\s+off-screen.*$/i, "")
+        .replace(/\s+with\s+.+$/i, "") // "Martin Brody with a rifle" → "Martin Brody"
+        .replace(/\s+in\s+\d{4}.*$/i, "") // "sharks in 1916" → "sharks"
+        .trim();
+    }
+
+    deaths.push({
+      character,
+      timeOfDeath: "Unknown",
+      cause: description,
+      killedBy,
+      context: subContext,
+      isAmbiguous,
+    });
+  }
+
+  return deaths;
 }
 
 /**
@@ -361,9 +486,10 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
  * Scrape Wikipedia for the movie's plot summary using the MediaWiki API.
  * The plot section typically describes deaths in narrative form.
  */
-async function scrapeWikipediaPlot(title: string): Promise<string | null> {
-  // Try page titles: "Title (film)", "Title (year film)", "Title"
+async function scrapeWikipediaPlot(title: string, year?: number): Promise<string | null> {
+  // Try page titles in order of specificity
   const pageVariants = [
+    ...(year ? [`${title} (${year} film)`] : []),
     `${title} (film)`,
     title,
   ];
@@ -542,24 +668,162 @@ function repairLlmJson(json: string): string {
 }
 
 /**
- * Use Ollama to extract structured death data from scraped text content.
- * Returns an array of death records, or empty array if extraction fails.
+ * Call Ollama with streaming enabled.
+ * Uses an inactivity timeout (no new tokens for N seconds) rather than a fixed
+ * total timeout. This handles cold model loading gracefully — the model may
+ * take 30-60s to load into VRAM, then stream tokens steadily.
+ */
+async function callOllamaStreaming(
+  ollamaEndpoint: string,
+  ollamaModel: string,
+  prompt: string,
+): Promise<string> {
+  const controller = new AbortController();
+  const startTime = Date.now();
+
+  // Hard ceiling: abort no matter what after LLM_MAX_TOTAL_MS
+  const totalTimeout = setTimeout(() => controller.abort(), LLM_MAX_TOTAL_MS);
+
+  // Inactivity timer: reset every time we receive a chunk
+  let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
+  const resetInactivityTimer = () => {
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => controller.abort(), LLM_INACTIVITY_TIMEOUT_MS);
+  };
+
+  try {
+    resetInactivityTimer();
+
+    const response = await fetch(`${ollamaEndpoint}/api/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: ollamaModel,
+        prompt,
+        stream: true,
+        options: {
+          // Explicitly set context window. Many models default to 2048 tokens
+          // which is too small for enrichment prompts (death list + plot summary).
+          num_ctx: 8192,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama returned ${response.status}: ${response.statusText}`);
+    }
+
+    if (!response.body) {
+      throw new Error("Ollama response has no body (streaming not supported?)");
+    }
+
+    let accumulated = "";
+    const decoder = new TextDecoder();
+
+    for await (const chunk of response.body as AsyncIterable<Uint8Array>) {
+      resetInactivityTimer();
+      const text = decoder.decode(chunk, { stream: true });
+
+      // Ollama streams NDJSON: one JSON object per line
+      for (const line of text.split("\n")) {
+        if (!line.trim()) continue;
+        try {
+          const parsed = JSON.parse(line);
+          if (parsed.response) {
+            accumulated += parsed.response;
+          }
+          if (parsed.done) {
+            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+            console.log(`[worker:llm] Streaming complete in ${elapsed}s (${accumulated.length} chars)`);
+            return accumulated.trim();
+          }
+        } catch {
+          // Partial JSON line — will be completed in next chunk
+        }
+      }
+    }
+
+    return accumulated.trim();
+  } catch (error) {
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const msg = error instanceof Error ? error.message : String(error);
+    if (msg.includes("aborted") || msg.includes("abort")) {
+      throw new Error(`Ollama inactivity/total timeout after ${elapsed}s`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(totalTimeout);
+    if (inactivityTimer) clearTimeout(inactivityTimer);
+  }
+}
+
+/**
+ * Use Ollama to extract/enrich structured death data.
+ *
+ * Two modes:
+ * 1. Enrichment (preferred): We already have parsed deaths from the wiki.
+ *    The LLM adds timeOfDeath, context, and validates killedBy using the plot summary.
+ * 2. Full extraction (fallback): No parsed deaths available. The LLM extracts
+ *    everything from the raw text (Wikipedia plot or Movie Spoiler content).
  */
 async function extractDeathsWithLlm(
   title: string,
-  scrapedContent: string,
+  scraped: ScrapedDeathData,
   ollamaEndpoint: string,
   ollamaModel: string,
 ): Promise<ExtractedDeath[]> {
-  if (!scrapedContent || scrapedContent.trim().length === 0) {
+  const hasPlot = scraped.plotSummary.trim().length > 0;
+  const hasParsedDeaths = scraped.parsedDeaths.length > 0;
+  const hasAnyContent = scraped.fandomContent.length > 0 || hasPlot;
+
+  if (!hasAnyContent && !hasParsedDeaths) {
     console.log(`[worker:llm] No content to extract deaths from — zero-death movie`);
     return [];
   }
 
-  const prompt = `Extract character deaths from this text about the movie "${title}".
+  // If we have parsed deaths but no plot summary, use them as-is (no LLM needed)
+  if (hasParsedDeaths && !hasPlot) {
+    console.log(
+      `[worker:llm] Using ${scraped.parsedDeaths.length} parsed deaths (no plot summary available for enrichment)`,
+    );
+    return scraped.parsedDeaths;
+  }
+
+  let prompt: string;
+
+  if (hasParsedDeaths && hasPlot) {
+    // Enrichment mode: we have the death list, LLM fills in context from plot
+    const deathSummary = scraped.parsedDeaths
+      .map((d, i) => `${i + 1}. ${d.character} — ${d.cause}`)
+      .join("\n");
+
+    prompt = `Here are the character deaths from the movie "${title}":
+
+DEATH LIST:
+${deathSummary}
+
+PLOT SUMMARY:
+${scraped.plotSummary.slice(0, 4000)}
+
+For EACH death listed above, provide additional details from the plot summary.
+Return ONLY a valid JSON array with one object per death. Each object must have:
+- character (string): exact character name from the death list
+- timeOfDeath (string): when in the movie (e.g. "Opening scene", "Act 2", "Final act", "~45 minutes in"). Use "Unknown" only if truly unclear
+- cause (string): how they died (from the death list)
+- killedBy (string): who/what killed them. Use "N/A" for accidents/natural causes
+- context (string): 1-2 sentence summary of the circumstances from the plot
+- isAmbiguous (boolean): true if death is off-screen/uncertain/only mentioned
+
+You MUST include ALL ${scraped.parsedDeaths.length} deaths. Do not skip any.
+Return ONLY valid JSON. No other text.`;
+  } else {
+    // Full extraction mode: no parsed deaths, extract from plot/raw content
+    const content = scraped.plotSummary || scraped.fandomContent;
+    prompt = `Extract ALL character deaths from this text about the movie "${title}".
 Return ONLY a valid JSON array of objects. Each object must have these exact fields:
 - character (string): character name
-- timeOfDeath (string): when they died
+- timeOfDeath (string): when they died (e.g. "Opening scene", "Act 2", "Final act")
 - cause (string): how they died
 - killedBy (string): who killed them (use "N/A" if not applicable)
 - context (string): 1-2 sentence summary
@@ -572,34 +836,16 @@ If no deaths, return: []
 Return ONLY valid JSON. No other text.
 
 Text:
-${scrapedContent}`;
+${content.slice(0, 6000)}`;
+  }
 
   for (let attempt = 0; attempt < LLM_MAX_RETRIES; attempt++) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), LLM_TIMEOUT_MS);
-
     try {
       console.log(
         `[worker:llm] Calling Ollama (attempt ${attempt + 1}/${LLM_MAX_RETRIES}, model: ${ollamaModel})`,
       );
 
-      const response = await fetch(`${ollamaEndpoint}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: ollamaModel,
-          prompt,
-          stream: false,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Ollama returned ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const rawResponse = (data.response || "").trim();
+      const rawResponse = await callOllamaStreaming(ollamaEndpoint, ollamaModel, prompt);
       console.log(
         `[worker:llm] Raw response (first 300 chars): ${rawResponse.slice(0, 300)}`,
       );
@@ -635,8 +881,8 @@ ${scrapedContent}`;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
 
-      if (msg.includes("aborted") || msg.includes("abort")) {
-        console.warn(`[worker:llm] Timeout after ${LLM_TIMEOUT_MS}ms (attempt ${attempt + 1})`);
+      if (msg.includes("aborted") || msg.includes("abort") || msg.includes("inactivity")) {
+        console.warn(`[worker:llm] Timeout (attempt ${attempt + 1}): ${msg}`);
       } else if (msg.includes("JSON")) {
         console.warn(`[worker:llm] Invalid JSON from LLM (attempt ${attempt + 1}): ${msg}`);
       } else {
@@ -644,17 +890,22 @@ ${scrapedContent}`;
       }
 
       if (attempt === LLM_MAX_RETRIES - 1) {
+        // Fall back to parsed deaths if available (better than failing entirely)
+        if (hasParsedDeaths) {
+          console.warn(
+            `[worker:llm] LLM failed, falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
+          );
+          return scraped.parsedDeaths;
+        }
         throw new Error(`LLM extraction failed after ${LLM_MAX_RETRIES} attempts: ${msg}`);
       }
 
       // Brief wait before retry
       await sleep(2_000);
-    } finally {
-      clearTimeout(timeout);
     }
   }
 
-  return []; // Should not reach here, but safe fallback
+  return hasParsedDeaths ? scraped.parsedDeaths : []; // Safe fallback
 }
 
 /**
@@ -823,15 +1074,15 @@ async function processJob(
   // Rate limiting between TMDB and scraping
   await sleep(TMDB_RATE_LIMIT_MS);
 
-  // Step 5: Scrape death data from web sources
+  // Step 5: Scrape death data from web sources (Fandom wiki + Wikipedia plot)
   console.log(`[worker:scrape] Scraping death data for "${movieData.title}" (${movieData.year})...`);
-  const scrapedContent = await scrapeDeathData(movieData.title, movieData.year);
+  const scraped = await scrapeDeathData(movieData.title, movieData.year);
 
-  // Step 6: Extract structured deaths via LLM
+  // Step 6: Extract/enrich structured deaths via LLM
   console.log(`[worker:llm] Extracting deaths from scraped content...`);
   const deaths = await extractDeathsWithLlm(
     movieData.title,
-    scrapedContent,
+    scraped,
     config.ollamaEndpoint,
     config.ollamaModel,
   );

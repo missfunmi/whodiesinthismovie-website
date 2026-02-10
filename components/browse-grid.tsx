@@ -4,11 +4,12 @@ import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Film, ChevronLeft, ChevronRight } from "lucide-react";
+import { Film, ChevronLeft, ChevronRight, LayoutGrid, List } from "lucide-react";
 import { getPosterUrl } from "@/lib/utils";
 import type { BrowseMovie, BrowseResponse } from "@/lib/types";
 
 type SortOption = "alphabetical" | "recent";
+type LayoutOption = "grid" | "list";
 
 type BrowseGridProps = {
   initialMovies: BrowseMovie[];
@@ -43,6 +44,7 @@ export default function BrowseGrid({
   const [sort, setSort] = useState<SortOption>(initialSort);
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [layout, setLayout] = useState<LayoutOption>("grid");
 
   // Gate time-dependent UI (NEW! badges) behind mount to prevent hydration mismatch
   useEffect(() => {
@@ -82,7 +84,7 @@ export default function BrowseGrid({
         setIsLoading(false);
       }
     },
-    [pathname, router]
+    [pathname, router],
   );
 
   const handleSortChange = (newSort: SortOption) => {
@@ -108,38 +110,80 @@ export default function BrowseGrid({
             : `Page ${currentPage} of ${totalPages}`}
         </p>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="sort-select" className="text-sm text-gray-400">
-            Sort by
-          </label>
-          <select
-            id="sort-select"
-            value={sort}
-            onChange={(e) => handleSortChange(e.target.value as SortOption)}
-            className="bg-white/10 text-white text-sm rounded-md px-3 py-1.5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="alphabetical">Alphabetical</option>
-            <option value="recent">Recently Added</option>
-          </select>
+        <div className="flex items-center gap-4">
+          {/* Layout toggle */}
+          <div className="flex items-center gap-1 bg-white/10 rounded-md p-0.5">
+            <button
+              onClick={() => setLayout("grid")}
+              aria-label="Grid layout"
+              className={`p-1.5 rounded transition-colors ${
+                layout === "grid"
+                  ? "bg-white/20 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setLayout("list")}
+              aria-label="List layout"
+              className={`p-1.5 rounded transition-colors ${
+                layout === "list"
+                  ? "bg-white/20 text-white"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <List className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort-select" className="text-sm text-gray-400">
+              Sort by
+            </label>
+            <select
+              id="sort-select"
+              value={sort}
+              onChange={(e) => handleSortChange(e.target.value as SortOption)}
+              className="bg-white/10 text-white text-sm rounded-md px-3 py-1.5 border border-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="alphabetical">Alphabetical</option>
+              <option value="recent">Recently Added</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Movie grid */}
-      <div
-        className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 transition-opacity duration-200 ${
-          isLoading ? "opacity-50 pointer-events-none" : ""
-        }`}
-      >
-        {movies.map((movie) => (
-          <MovieCard key={movie.tmdbId} movie={movie} mounted={mounted} />
-        ))}
-      </div>
+      {/* Movie grid or list */}
+      {layout === "grid" ? (
+        <div
+          className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 transition-opacity duration-200 ${
+            isLoading ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
+          {movies.map((movie) => (
+            <MovieCard key={movie.tmdbId} movie={movie} mounted={mounted} />
+          ))}
+        </div>
+      ) : (
+        <div
+          className={`flex flex-col gap-2 transition-opacity duration-200 ${
+            isLoading ? "opacity-50 pointer-events-none" : ""
+          }`}
+        >
+          {movies.map((movie) => (
+            <MovieListItem key={movie.tmdbId} movie={movie} mounted={mounted} />
+          ))}
+        </div>
+      )}
 
       {/* Empty state */}
       {movies.length === 0 && !isLoading && (
         <div className="text-center py-20">
           <Film className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-          <p className="text-gray-400 text-lg">No movies found</p>
+          <p className="text-gray-400 text-lg">
+            We don&apos;t have that one yet!
+          </p>
         </div>
       )}
 
@@ -176,7 +220,13 @@ export default function BrowseGrid({
 }
 
 /** Individual movie card in the browse grid */
-function MovieCard({ movie, mounted }: { movie: BrowseMovie; mounted: boolean }) {
+function MovieCard({
+  movie,
+  mounted,
+}: {
+  movie: BrowseMovie;
+  mounted: boolean;
+}) {
   const posterUrl = getPosterUrl(movie.posterPath);
 
   return (
@@ -211,6 +261,50 @@ function MovieCard({ movie, mounted }: { movie: BrowseMovie; mounted: boolean })
         <p className="text-white text-sm font-medium truncate">{movie.title}</p>
         <p className="text-gray-400 text-xs">{movie.year}</p>
       </div>
+    </Link>
+  );
+}
+
+/** Individual movie row in the list layout — titles visible for Cmd+F search */
+function MovieListItem({
+  movie,
+  mounted,
+}: {
+  movie: BrowseMovie;
+  mounted: boolean;
+}) {
+  const posterUrl = getPosterUrl(movie.posterPath, "w92");
+
+  return (
+    <Link
+      href={`/movie/${movie.tmdbId}`}
+      className="flex items-center gap-4 p-3 rounded-lg hover:bg-white/10 transition-colors"
+    >
+      {/* Poster thumbnail */}
+      {posterUrl ? (
+        <Image
+          src={posterUrl}
+          alt=""
+          width={40}
+          height={60}
+          className="w-10 h-15 object-cover rounded shadow-md shrink-0"
+        />
+      ) : (
+        <div className="w-10 h-15 rounded shadow-md shrink-0 bg-white/10 flex items-center justify-center">
+          <Film className="w-4 h-4 text-gray-500" />
+        </div>
+      )}
+
+      {/* Title and year — always visible for Cmd+F */}
+      <span className="text-white font-medium truncate">{movie.title}</span>
+      <span className="text-gray-400 text-sm shrink-0">({movie.year})</span>
+
+      {/* "NEW!" badge */}
+      {mounted && isNew(movie.createdAt) && (
+        <span className="bg-green-500 text-white px-2 py-0.5 text-xs rounded font-bold shrink-0">
+          NEW!
+        </span>
+      )}
     </Link>
   );
 }

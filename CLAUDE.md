@@ -13,7 +13,7 @@
 - **Styling**: Tailwind CSS v4 (utility-first, no CSS modules)
 - **Database**: PostgreSQL 15+ via Prisma ORM v7
 - **Images**: next/image with TMDB CDN (`image.tmdb.org`)
-- **LLM**: Ollama + Llama 3.2 3B (query validation & death extraction in ingestion worker)
+- **LLM**: Ollama + Mistral 7B (query validation & death extraction in ingestion worker; configurable via `OLLAMA_MODEL` env var)
 - **Queue**: Database-based polling queue (no Redis/BullMQ)
 - **Notifications**: Polling-based (60s interval) with localStorage persistence
 - **Logging**: Sentry
@@ -160,7 +160,7 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 
 ### Death Reveal — Zero Deaths Handling
 - Movies absent from `seed-deaths.json` have zero `Death` rows in the database (the seed script only creates deaths for movies present in the file).
-- The `DeathReveal` component checks `confirmedDeaths.length === 0 && ambiguousDeaths.length === 0` and renders a "No deaths! Everyone survives!" message directly — no reveal button is shown.
+- The `DeathReveal` component always shows the reveal button, even for zero-death movies. The "No deaths! Everyone survives!" message is only shown after the user clicks the button — maintaining the spoiler-protection pattern consistently.
 
 ## Architectural Decisions (Phase 3-6)
 
@@ -174,13 +174,14 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Sort validation:** Browse API returns 400 for invalid `sort` params (strict validation, not silent fallback) — surfaces frontend bugs early
 - **Sort dropdown options:** "Alphabetical" (default, `ORDER BY title ASC`) and "Recently Added" (`ORDER BY createdAt DESC`). Changing sort resets to page 1
 - **Loading state:** Grid dims to 50% opacity with `pointer-events-none` during fetches
-- **Empty state:** Shows Film icon + "No movies found" when database has zero movies
+- **Empty state:** Shows Film icon + "We don't have that one yet!" when database has zero movies
 - **"Browse All Movies" link** added to home page below search bar as a subtle white/60 text link
+- **Grid/List layout toggle:** Users can switch between grid (default) and list view. List view renders a compact table with poster thumbnail, title, year, and runtime — useful for Cmd+F text searching
 
 ### Movie Request System (Phase 4) *(Complete)*
 - **IngestionQueue model pulled forward from Phase 5** — Phase 4 API route needs to insert into the queue, so the model was added in Phase 4 (SPEC Phase 5 task 5.1 marked done)
-- **LLM validation is best-effort** — Ollama call uses a 5-second timeout with AbortController. If Ollama is unavailable, timeout, or errors, validation is skipped and the request still succeeds. Per SPEC: "don't expose validation to user". AbortController timeout cleanup uses `finally` block to prevent timer leaks
-- **Ollama model is configurable** — `OLLAMA_MODEL` env var (defaults to `llama3.2:3b`). Allows using different Ollama models without code changes
+- **LLM validation gates queue inserts** — Ollama call uses a 5-second timeout with AbortController. If the LLM identifies a query as not a real movie title, the queue insert is silently skipped (user still sees success per SPEC). If Ollama is unavailable/timeout/errors, validation is skipped and the request proceeds normally. AbortController timeout cleanup uses `finally` block to prevent timer leaks
+- **Ollama model is configurable** — `OLLAMA_MODEL` env var (defaults to `mistral`). Switched from Llama 3.2 3B to Mistral 7B — the 3B model timed out on enrichment prompts with large inputs
 - **Inline confirmation instead of toast/modal** — SPEC says "toast/modal" but we use inline state in the autocomplete dropdown. Simpler, no toast infrastructure needed, feedback appears right where the user is looking
 - **RequestStatus state machine** — `"idle" | "loading" | "success" | "error"` union type in `lib/types.ts` drives the zero-results UI in the dropdown. State resets to `"idle"` only when the query substantively changes (trimmed value differs), preventing accidental whitespace from wiping success messages
 - **Existing movie check uses `equals` (not `contains`)** — Prevents false redirects where a broad query like "Alien" might match "Alien vs. Predator". SPEC prescribes `contains` but `equals` with `mode: "insensitive"` is more precise for the request flow
@@ -207,7 +208,7 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
   - If all sources fail, proceeds with empty deaths (not a hard failure)
   - User-Agent includes contact email per Wikipedia/Fandom policies
 - **Memory management**: HTML inputs are truncated before cheerio parsing (100KB for Wikipedia, 500KB for Movie Spoiler). Cheerio DOM instances are explicitly nullified after extraction to assist garbage collection in this long-running process
-- **LLM extraction**: Ollama with 30s timeout, up to 3 retries, JSON repair for common LLM output quirks (mismatched brackets, HTML entities). Prompt includes example JSON to guide formatting
+- **LLM extraction**: Ollama streaming mode with `num_ctx: 8192` (default 2048 too small for enrichment prompts with plot text), 30s inactivity timeout + 180s hard ceiling, up to 3 retries, JSON repair for common LLM output quirks (mismatched brackets, HTML entities). Prompt includes example JSON to guide formatting
 - **Atomic database insert**: Movie upsert + death delete + death insert + queue update are wrapped in `prisma.$transaction()` for atomicity. If the process crashes mid-write, PostgreSQL rolls back — no risk of a movie being left with zero deaths due to interrupted writes
 - **Error handling**: TMDB exponential backoff (2s, 4s, 8s), scraping failures cascade to next source, LLM retries with JSON repair. All errors caught at processJob level — job marked 'failed' with reason, worker continues
 - **Graceful shutdown**: SIGINT/SIGTERM disconnects Prisma cleanly
@@ -220,6 +221,13 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Notification bell**: Fixed top-right on all pages via root layout
 - **Auto-dismiss**: Clicking notification navigates to movie page and marks as read
 - **"Mark all as read"**: Clears badge, updates localStorage with all current tmdbIds
+
+### Bug Fixes & Hardening (Pre-Phase 6)
+- **Tagline visibility fix**: `flex flex-col items-center` on parent caused taglines container to have zero intrinsic width (only contains `absolute` children). Fixed by adding `w-full` to the container div
+- **Unmount safety in rotating-taglines**: Added `isMountedRef` guard to prevent state updates after component unmount. The `rotateTimeoutRef` is also cleaned up in the interval effect's teardown
+- **onBlur race condition in search**: `isRequestingRef` is now cleared with a 200ms delay (via `setTimeout`) so the 150ms onBlur timer doesn't race ahead and close the dropdown before the success/error message renders
+- **Fandom wiki parser hardening**: `parseFandomDeaths` now processes only top-level bullets (`*`), collects `**` sub-bullets as additional context, and uses an extended killedBy regex with more cause-of-death verbs (beheaded, strangled, crushed, drowned, poisoned, mauled, devoured, impaled, decapitated) plus "at the hands of" pattern
+- **Success message UX**: Movie request success confirmation now uses a green-tinted background (`bg-green-500/10` + `border-green-500/20`) for visual distinction
 
 ### TMDB API Integration Details
 - **Bearer token authentication**: All TMDB requests use `Authorization: Bearer ${API_KEY}` header. The worker auto-detects whether `TMDB_API_KEY` includes the "Bearer " prefix and adds it if missing
@@ -238,6 +246,7 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 
 - The Figma prototype in `figma-make-prototype/` is for visual reference only. Do NOT copy its code. Rebuild all components from scratch with proper Next.js patterns.
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
-- The ingestion worker requires Ollama running locally (`http://localhost:11434`) with Llama 3.2 3B model pulled
+- The ingestion worker requires Ollama running locally (`http://localhost:11434`) with Mistral model pulled (`ollama pull mistral`)
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
 - Environment variables must include TMDB_API_KEY (raw key or "Bearer ..." token both supported) and OLLAMA_ENDPOINT for Phases 4+
+- ALWAYS commit all changes on `feature/` or `bugfix/` branches, as necessary — never on main or master

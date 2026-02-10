@@ -91,9 +91,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. LLM validation (best-effort — if Ollama is unavailable, skip and proceed)
+    // If the LLM says NO, silently skip the queue insert (return success to user
+    // per SPEC: "don't expose validation to user") to reduce junk queue entries.
+    let skipQueue = false;
     const ollamaEndpoint =
       process.env.OLLAMA_ENDPOINT || "http://localhost:11434";
-    const ollamaModel = process.env.OLLAMA_MODEL || "llama3.2:3b";
+    const ollamaModel = process.env.OLLAMA_MODEL || "mistral";
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
 
@@ -116,28 +119,33 @@ export async function POST(request: NextRequest) {
         console.log(
           `[request] LLM validation for "${query}": ${answer} (isRealMovie: ${isRealMovie})`
         );
-        // Per SPEC: "If NO: still return success (don't expose validation to user)"
+        if (!isRealMovie) {
+          skipQueue = true;
+        }
       }
     } catch {
-      // Ollama unavailable, timeout, or parse error — skip validation
+      // Ollama unavailable, timeout, or parse error — skip validation, allow queue insert
       console.log("[request] LLM validation skipped (Ollama unavailable)");
     } finally {
       clearTimeout(timeout);
     }
 
-    // 7. Insert into ingestion queue
-    const queueEntry = await prisma.ingestionQueue.create({
-      data: {
-        query,
-        status: "pending",
-      },
-    });
+    // 7. Insert into ingestion queue (skip if LLM flagged as non-movie)
+    if (skipQueue) {
+      console.log(`[request] LLM rejected "${query}" as non-movie — skipping queue insert`);
+    } else {
+      const queueEntry = await prisma.ingestionQueue.create({
+        data: {
+          query,
+          status: "pending",
+        },
+      });
+      console.log(
+        `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"`
+      );
+    }
 
-    console.log(
-      `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"`
-    );
-
-    // 8. Return success
+    // 8. Return success (always — don't expose validation to user per SPEC)
     return NextResponse.json({
       success: true,
       message: "Okay, we'll check on that!",

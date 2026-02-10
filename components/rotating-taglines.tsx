@@ -77,17 +77,28 @@ export default function RotatingTaglines() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [variant, setVariant] = useState<AnimationVariant>("fadeScale");
   const [isExiting, setIsExiting] = useState(false);
+  // Skip animation on the very first render so the tagline is immediately visible.
+  // Without this, the fadeScaleIn animation starts at opacity: 0, and reduced-motion
+  // overrides (0.01ms duration) can prevent the animation from completing, leaving
+  // the tagline invisible.
+  const hasRotated = useRef(false);
   const prefersReducedMotion = useRef(false);
   // Track pending rotation timeout so it can be cleared on unmount
   const rotateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Guard against state updates after unmount
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     prefersReducedMotion.current = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
+    return () => { isMountedRef.current = false; };
   }, []);
 
   const rotate = useCallback(() => {
+    if (!isMountedRef.current) return;
+    hasRotated.current = true;
+
     // Start exit animation
     setIsExiting(true);
 
@@ -96,6 +107,7 @@ export default function RotatingTaglines() {
 
     // After exit animation, swap tagline and enter
     rotateTimeoutRef.current = setTimeout(() => {
+      if (!isMountedRef.current) return;
       setCurrentIndex((prev) => (prev + 1) % TAGLINES.length);
       setVariant(pickRandomVariant());
       setIsExiting(false);
@@ -113,15 +125,21 @@ export default function RotatingTaglines() {
   const isTypewriter = variant === "typewriter" && !isExiting;
 
   return (
-    <div className="h-20 flex items-center justify-center overflow-hidden relative">
+    <div className="h-20 w-full flex items-center justify-center overflow-hidden relative">
       <p
         key={currentIndex}
-        className="text-lg md:text-xl text-gray-300 text-center absolute"
+        className="text-lg md:text-xl text-gray-300 text-center absolute left-0 right-0"
         style={{
-          animation: getAnimation(variant, isExiting),
-          // Typewriter needs hidden overflow and no-wrap to animate width
-          ...(isTypewriter
-            ? { overflow: "hidden", whiteSpace: "nowrap" as const }
+          // Skip animation on the very first render — tagline just appears.
+          // Subsequent rotations animate normally.
+          ...(hasRotated.current
+            ? {
+                animation: getAnimation(variant, isExiting),
+                // Typewriter needs hidden overflow and no-wrap to animate width
+                ...(isTypewriter
+                  ? { overflow: "hidden", whiteSpace: "nowrap" as const }
+                  : {}),
+              }
             : {}),
         }}
       >
