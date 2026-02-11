@@ -96,6 +96,7 @@ function validateEnv(): {
   const databaseUrl = process.env.DATABASE_URL;
   const tmdbApiKey = process.env.TMDB_API_KEY;
   const geminiApiKey = process.env.GEMINI_API_KEY || undefined;
+  const geminiModel = process.env.GEMINI_MODEL || undefined;
   const ollamaEndpoint =
     process.env.OLLAMA_ENDPOINT || "http://localhost:11434";
   const ollamaModel = process.env.OLLAMA_MODEL || "mistral";
@@ -112,7 +113,7 @@ function validateEnv(): {
   return {
     databaseUrl,
     tmdbApiKey,
-    llmConfig: { geminiApiKey, ollamaEndpoint, ollamaModel },
+    llmConfig: { geminiApiKey, geminiModel, ollamaEndpoint, ollamaModel },
   };
 }
 
@@ -589,30 +590,24 @@ async function scrapeWikipediaPlot(title: string, year?: number): Promise<string
       // The extract is HTML — parse with cheerio to find the Plot section
       // Truncate early to cap memory usage in this long-running process
       const extractHtml = (page.extract as string).slice(0, 100_000);
-      let $ = cheerio.load(extractHtml);
-
+      const $ = cheerio.load(extractHtml);
       let plotText = "";
-      let inPlotSection = false;
 
       // Wikipedia API extracts use <h2>, <h3> as section headers
-      $("body").children().each((_i, el) => {
-        const tagName = (el as cheerio.Element).tagName?.toLowerCase();
-        const text = $(el).text().trim();
+      const plotHeader = $("h2, h3")
+        .filter((_, el) =>
+          $(el).text().toLowerCase().includes("plot")
+        )
+        .first();
 
-        if (tagName === "h2" || tagName === "h3") {
-          if (text.toLowerCase().includes("plot")) {
-            inPlotSection = true;
-            return; // continue
-          }
-          if (inPlotSection) {
-            return false; // break — next section
-          }
-        }
-
-        if (inPlotSection && tagName === "p") {
-          plotText += text + "\n\n";
-        }
-      });
+      if (plotHeader.length) {
+        plotText = plotHeader
+          .nextUntil("h2, h3") // everything until next section
+          .filter("p")         // only paragraphs
+          .map((_, el) => $(el).text().trim())
+          .get()
+          .join("\n\n");
+      }
 
       if (plotText.length > 100) {
         ($ as unknown) = null; // Release cheerio DOM for GC
@@ -922,7 +917,7 @@ async function main(): Promise<void> {
   console.log(`[worker] Config:`);
   console.log(`  Database: ${config.databaseUrl.replace(/:[^@]+@/, ":***@")}`);
   console.log(`  TMDB API: configured (${config.tmdbApiKey.startsWith("Bearer ") ? "Bearer token" : "raw key, will add Bearer prefix"})`);
-  console.log(`  LLM (primary): ${config.llmConfig.geminiApiKey ? "Gemini 2.5 Flash" : "not configured (no GEMINI_API_KEY)"}`);
+  console.log(`  LLM (primary): Gemini ${config.llmConfig.geminiApiKey ? `(model: ${config.llmConfig.geminiModel})` : "not configured (no GEMINI_API_KEY)"}`);
   console.log(`  LLM (fallback): Ollama @ ${config.llmConfig.ollamaEndpoint} (model: ${config.llmConfig.ollamaModel})`);
   console.log(`  Poll interval: ${POLL_INTERVAL_MS / 1000}s`);
   console.log("[worker] Polling for jobs...\n");

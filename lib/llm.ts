@@ -1,15 +1,14 @@
 /**
- * Shared LLM module — Gemini 2.5 Flash (primary) with Ollama fallback.
+ * Shared LLM module — Gemini (primary) with Ollama fallback.
  *
  * Used by:
  *   - scripts/ingestion-worker.ts (import "../lib/llm.js")
- *   - app/api/ routes (import "@/lib/llm")
  *
  * Config is passed as a parameter (not read from process.env) so the module
  * works in both Next.js and standalone Node.js contexts.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -17,6 +16,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface LlmConfig {
   geminiApiKey?: string;
+  geminiModel?: string;
   ollamaEndpoint: string;
   ollamaModel: string;
 }
@@ -40,7 +40,6 @@ export interface ScrapedContent {
 // Constants
 // ---------------------------------------------------------------------------
 
-const GEMINI_MODEL = "gemini-2.5-flash-preview-05-20";
 const GEMINI_VALIDATION_TIMEOUT_MS = 8_000;
 const GEMINI_EXTRACTION_TIMEOUT_MS = 30_000;
 
@@ -56,21 +55,30 @@ const LLM_MAX_RETRIES = 3;
 
 async function callGemini(
   prompt: string,
-  apiKey: string,
+  model: string,
   timeoutMs: number,
 ): Promise<string> {
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
+  // The model reads the GEMINI_API_KEY from the environment,
+  // so it doesn't need to be passed in
+  const ai = new GoogleGenAI({});
+  const request = ai.models.generateContent({
+    model,
+    contents: prompt,
+  });
 
-  // The SDK doesn't support AbortController, so use Promise.race for timeout
-  const result = await Promise.race([
-    model.generateContent(prompt),
+  const response = await Promise.race([
+    request,
     new Promise<never>((_, reject) =>
       setTimeout(() => reject(new Error("Gemini timeout")), timeoutMs),
     ),
   ]);
 
-  const text = result.response.text();
+  const text = response.text;
+
+  if (!text) {
+    throw new Error("Gemini returned empty response");
+  }
+
   return text.trim();
 }
 
@@ -322,21 +330,22 @@ ${content.slice(0, 6000)}`;
 // ---------------------------------------------------------------------------
 
 /**
- * Validate whether a query is a real movie title.
+ * Validate whether a query is a real movie.
  * Tries Gemini first, falls back to Ollama. Returns true if both fail (best-effort).
  */
 export async function validateMovieTitle(
   query: string,
   config: LlmConfig,
 ): Promise<boolean> {
-  const prompt = `Is '${query}' a real movie title? Answer with only YES or NO.`;
+  const prompt = `Is '${query}' a real movie? Answer with only YES or NO.`;
 
   // Try Gemini first
-  if (config.geminiApiKey) {
+  if (config.geminiApiKey && config.geminiModel) {
     try {
+      console.log(`[llm:gemini] Calling Gemini to validate movie title...`);
       const answer = await callGemini(
         prompt,
-        config.geminiApiKey,
+        config.geminiModel,
         GEMINI_VALIDATION_TIMEOUT_MS,
       );
       const isRealMovie = answer.toUpperCase().startsWith("YES");
@@ -409,12 +418,12 @@ export async function extractDeaths(
         );
 
   // Try Gemini first (if available)
-  if (config.geminiApiKey) {
+  if (config.geminiApiKey && config.geminiModel) {
     try {
       console.log(`[llm:gemini] Calling Gemini for death extraction...`);
       const raw = await callGemini(
         prompt,
-        config.geminiApiKey,
+        config.geminiModel,
         GEMINI_EXTRACTION_TIMEOUT_MS,
       );
       console.log(
