@@ -30,7 +30,7 @@
 | Database      | PostgreSQL 15+           | Persistent data store                    |
 | ORM           | Prisma                   | Type-safe database queries               |
 | Images        | next/image + TMDB CDN    | Optimized poster loading                 |
-| LLM           | Ollama + Llama 3.2 3B    | Query validation & death data extraction |
+| LLM           | Gemini 2.5 Flash (primary), Ollama (fallback) | Query validation & death data extraction |
 | Queue System  | Database-based (Prisma)  | Ingestion queue with polling worker      |
 | Notifications | Polling (60s interval)   | Check for new movies, localStorage       |
 | Logging       | Sentry                   | Error tracking                           |
@@ -74,7 +74,7 @@
 │                  BACKGROUND WORKER                           │
 │  (Node.js polling ingestion_queue every 30s)                │
 │                                                              │
-│  1. LLM Validation (Llama 3.2 via Ollama)                   │
+│  1. LLM Validation (Gemini primary, Ollama fallback)        │
 │  2. TMDB API Lookup                                          │
 │  3. Death Scraping (List of Deaths wiki)                    │
 │  4. LLM Extraction (structured death data)                   │
@@ -122,16 +122,16 @@
 1. User searches for movie not in database → zero results
 2. "Want us to look it up?" link appears
 3. User clicks → `POST /api/movies/request` with `{ query: string }`
-4. API validates query is not empty/malformed
-5. LLM validates query is a real movie name (rejects obvious fake queries)
-6. Check if movie already exists in main Movies DB → if yes, return existing movie
-7. Add to ingestion_queue with status "pending", return success message
-8. Background worker polls queue every 30s
-9. Worker picks up job, updates status to "processing"
-10. Worker calls TMDB API to get movie metadata + tmdbId
+4. API validates query is not empty/malformed, parses optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
+5. Check if movie already exists in main Movies DB (filtered by year if provided) → if yes, return existing movie
+6. Add to ingestion_queue with status "pending" and optional year, return success message immediately (non-blocking — no LLM call)
+7. Background worker polls queue every 30s
+8. Worker picks up job, updates status to "processing"
+9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable)
+10. Worker calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
 11. If multiple matches, take first result
-12. Worker scrapes List of Deaths wiki / The Movie Spoiler for death data
-13. Worker uses LLM to extract structured death data from scraped HTML
+12. Worker scrapes List of Deaths wiki / Wikipedia / The Movie Spoiler for death data, validates scraped content matches expected year/director to prevent disambiguation errors
+13. Worker uses LLM to extract/enrich structured death data from scraped content (Gemini primary, Ollama fallback)
 14. Worker inserts movie + deaths to main tables, updates queue status to "complete"
 15. Frontend polls `/api/notifications/poll` every 60s, detects new movie
 16. Notification appears in bell dropdown
@@ -528,13 +528,12 @@ Pagination controls:
 - Implement `POST /api/movies/request` endpoint
   - Validate query is not empty, max 200 chars
   - Sanitize input (strip HTML, trim whitespace)
-  - **LLM Validation**: Call Ollama to validate query is a real movie name
-    - Prompt: "Is '{query}' a real movie title? Answer with only YES or NO."
-    - If NO: return success anyway (don't expose validation to user)
-  - Check if movie already exists in main `movies` table
+  - Parse optional trailing year from query (e.g., "matrix 1999" → title="matrix", year=1999)
+  - Check if movie already exists in main `movies` table (filtered by year if provided)
     - If yes: return existing movie data
-  - Add to `ingestion_queue` table with status "pending"
-  - Return `{ success: true, message: string }`
+  - Check for duplicate pending/processing queue entries
+  - Add to `ingestion_queue` table with status "pending" and optional `year` field
+  - Return `{ success: true, message: string }` immediately (non-blocking — LLM validation deferred to worker)
 
 ### PHASE 5 — Ingestion Worker *(Complete)*
 
@@ -546,7 +545,7 @@ Pagination controls:
   - SELECT jobs WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
   - Update status to 'processing' (prevents duplicate work)
 - **TMDB Lookup**:
-  - Call TMDB search API: `GET /search/movie?query=${query}`
+  - Call TMDB search API: `GET /search/movie?query=${query}&year=${year}` (year is optional, from IngestionQueue)
   - If multiple results, take first match
   - If no results, mark job 'failed' with reason, return
   - Extract tmdbId from search result
@@ -560,12 +559,15 @@ Pagination controls:
 - **Death Scraping** (3 sources, tried in order):
   1. List of Deaths fandom wiki: `https://listofdeaths.fandom.com/api.php` (MediaWiki API)
   2. Wikipedia plot summary: `https://en.wikipedia.org/w/api.php` (MediaWiki API)
-  3. The Movie Spoiler: `https://themoviespoiler.com` (HTML scraping)
-  - If all sources fail, set deaths = [] (valid zero-death movie)
-- **LLM Extraction**:
-  - Pass scraped HTML to Ollama (Llama 3.2 3B)
-  - Prompt: "Extract character deaths from this HTML. Return ONLY a JSON array with these exact fields: character (string), timeOfDeath (string), cause (string), killedBy (string), context (string, 1-2 sentences max), isAmbiguous (boolean). Do not include any preamble or explanation."
-  - Parse JSON response into structured death records
+  3. The Movie Spoiler: `https://themoviespoiler.com` (HTML scraping, with year-suffixed URL slugs)
+  - **Disambiguation validation**: After fetching from each source, `validateScrapedContent()` checks that the content mentions the expected year OR director. Content that fails validation is discarded to prevent wrong-movie deaths (e.g., "The Housemaid" 1960 vs 2025)
+  - If all sources fail or are rejected by disambiguation, set deaths = [] (valid zero-death movie)
+- **LLM Extraction** (shared module: `lib/llm.ts`):
+  - Primary: Google Gemini 2.5 Flash via `@google/generative-ai` SDK
+  - Fallback: Ollama (streaming mode, `num_ctx: 8192`, 30s inactivity timeout, 180s hard ceiling)
+  - If `GEMINI_API_KEY` not set, Gemini is skipped entirely (Ollama-only mode)
+  - Two modes: enrichment (parsed deaths + plot → LLM fills context) or full extraction (LLM extracts from raw text)
+  - Parse JSON response into structured death records with JSON repair for common LLM output quirks
   - Validate each record has all required fields
   - Set `killedBy: "N/A"` if missing
 - **Database Insert**:
@@ -576,8 +578,8 @@ Pagination controls:
 - **Error Handling**:
   - TMDB timeout: retry with exponential backoff (2s, 4s, 8s), max 3 attempts
   - Scraping failure: log error with URL, mark job 'failed' with reason
-  - LLM timeout: retry once with 10-second timeout, mark 'failed' if still timing out
-  - Invalid JSON from LLM: log raw response, mark 'failed'
+  - LLM timeout: Gemini (8s validation, 30s extraction), Ollama (30s inactivity, 180s ceiling). Retry up to 3 times for Ollama. Falls back to parsed deaths if available
+  - Invalid JSON from LLM: JSON repair (mismatched brackets, HTML entities), retry, fallback to parsed deaths
   - All errors: console.log with details, don't throw (keep worker running)
 - Run worker as separate process: `npm run worker`
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
@@ -883,13 +885,12 @@ Navigate to /movie/[tmdbId]
 **4.3** Create `POST /api/movies/request` endpoint
 - [x] Validate request body: `{ query: string }`
 - [x] Validate query: not empty, max 200 chars, sanitize (strip HTML, trim)
-- [x] **LLM Validation**: Call Ollama with prompt "Is '{query}' a real movie title? Answer YES or NO."
-  - Parse LLM response
-  - If NO: still return success (don't expose validation to user)
-- [x] Check if movie already exists: `await prisma.movie.findFirst({ where: { title: { contains: query, mode: 'insensitive' } } })`
+- [x] Parse optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
+- [x] Check if movie already exists (filtered by year if present): `await prisma.movie.findFirst({ where: { title: { equals: searchTitle, mode: 'insensitive' }, ...(year ? { year } : {}) } })`
   - If found: return `{ success: true, existingMovie: movie }`
-- [x] Insert into ingestion_queue: `status: 'pending'`
-- [x] Return `{ success: true, message: "Request queued" }`
+- [x] Check for duplicate pending/processing queue entries
+- [x] Insert into ingestion_queue: `status: 'pending'`, `year: searchYear`
+- [x] Return `{ success: true, message: "Request queued" }` immediately (non-blocking — LLM validation deferred to worker)
 
 **4.4** Add error handling
 - [x] API errors: return structured error response with 400/500 status
@@ -924,8 +925,9 @@ Navigate to /movie/[tmdbId]
 - [x] Source 3: The Movie Spoiler (`https://themoviespoiler.com`)
 - [x] If no deaths found, set `scrapedContent = ""` (will result in empty deaths array)
 
-**5.5** Implement LLM extraction
-- [x] Call Ollama API at `${OLLAMA_ENDPOINT}/api/generate` with structured prompt + example JSON
+**5.5** Implement LLM extraction (shared module: `lib/llm.ts`)
+- [x] Primary: Google Gemini 2.5 Flash via `@google/generative-ai` SDK (8s validation, 30s extraction timeout)
+- [x] Fallback: Ollama streaming (30s inactivity timeout, 180s ceiling, up to 3 retries)
 - [x] Parse LLM response: strip code fences, extract JSON array, repair common formatting errors
 - [x] Validate each death record with field defaults and HTML entity decoding
 - [x] If scraped content was empty, set `deaths = []` (valid zero-death movie)
@@ -1204,12 +1206,14 @@ model IngestionQueue {
 | `DATABASE_URL`                | `postgresql://user:pass@localhost:5432/whodiesinthismovie` | Yes           |
 | `TMDB_API_KEY`                | `Bearer eyJhbGc...` (bearer token from TMDB)               | Yes           |
 | `NEXT_PUBLIC_TMDB_IMAGE_BASE` | `https://image.tmdb.org/t/p`                               | Yes           |
-| `OLLAMA_ENDPOINT`             | `http://localhost:11434`                                   | Yes           |
+| `GEMINI_API_KEY`              | `AIzaSy...` (from Google AI Studio)                        | No (primary LLM, falls back to Ollama) |
+| `OLLAMA_ENDPOINT`             | `http://localhost:11434`                                   | No (fallback LLM) |
+| `OLLAMA_MODEL`                | `mistral`                                                  | No (defaults to mistral) |
 | `SENTRY_DSN`                  | `https://xxx@sentry.io/xxx`                                | No (optional) |
 | `NEXT_PUBLIC_SENTRY_DSN`      | Same as above for client-side                              | No (optional) |
 
 **Setup Notes:**
 - Get TMDB API key (bearer token): https://www.themoviedb.org/settings/api
-- Install Ollama: https://ollama.ai/download
-- Pull Llama 3.2 3B: `ollama pull llama3.2:3b`
+- Get Gemini API key (primary LLM): https://aistudio.google.com/apikey
+- Ollama fallback (optional): Install from https://ollama.ai/download, pull Mistral: `ollama pull mistral`
 - Verify Ollama is running: `curl http://localhost:11434/api/tags`

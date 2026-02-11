@@ -24,3 +24,29 @@ export function getPosterUrl(
   const baseUrl = raw.endsWith("/") ? raw : `${raw}/`;
   return `${baseUrl}${size}${posterPath}`;
 }
+
+/**
+ * Extract an optional trailing 4-digit year (1900–2099) from a search query.
+ * The year must be at the END of the string, preceded by whitespace and at
+ * least one non-year character. A year at the START is treated as part of
+ * the title (e.g., "2001 a space odyssey" → year=null).
+ *
+ * Examples:
+ *   "matrix 1999"          → { title: "matrix", year: 1999 }
+ *   "the matrix"           → { title: "the matrix", year: null }
+ *   "2001 a space odyssey" → { title: "2001 a space odyssey", year: null }
+ *   "1917 2019"            → { title: "1917", year: 2019 }
+ *   "alien 3 1992"         → { title: "alien 3", year: 1992 }
+ *   "1999"                 → { title: "1999", year: null }
+ */
+export function parseQueryWithYear(query: string): {
+  title: string;
+  year: number | null;
+} {
+  const trimmed = query.trim();
+  const match = trimmed.match(/^(.+?)\s+((?:19|20)\d{2})$/);
+  if (match && match[1].trim().length > 0) {
+    return { title: match[1].trim(), year: parseInt(match[2], 10) };
+  }
+  return { title: trimmed, year: null };
+}
