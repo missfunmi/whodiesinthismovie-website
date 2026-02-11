@@ -332,11 +332,15 @@ ${content.slice(0, 6000)}`;
 /**
  * Validate whether a query is a real movie.
  * Tries Gemini first, falls back to Ollama. Returns true if both fail (best-effort).
+ * TODO — Skipping LLM validation of movie title for now — results very inconsistent, needs finetuning
  */
 export async function validateMovieTitle(
   query: string,
   config: LlmConfig,
 ): Promise<boolean> {
+  console.log("[llm:debug] Skipping LLM validation of movie title for now...");
+  return true;
+  /*
   const prompt = `Is '${query}' a real movie? Answer with only YES or NO.`;
 
   // Try Gemini first
@@ -379,6 +383,7 @@ export async function validateMovieTitle(
     );
     return true; // Best-effort — proceed if both LLMs are down
   }
+  */
 }
 
 /**

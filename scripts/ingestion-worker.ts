@@ -33,7 +33,7 @@ const FANDOM_API_BASE =
   "https://listofdeaths.fandom.com/api.php";
 const WIKIPEDIA_API_BASE =
   "https://en.wikipedia.org/w/api.php";
-const MOVIE_SPOILER_BASE = "https://themoviespoiler.com";
+const MOVIE_SPOILER_BASE = "https://themoviespoiler.com/movies";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -297,6 +297,10 @@ function validateScrapedContent(
 ): boolean {
   if (!content || content.length < 50) return false;
 
+  console.log(
+    `[worker:scrape:debug] Checking for year ${year} and director "${director}" in scraped content: \n${content}\n`,
+  );
+
   const lower = content.toLowerCase();
   const hasYear = lower.includes(String(year));
 
@@ -512,7 +516,7 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
 
   for (const pageTitle of pageVariants) {
     const url = `${FANDOM_API_BASE}?action=parse&page=${encodeURIComponent(pageTitle)}&prop=wikitext&format=json`;
-    console.log(`[worker:scrape] Trying List of Deaths wiki API: page="${pageTitle}"`);
+    console.log(`[worker:scrape] Trying List of Deaths wiki API: page="${pageTitle}" at url: ${url}`);
 
     try {
       const response = await fetch(url, {
@@ -529,6 +533,7 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
         continue;
       }
 
+      console.log(`[worker:scrape] Found List of Deaths wiki page="${pageTitle}" at url: ${url}`);
       const wikitext: string = data.parse?.wikitext?.["*"] || "";
       if (!wikitext || wikitext.length < 50) continue;
 
@@ -590,11 +595,11 @@ async function scrapeWikipediaPlot(title: string, year?: number): Promise<string
       // The extract is HTML — parse with cheerio to find the Plot section
       // Truncate early to cap memory usage in this long-running process
       const extractHtml = (page.extract as string).slice(0, 100_000);
-      const $ = cheerio.load(extractHtml);
+      let $ = cheerio.load(extractHtml);
       let plotText = "";
 
       // Wikipedia API extracts use <h2>, <h3> as section headers
-      const plotHeader = $("h2, h3")
+      let plotHeader = $("h2, h3")
         .filter((_, el) =>
           $(el).text().toLowerCase().includes("plot")
         )
