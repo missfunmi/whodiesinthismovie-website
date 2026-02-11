@@ -15,7 +15,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 	- "Your therapist will thank us! 🧠"
 	- "Plot armor? Not in our database! 🛡️"
 	- "We do the hard watching so you don't have to! 👀"
-- **A single search bar:** Where the user can type a movie name, and autocomplete suggestions in the search results are returned that match as they type. User can press enter or click to select the top choice or use their arrow keys to navigate up/down through the autocomplete suggestions. Autocomplete shows max 8 suggestions. If query matches >100 movies (e.g. "the"), show message "Too many matches - keep typing!" Searches match anywhere in title (partial word matching enabled). Movie names in the autocomplete search results should be prefixed with the poster image and suffixed with the year in parentheses. For example, "<poster> Sinners (2025)"
+- **A single search bar:** Where the user can type a movie name, and autocomplete suggestions in the search results are returned that match as they type. User can press enter or click to select the top choice or use their arrow keys to navigate up/down through the autocomplete suggestions. Autocomplete shows max 8 suggestions. If query matches >100 movies (e.g. "the"), show message "Too many matches - keep typing!" Searches match anywhere in title (partial word matching enabled). Movie names in the autocomplete search results should be prefixed with the poster image and suffixed with the year in parentheses. For example, "<poster> Sinners (2025)". **Year-aware search**: Users can append a year to their query (e.g., "matrix 1999") to filter results to that specific year. The year is also passed through the ingestion pipeline for TMDB filtering when requesting new movies.
 - **Movie Detail Page**: Upon selecting a movie name, a page is shown with the movie metadata and character deaths list. 
 	- Movie detail page shows: poster image, title, year, director, tagline (if available), runtime, and MPAA rating. Do not include budget, box office, or full cast list
 	- Character death cards containing Character Name | Time of Death (timestamp or act/scene) | Cause of Death | Killed By (person/entity or "N/A" for accidents/natural causes) | Surrounding Context (brief summary of the situation that led to character's death)
@@ -24,7 +24,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 	- Ambiguous deaths shown in a separate section below confirmed deaths, with grayed-out text and a '?' icon next to the character name, along with the detail surrounding the particular ambiguity
 - **All Movies Browse Page**: A dedicated page showing all movies in the database. 
 	Displays movies in alphabetical order (A-Z) in a grid layout with poster thumbnails. Movies added in the last 24 hours show a "NEW!" badge. Pagination with 100 movies per page. Filter/sort options: alphabetical (default) or recently added. Clicking a movie poster navigates to that movie's detail page
-- **Dynamic Movie Ingestion System**: When a user searches for a movie not in the database and the search returns zero results → show "We don't have that one yet! Want us to look it up?" text link. Clicking the link triggers background ingestion process. System validates query is a real movie name (using LLM) before processing. Background worker fetches movie metadata from TMDB API. Worker scrapes character death data from List of Deaths wiki / The Movie Spoiler (see data sources below). Worker uses LLM to extract and structure death data. Movie is added to database once processing complete. User receives notification when movie is available.
+- **Dynamic Movie Ingestion System**: When a user searches for a movie not in the database and the search returns zero results → show "We don't have that one yet! Want us to look it up?" text link. Clicking the link immediately adds the request to the ingestion queue (non-blocking — no LLM validation at request time). Background worker validates query is a real movie name using LLM (Gemini primary, Ollama fallback), then fetches movie metadata from TMDB API. Worker scrapes character death data from List of Deaths wiki / Wikipedia / The Movie Spoiler, with disambiguation validation to prevent wrong-movie data. Worker uses LLM to extract and structure death data. Movie is added to database once processing complete. User receives notification when movie is available.
 	- Handles edge cases:
 		- Concurrent requests for same movie (deduplicates by TMDB ID)
 		- Multiple TMDB matches (takes first result)
@@ -74,7 +74,7 @@ I'd like to build a website where you can look up a movie or a TV show and then 
 	- Stack: Next.js / Node using TypeScript and Tailwind
 	- Database: Local Postgres with Prisma ORM
 	- Build/hosting: Vercel (entire stack runs on Next.js for MVP, no separate Python service)
-	- LLM: Ollama running Mistral 7B (for query validation and death data extraction)
+	- LLM: Google Gemini 2.5 Flash (primary, via @google/generative-ai SDK) with Ollama + Mistral 7B fallback (for query validation and death data extraction)
 	- Queue System: Database-based polling queue (no Redis/BullMQ for MVP)
 	- Notifications: Polling-based (60-second interval), localStorage persistence
 	- Logging: Sentry

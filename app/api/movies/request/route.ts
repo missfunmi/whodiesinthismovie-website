@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseQueryWithYear } from "@/lib/utils";
 
 const MAX_QUERY_LENGTH = 200;
-const OLLAMA_TIMEOUT_MS = 5000;
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,17 +14,17 @@ export async function POST(request: NextRequest) {
         const originHost = new URL(origin).host;
         if (originHost !== host) {
           console.warn(
-            `[request] CSRF blocked: origin=${origin}, host=${host}`
+            `[request] CSRF blocked: origin=${origin}, host=${host}`,
           );
           return NextResponse.json(
             { success: false, message: "Unauthorized" },
-            { status: 403 }
+            { status: 403 },
           );
         }
       } catch {
         return NextResponse.json(
           { success: false, message: "Unauthorized" },
-          { status: 403 }
+          { status: 403 },
         );
       }
     }
@@ -36,12 +36,15 @@ export async function POST(request: NextRequest) {
     if (!rawQuery || typeof rawQuery !== "string") {
       return NextResponse.json(
         { success: false, message: "Query is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 3. Sanitize: strip HTML, trim, enforce max length
+    // TODO: Switch to using 'sanitize-html' or 'dompurify'
     const query = rawQuery
+      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+      .replace(/on\w+="[^"]*"/gim, "")
       .replace(/<[^>]*>/g, "")
       .trim()
       .slice(0, MAX_QUERY_LENGTH);
@@ -49,21 +52,27 @@ export async function POST(request: NextRequest) {
     if (query.length === 0) {
       return NextResponse.json(
         { success: false, message: "Query cannot be empty" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.log(`[request] Received movie request: "${query}"`);
 
-    // 4. Check if movie already exists in main database (exact title match)
+    // 4. Parse optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
+    const { title: searchTitle, year: searchYear } = parseQueryWithYear(query);
+
+    // 5. Check if movie already exists in main database (exact title match, optionally filtered by year)
     const existingMovie = await prisma.movie.findFirst({
-      where: { title: { equals: query, mode: "insensitive" } },
+      where: {
+        title: { equals: searchTitle, mode: "insensitive" },
+        ...(searchYear ? { year: searchYear } : {}),
+      },
       select: { tmdbId: true, title: true, year: true, posterPath: true },
     });
 
     if (existingMovie) {
       console.log(
-        `[request] Movie already exists: "${existingMovie.title}" (tmdbId: ${existingMovie.tmdbId})`
+        `[request] Movie already exists: "${existingMovie.title}" (tmdbId: ${existingMovie.tmdbId})`,
       );
       return NextResponse.json({
         success: true,
@@ -72,7 +81,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 5. Prevent duplicate queue entries for the same query
+    // 6. Prevent duplicate queue entries for the same query
     const existingRequest = await prisma.ingestionQueue.findFirst({
       where: {
         query: { equals: query, mode: "insensitive" },
@@ -82,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (existingRequest) {
       console.log(
-        `[request] Duplicate request skipped: "${query}" (existing id=${existingRequest.id}, status=${existingRequest.status})`
+        `[request] Duplicate request skipped: "${query}" (existing id=${existingRequest.id}, status=${existingRequest.status})`,
       );
       return NextResponse.json({
         success: true,
@@ -90,62 +99,20 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 6. LLM validation (best-effort — if Ollama is unavailable, skip and proceed)
-    // If the LLM says NO, silently skip the queue insert (return success to user
-    // per SPEC: "don't expose validation to user") to reduce junk queue entries.
-    let skipQueue = false;
-    const ollamaEndpoint =
-      process.env.OLLAMA_ENDPOINT || "http://localhost:11434";
-    const ollamaModel = process.env.OLLAMA_MODEL || "mistral";
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), OLLAMA_TIMEOUT_MS);
+    // 7. Insert into ingestion queue immediately (non-blocking — LLM validation
+    // happens in the worker, not here, to avoid blocking the user for seconds)
+    const queueEntry = await prisma.ingestionQueue.create({
+      data: {
+        query,
+        year: searchYear,
+        status: "pending",
+      },
+    });
+    console.log(
+      `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"${searchYear ? `, year=${searchYear}` : ""}`,
+    );
 
-    try {
-      const ollamaRes = await fetch(`${ollamaEndpoint}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: ollamaModel,
-          prompt: `Is '${query}' a real movie title? Answer with only YES or NO.`,
-          stream: false,
-        }),
-        signal: controller.signal,
-      });
-
-      if (ollamaRes.ok) {
-        const ollamaData = await ollamaRes.json();
-        const answer = (ollamaData.response || "").trim().toUpperCase();
-        const isRealMovie = answer.startsWith("YES");
-        console.log(
-          `[request] LLM validation for "${query}": ${answer} (isRealMovie: ${isRealMovie})`
-        );
-        if (!isRealMovie) {
-          skipQueue = true;
-        }
-      }
-    } catch {
-      // Ollama unavailable, timeout, or parse error — skip validation, allow queue insert
-      console.log("[request] LLM validation skipped (Ollama unavailable)");
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    // 7. Insert into ingestion queue (skip if LLM flagged as non-movie)
-    if (skipQueue) {
-      console.log(`[request] LLM rejected "${query}" as non-movie — skipping queue insert`);
-    } else {
-      const queueEntry = await prisma.ingestionQueue.create({
-        data: {
-          query,
-          status: "pending",
-        },
-      });
-      console.log(
-        `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"`
-      );
-    }
-
-    // 8. Return success (always — don't expose validation to user per SPEC)
+    // 8. Return success
     return NextResponse.json({
       success: true,
       message: "Okay, we'll check on that!",
@@ -154,7 +121,7 @@ export async function POST(request: NextRequest) {
     console.error("[request] Movie request API error:", error);
     return NextResponse.json(
       { success: false, message: "Something went wrong. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

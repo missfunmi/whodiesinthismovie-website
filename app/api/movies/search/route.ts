@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseQueryWithYear } from "@/lib/utils";
 
 const MAX_RESULTS = 8;
 const MIN_QUERY_LENGTH = 3;
@@ -41,12 +42,15 @@ export async function GET(request: NextRequest) {
       .replace(/on\w+="[^"]*"/gim, "")
       .replace(/<[^>]*>/g, "");
 
+    // Parse optional trailing year from query (e.g., "matrix 1999" → title="matrix", year=1999)
+    const { title: searchTitle, year: searchYear } = parseQueryWithYear(sanitizedQuery);
+    const whereClause = {
+      title: { contains: searchTitle, mode: "insensitive" as const },
+      ...(searchYear ? { year: searchYear } : {}),
+    };
+
     // Count total matches first to check for "too many"
-    const totalCount = await prisma.movie.count({
-      where: {
-        title: { contains: sanitizedQuery, mode: "insensitive" },
-      },
-    });
+    const totalCount = await prisma.movie.count({ where: whereClause });
 
     if (totalCount > TOO_MANY_THRESHOLD) {
       return NextResponse.json({ tooMany: true, count: totalCount });
@@ -54,9 +58,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch up to MAX_RESULTS
     const movies = await prisma.movie.findMany({
-      where: {
-        title: { contains: sanitizedQuery, mode: "insensitive" },
-      },
+      where: whereClause,
       select: {
         tmdbId: true,
         title: true,

@@ -13,7 +13,7 @@
 - **Styling**: Tailwind CSS v4 (utility-first, no CSS modules)
 - **Database**: PostgreSQL 15+ via Prisma ORM v7
 - **Images**: next/image with TMDB CDN (`image.tmdb.org`)
-- **LLM**: Ollama + Mistral 7B (query validation & death extraction in ingestion worker; configurable via `OLLAMA_MODEL` env var)
+- **LLM**: Google Gemini 2.5 Flash (primary) with Ollama fallback (query validation & death extraction in ingestion worker; shared module in `lib/llm.ts`)
 - **Queue**: Database-based polling queue (no Redis/BullMQ)
 - **Notifications**: Polling-based (60s interval) with localStorage persistence for read state
 - **Logging**: Sentry
@@ -72,8 +72,9 @@ npx prisma studio        # Visual database browser
 │   └── browse-grid.tsx         # Movie grid with pagination (client)
 ├── lib/
 │   ├── prisma.ts               # Prisma client singleton
+│   ├── llm.ts                  # Shared LLM module (Gemini primary, Ollama fallback)
 │   ├── types.ts                # Shared TypeScript types (decoupled from Prisma)
-│   └── utils.ts                # formatRuntime, getPosterUrl helpers
+│   └── utils.ts                # formatRuntime, getPosterUrl, parseQueryWithYear helpers
 ├── scripts/
 │   └── ingestion-worker.ts     # Background worker for movie ingestion
 ├── prisma/
@@ -263,11 +264,17 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - `killedBy` defaults to "N/A" if missing or empty
 - Zero-death movies insert movie record with empty deaths array (valid state)
 
+### Search & Ingestion Hardening *(Complete)*
+- **Year-aware search**: Queries like "matrix 1999" extract trailing year via `parseQueryWithYear()` in `lib/utils.ts`. Search API filters by `title ILIKE` + `year =`. Request API stores year in `IngestionQueue.year`. Worker passes year to TMDB search API (`&year=YYYY`) and strips year from query string before searching
+- **Scraping disambiguation**: `validateScrapedContent(content, year, director)` checks that scraped wiki/Wikipedia/MovieSpoiler content mentions the expected year OR director (permissive OR). Prevents wrong-movie deaths (e.g., "The Housemaid" 1960 vs 2025). Content rejected by validation is discarded; worker falls through to next source
+- **LLM provider switch**: Gemini 2.5 Flash (primary) via `@google/generative-ai` SDK, Ollama (fallback). Shared `lib/llm.ts` module exports `validateMovieTitle()` and `extractDeaths()`. Config passed as parameter, not read from `process.env`. Gemini timeout via `Promise.race` (SDK doesn't support AbortController). If `GEMINI_API_KEY` not set, Gemini calls are skipped (Ollama-only mode)
+- **Non-blocking request flow**: Request API (`POST /api/movies/request`) no longer blocks on LLM validation. Queue insert happens immediately. LLM validation deferred to worker's Step 1
+
 ## Important Notes
 
 - The Figma prototype in `figma-make-prototype/` is for visual reference only. Do NOT copy its code. Rebuild all components from scratch with proper Next.js patterns.
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
-- The ingestion worker requires Ollama running locally (`http://localhost:11434`) with Mistral model pulled (`ollama pull mistral`)
+- The ingestion worker uses Gemini 2.5 Flash (primary) with Ollama fallback for LLM tasks. Set `GEMINI_API_KEY` for Gemini, or run Ollama locally (`http://localhost:11434`) with Mistral model pulled (`ollama pull mistral`) as fallback
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
-- Environment variables must include TMDB_API_KEY (raw key or "Bearer ..." token both supported) and OLLAMA_ENDPOINT for Phases 4+
+- Environment variables must include TMDB_API_KEY (raw key or "Bearer ..." token both supported). Optional: GEMINI_API_KEY (primary LLM), OLLAMA_ENDPOINT (fallback LLM)
 - ALWAYS commit all changes on `feature/` or `bugfix/` branches, as necessary — never on main or master
