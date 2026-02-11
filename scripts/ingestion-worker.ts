@@ -297,10 +297,6 @@ function validateScrapedContent(
 ): boolean {
   if (!content || content.length < 50) return false;
 
-  console.log(
-    `[worker:scrape:debug] Checking for year ${year} and director "${director}" in scraped content: \n${content}\n`,
-  );
-
   const lower = content.toLowerCase();
   const hasYear = lower.includes(String(year));
 
@@ -321,6 +317,14 @@ function validateScrapedContent(
   return false;
 }
 
+/** Result from a single scraping source — includes both section content and full page text */
+interface ScrapedResult {
+  /** Extracted section content (Victims, Plot, etc.) used for death parsing */
+  content: string;
+  /** Full page text used for disambiguation validation (contains year, director, etc.) */
+  fullText: string;
+}
+
 /** Scraped content from multiple sources, used together for best extraction */
 interface ScrapedDeathData {
   /** Pre-parsed deaths from the Fandom wiki (programmatic, reliable) */
@@ -339,16 +343,18 @@ interface ScrapedDeathData {
  */
 async function scrapeDeathData(title: string, year: number, director: string): Promise<ScrapedDeathData> {
   // Source 1: List of Deaths fandom wiki (primary — structured death list)
-  let fandomContent = await scrapeFandomWiki(title, year);
+  const fandomResult = await scrapeFandomWiki(title, year);
   let parsedDeaths: ExtractedDeath[] = [];
+  let fandomContent = "";
 
-  if (fandomContent) {
-    // Validate that Fandom content is for the correct movie (disambiguation)
-    if (validateScrapedContent(fandomContent, year, director)) {
+  if (fandomResult) {
+    // Validate against FULL page text (year/director appear in the intro, not the Victims section)
+    if (validateScrapedContent(fandomResult.fullText, year, director)) {
       console.log(
-        `[worker:scrape] Found content on List of Deaths wiki (${fandomContent.length} chars)`,
+        `[worker:scrape] Found content on List of Deaths wiki (${fandomResult.content.length} chars)`,
       );
-      parsedDeaths = parseFandomDeaths(fandomContent);
+      parsedDeaths = parseFandomDeaths(fandomResult.content);
+      fandomContent = fandomResult.content;
       console.log(
         `[worker:scrape] Parsed ${parsedDeaths.length} deaths from wikitext`,
       );
@@ -356,44 +362,43 @@ async function scrapeDeathData(title: string, year: number, director: string): P
       console.log(
         `[worker:scrape] Fandom content rejected (wrong movie — disambiguation failed)`,
       );
-      fandomContent = null;
     }
   }
 
   // Source 2: Wikipedia plot summary (supplementary — narrative context)
-  let wikiContent = await scrapeWikipediaPlot(title, year);
-  if (wikiContent) {
-    if (validateScrapedContent(wikiContent, year, director)) {
+  const wikiResult = await scrapeWikipediaPlot(title, year);
+  let plotSummary = "";
+
+  if (wikiResult) {
+    // Validate against FULL page text (year/director appear in the intro, not the Plot section)
+    if (validateScrapedContent(wikiResult.fullText, year, director)) {
       console.log(
-        `[worker:scrape] Found Wikipedia plot summary (${wikiContent.length} chars)`,
+        `[worker:scrape] Found Wikipedia plot summary (${wikiResult.content.length} chars)`,
       );
+      plotSummary = wikiResult.content;
     } else {
       console.log(
         `[worker:scrape] Wikipedia content rejected (wrong movie — disambiguation failed)`,
       );
-      wikiContent = null;
     }
   }
 
   // Source 3: The Movie Spoiler (fallback for plot summary)
-  let spoilerContent: string | null = null;
-  if (!wikiContent) {
-    spoilerContent = await scrapeMovieSpoiler(title, year);
-    if (spoilerContent) {
-      if (validateScrapedContent(spoilerContent, year, director)) {
+  if (!plotSummary) {
+    const spoilerResult = await scrapeMovieSpoiler(title, year);
+    if (spoilerResult) {
+      if (validateScrapedContent(spoilerResult.fullText, year, director)) {
         console.log(
-          `[worker:scrape] Found Movie Spoiler content (${spoilerContent.length} chars)`,
+          `[worker:scrape] Found Movie Spoiler content (${spoilerResult.content.length} chars)`,
         );
+        plotSummary = spoilerResult.content;
       } else {
         console.log(
           `[worker:scrape] Movie Spoiler content rejected (wrong movie — disambiguation failed)`,
         );
-        spoilerContent = null;
       }
     }
   }
-
-  const plotSummary = wikiContent || spoilerContent || "";
 
   if (!fandomContent && !plotSummary) {
     console.log(`[worker:scrape] No death data found from any source for "${title}"`);
@@ -401,7 +406,7 @@ async function scrapeDeathData(title: string, year: number, director: string): P
 
   return {
     parsedDeaths,
-    fandomContent: fandomContent || "",
+    fandomContent,
     plotSummary,
   };
 }
@@ -506,7 +511,7 @@ function parseFandomDeaths(wikitext: string): ExtractedDeath[] {
  * Scrape the List of Deaths fandom wiki using the MediaWiki API.
  * Returns raw wikitext containing death entries (structured as bullet lists).
  */
-async function scrapeFandomWiki(title: string, year?: number): Promise<string | null> {
+async function scrapeFandomWiki(title: string, year?: number): Promise<ScrapedResult | null> {
   // Try year-specific page first (e.g., "Jaws (1975)"), then plain title, then (film)
   const pageVariants = [
     ...(year ? [`${title} (${year})`] : []),
@@ -537,18 +542,20 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
       const wikitext: string = data.parse?.wikitext?.["*"] || "";
       if (!wikitext || wikitext.length < 50) continue;
 
+      const fullText = wikitext.slice(0, 20_000); // Full page for disambiguation
+
       // Extract the "Victims" section (primary death data) from wikitext
       const victimsMatch = wikitext.match(/==\s*Victims?\s*==\s*\n([\s\S]*?)(?:\n==\s*[^=]|$)/i);
       if (victimsMatch) {
         const content = victimsMatch[1].trim();
         if (content.length > 20) {
-          return content.slice(0, 8000);
+          return { content: content.slice(0, 8000), fullText };
         }
       }
 
       // Fallback: return the whole wikitext if it contains death-related content
       if (wikitext.toLowerCase().includes("killed") || wikitext.toLowerCase().includes("death")) {
-        return wikitext.slice(0, 8000);
+        return { content: wikitext.slice(0, 8000), fullText };
       }
     } catch (error) {
       console.log(`[worker:scrape] Fandom API error: ${error instanceof Error ? error.message : error}`);
@@ -562,7 +569,7 @@ async function scrapeFandomWiki(title: string, year?: number): Promise<string | 
  * Scrape Wikipedia for the movie's plot summary using the MediaWiki API.
  * The plot section typically describes deaths in narrative form.
  */
-async function scrapeWikipediaPlot(title: string, year?: number): Promise<string | null> {
+async function scrapeWikipediaPlot(title: string, year?: number): Promise<ScrapedResult | null> {
   // Try page titles in order of specificity
   const pageVariants = [
     ...(year ? [`${title} (${year} film)`] : []),
@@ -596,6 +603,7 @@ async function scrapeWikipediaPlot(title: string, year?: number): Promise<string
       // Truncate early to cap memory usage in this long-running process
       const extractHtml = (page.extract as string).slice(0, 100_000);
       let $ = cheerio.load(extractHtml);
+      const fullPageText = $("body").text().trim().slice(0, 20_000); // Full page for disambiguation
       let plotText = "";
 
       // Wikipedia API extracts use <h2>, <h3> as section headers
@@ -616,15 +624,14 @@ async function scrapeWikipediaPlot(title: string, year?: number): Promise<string
 
       if (plotText.length > 100) {
         ($ as unknown) = null; // Release cheerio DOM for GC
-        return plotText.slice(0, 8000);
+        return { content: plotText.slice(0, 8000), fullText: fullPageText };
       }
 
-      // Fallback: if no distinct "Plot" section, use the full extract
-      const fullText = $("body").text().trim();
       ($ as unknown) = null; // Release cheerio DOM for GC
-      if (fullText.length > 200) {
+      // Fallback: if no distinct "Plot" section, use the full extract
+      if (fullPageText.length > 200) {
         console.log(`[worker:scrape] Wikipedia: no Plot section, using full extract`);
-        return fullText.slice(0, 8000);
+        return { content: fullPageText.slice(0, 8000), fullText: fullPageText };
       }
     } catch (error) {
       console.log(`[worker:scrape] Wikipedia API error: ${error instanceof Error ? error.message : error}`);
@@ -638,7 +645,7 @@ async function scrapeWikipediaPlot(title: string, year?: number): Promise<string
  * Scrape The Movie Spoiler for death-related content.
  * Uses Google-style search to find the right page since URL patterns vary.
  */
-async function scrapeMovieSpoiler(title: string, year?: number): Promise<string | null> {
+async function scrapeMovieSpoiler(title: string, year?: number): Promise<ScrapedResult | null> {
   // The Movie Spoiler uses various URL patterns; try direct URL first
   const baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "");
   const slugVariants = [
@@ -692,7 +699,7 @@ async function scrapeMovieSpoiler(title: string, year?: number): Promise<string 
       if (paragraphs.length === 0) continue;
 
       const combined = paragraphs.join("\n\n");
-      return combined.slice(0, 8000);
+      return { content: combined.slice(0, 8000), fullText: combined.slice(0, 20_000) };
     } catch (error) {
       console.log(`[worker:scrape] Movie Spoiler error: ${error instanceof Error ? error.message : error}`);
     }
