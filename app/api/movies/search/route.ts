@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseQueryWithYear } from "@/lib/utils";
+import { parseQueryWithYear, sanitizeInput } from "@/lib/utils";
 
 const MAX_RESULTS = 8;
 const MIN_QUERY_LENGTH = 3;
@@ -35,12 +35,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // Strip HTML tags for safety
-    // TODO: Switch to using 'sanitize-html' or 'dompurify'
-    const sanitizedQuery = trimmedQuery
-      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-      .replace(/on\w+="[^"]*"/gim, "")
-      .replace(/<[^>]*>/g, "");
+    // Strip all HTML via DOMPurify
+    const sanitizedQuery = sanitizeInput(trimmedQuery);
 
     // Parse optional trailing year from query (e.g., "matrix 1999" → title="matrix", year=1999)
     const { title: searchTitle, year: searchYear } = parseQueryWithYear(sanitizedQuery);

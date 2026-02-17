@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseQueryWithYear } from "@/lib/utils";
+import { parseQueryWithYear, sanitizeInput } from "@/lib/utils";
 
 const MAX_QUERY_LENGTH = 200;
 
@@ -40,14 +40,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Sanitize: strip HTML, trim, enforce max length
-    // TODO: Switch to using 'sanitize-html' or 'dompurify'
-    const query = rawQuery
-      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-      .replace(/on\w+="[^"]*"/gim, "")
-      .replace(/<[^>]*>/g, "")
-      .trim()
-      .slice(0, MAX_QUERY_LENGTH);
+    // 3. Sanitize: strip all HTML via DOMPurify, trim, enforce max length
+    const query = sanitizeInput(rawQuery).slice(0, MAX_QUERY_LENGTH);
 
     if (query.length === 0) {
       return NextResponse.json(

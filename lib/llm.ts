@@ -436,6 +436,14 @@ export async function extractDeaths(
       );
       const deaths = parseDeathResponse(raw);
       console.log(`[llm:gemini] Extracted ${deaths.length} deaths`);
+      // Sanity check: if LLM returned significantly fewer deaths than parsed,
+      // it likely truncated output — fall back to parsed deaths
+      if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
+        console.warn(
+          `[llm:gemini] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths`,
+        );
+        return scraped.parsedDeaths;
+      }
       return deaths;
     } catch (error) {
       console.log(
@@ -462,6 +470,14 @@ export async function extractDeaths(
 
       const deaths = parseDeathResponse(raw);
       console.log(`[llm:ollama] Extracted ${deaths.length} deaths`);
+      // Sanity check: if LLM returned significantly fewer deaths than parsed,
+      // it likely truncated output — fall back to parsed deaths
+      if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
+        console.warn(
+          `[llm:ollama] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths`,
+        );
+        return scraped.parsedDeaths;
+      }
       return deaths;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);

@@ -18,6 +18,7 @@ import {
   type LlmConfig,
   type ExtractedDeath,
 } from "../lib/llm.js";
+import { parseQueryWithYear } from "../lib/utils.js";
 
 // ---------------------------------------------------------------------------
 // Configuration & constants
@@ -115,22 +116,6 @@ function validateEnv(): {
     tmdbApiKey,
     llmConfig: { geminiApiKey, geminiModel, ollamaEndpoint, ollamaModel },
   };
-}
-
-// ---------------------------------------------------------------------------
-// Utility: parse year from query (duplicated from lib/utils.ts — scripts/ excluded from tsconfig)
-// ---------------------------------------------------------------------------
-
-function parseQueryWithYear(query: string): {
-  title: string;
-  year: number | null;
-} {
-  const trimmed = query.trim();
-  const match = trimmed.match(/^(.+?)\s+((?:19|20)\d{2})$/);
-  if (match && match[1].trim().length > 0) {
-    return { title: match[1].trim(), year: parseInt(match[2], 10) };
-  }
-  return { title: trimmed, year: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -287,7 +272,9 @@ async function fetchTmdbMetadata(
 
 /**
  * Validate that scraped content actually describes the correct movie.
- * Checks if the content mentions the expected year OR director.
+ * Checks if the HEADER (first ~2500 chars) mentions the expected year OR director.
+ * Restricting to the header prevents false positives from remake/sequel pages that
+ * mention the original version's year or director in "Production" or "Legacy" sections.
  * Returns true if EITHER matches (permissive — avoids false rejections).
  */
 function validateScrapedContent(
@@ -297,8 +284,12 @@ function validateScrapedContent(
 ): boolean {
   if (!content || content.length < 50) return false;
 
-  const lower = content.toLowerCase();
-  const hasYear = lower.includes(String(year));
+  // Focus on the introduction/header for disambiguation — the correct year and
+  // director are virtually always mentioned in the first ~2500 chars, while
+  // references to other versions (remakes, originals) appear later.
+  const headerContext = content.toLowerCase().slice(0, 2500);
+
+  const hasYear = headerContext.includes(String(year));
 
   const directors = director.split(",").map((d) => d.trim().toLowerCase());
   const hasDirector = directors.some((d) => {
@@ -306,13 +297,13 @@ function validateScrapedContent(
     const parts = d.split(/\s+/);
     const lastName = parts[parts.length - 1];
     // Match full name first, then last name only if >3 chars to avoid false matches
-    return lower.includes(d) || (lastName.length > 3 && lower.includes(lastName));
+    return headerContext.includes(d) || (lastName.length > 3 && headerContext.includes(lastName));
   });
 
   if (hasYear || hasDirector) return true;
 
   console.log(
-    `[worker:scrape] Disambiguation failed: no mention of year ${year} or director "${director}"`,
+    `[worker:scrape] Disambiguation failed: no mention of year ${year} or director "${director}" in header (first 2500 chars)`,
   );
   return false;
 }
