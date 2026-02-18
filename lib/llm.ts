@@ -439,8 +439,10 @@ export async function extractDeaths(
       // Sanity check: if LLM returned significantly fewer deaths than parsed,
       // it likely truncated output — fall back to parsed deaths
       if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
+        const llmNames = new Set(deaths.map(d => d.character));
+        const dropped = scraped.parsedDeaths.filter(d => !llmNames.has(d.character)).map(d => d.character);
         console.warn(
-          `[llm:gemini] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths`,
+          `[llm:gemini] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
         );
         return scraped.parsedDeaths;
       }
@@ -473,8 +475,10 @@ export async function extractDeaths(
       // Sanity check: if LLM returned significantly fewer deaths than parsed,
       // it likely truncated output — fall back to parsed deaths
       if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
+        const llmNames = new Set(deaths.map(d => d.character));
+        const dropped = scraped.parsedDeaths.filter(d => !llmNames.has(d.character)).map(d => d.character);
         console.warn(
-          `[llm:ollama] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths`,
+          `[llm:ollama] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
         );
         return scraped.parsedDeaths;
       }
