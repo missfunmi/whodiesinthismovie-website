@@ -61,25 +61,31 @@ async function callGemini(
   // The model reads the GEMINI_API_KEY from the environment,
   // so it doesn't need to be passed in
   const ai = new GoogleGenAI({});
-  const request = ai.models.generateContent({
-    model,
-    contents: prompt,
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  const response = await Promise.race([
-    request,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Gemini timeout")), timeoutMs),
-    ),
-  ]);
+  try {
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: { abortSignal: controller.signal },
+    });
 
-  const text = response.text;
+    const text = response.text;
 
-  if (!text) {
-    throw new Error("Gemini returned empty response");
+    if (!text) {
+      throw new Error("Gemini returned empty response");
+    }
+
+    return text.trim();
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Gemini timeout");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  return text.trim();
 }
 
 // ---------------------------------------------------------------------------
