@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sanitizeInput } from "@/lib/utils";
 
 const RAG_SERVICE_URL = process.env.RAG_SERVICE_URL || "http://localhost:8000";
 const RAG_TIMEOUT_MS = 5000;
@@ -24,12 +25,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Input sanitization: Remove potential script tags and attributes
-    // TODO: Switch to using 'sanitize-html' or 'dompurify'
-    const sanitizedQuery = trimmedQuery
-      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
-      .replace(/on\w+="[^"]*"/gim, "")
-      .replace(/<[^>]*>/g, "");
+    // Strip all HTML via DOMPurify
+    const sanitizedQuery = sanitizeInput(trimmedQuery);
 
     // Forward to Python RAG service with timeout
     const controller = new AbortController();

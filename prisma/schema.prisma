@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Movie {
@@ -42,6 +43,7 @@ model Death {
 model IngestionQueue {
   id            Int       @id @default(autoincrement())
   query         String
+  year          Int?      // Optional year extracted from user query for TMDB filtering
   status        String    // 'pending' | 'processing' | 'complete' | 'failed'
   tmdbId        Int?
   failureReason String?

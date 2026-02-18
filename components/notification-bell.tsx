@@ -15,6 +15,12 @@ type SeenNotification = {
   addedAt: number;
 };
 
+const POLL_INTERVAL_MS = 60_000; // 60 seconds
+// Longer than the poll API's 24h window intentionally — prevents a race where
+// a movie could re-appear as "unread" if its localStorage entry were pruned
+// right as it falls off the 24h API response boundary.
+const NEW_MOVIES_LIMIT_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
 export default function NotificationBell() {
   const [notifications, setNotifications] = useState<NotificationMovie[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +36,7 @@ export default function NotificationBell() {
       if (!stored) return [];
 
       const parsed = JSON.parse(stored);
-      const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const newMoviesLimit = Date.now() - NEW_MOVIES_LIMIT_MS;
 
       // Resilience: Handle legacy array of numbers vs new array of objects
       if (Array.isArray(parsed) && typeof parsed[0] === "number") {
@@ -40,7 +46,7 @@ export default function NotificationBell() {
       }
 
       const validEntries: SeenNotification[] = parsed.filter(
-        (item: any) => item.addedAt && item.addedAt > sevenDaysAgo,
+        (item: any) => item.addedAt && item.addedAt > newMoviesLimit,
       );
 
       if (validEntries.length !== parsed.length) {
@@ -70,7 +76,7 @@ export default function NotificationBell() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await fetch("/api/notifications/poll");
+        const res = await fetch("/api/notifications/poll", { cache: "no-store" });
         if (!res.ok) return;
 
         const movies: NotificationMovie[] = await res.json();
@@ -86,7 +92,7 @@ export default function NotificationBell() {
     };
 
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000);
+    const interval = setInterval(fetchNotifications, POLL_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [getProcessedSeenIds]);
 
