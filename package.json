@@ -1,7 +1,7 @@
 {
   "name": "whodiesinthismovie-website",
   "version": "1.0.0",
-  "description": "Look up a movie and find out which characters die — when, how, and by whose hand. Because sometimes knowing is better than wondering.",
+  "description": "Look up a movie and find out which characters die... when, how, and by whose hand",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
