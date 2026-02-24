@@ -17,7 +17,7 @@
  * The local worker waits 500ms between jobs = max 2 req/min (within 5 RPM limit).
  */
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ApiError } from "@google/genai";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -80,14 +80,23 @@ function sleep(ms: number): Promise<void> {
 function isRetryableGeminiError(error: unknown): boolean {
   if (error instanceof Error && error.name === "AbortError") return false;
 
+  // Primary signal: SDK's typed ApiError with a numeric HTTP status code.
+  // This is robust against SDK message format changes.
+  if (error instanceof ApiError) {
+    const { status } = error;
+    if (status === 429 || status === 500 || status === 502 || status === 503)
+      return true;
+    if (status === 400 || status === 401 || status === 403) return false;
+    // Unknown status — fall through to message-based checks below
+  }
+
   const msg = error instanceof Error ? error.message : String(error);
 
-  // Non-retryable auth/client errors
+  // Fallback: message-based checks for non-ApiError throws (our own errors like
+  // "not a JSON array", or errors from SDK versions that don't use ApiError).
   if (msg.includes("401") || msg.includes("403") || msg.includes("400")) {
     return false;
   }
-
-  // Retryable server/rate-limit errors
   if (
     msg.includes("429") ||
     msg.includes("500") ||
@@ -99,7 +108,7 @@ function isRetryableGeminiError(error: unknown): boolean {
     return true;
   }
 
-  // JSON parsing failures — could be transient model output corruption
+  // JSON parsing failures — transient model output corruption, worth retrying
   if (
     msg.includes("JSON") ||
     msg.toLowerCase().includes("parse") ||
@@ -117,12 +126,11 @@ function isRetryableGeminiError(error: unknown): boolean {
 // ---------------------------------------------------------------------------
 
 async function callGemini(
+  ai: GoogleGenAI,
   prompt: string,
   model: string,
   timeoutMs: number,
 ): Promise<string> {
-  // GoogleGenAI reads GEMINI_API_KEY from the environment automatically
-  const ai = new GoogleGenAI({});
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -337,6 +345,9 @@ export async function extractDeaths(
           scraped.plotSummary || scraped.fandomContent,
         );
 
+  // Instantiate once — reused across all retry attempts
+  const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
+
   // Retry loop — up to GEMINI_MAX_RETRIES attempts with exponential backoff
   for (let attempt = 0; attempt < GEMINI_MAX_RETRIES; attempt++) {
     try {
@@ -344,7 +355,7 @@ export async function extractDeaths(
         `[llm:gemini] Calling Gemini for death extraction (attempt ${attempt + 1}/${GEMINI_MAX_RETRIES}, model: ${model})...`,
       );
 
-      const raw = await callGemini(prompt, model, GEMINI_EXTRACTION_TIMEOUT_MS);
+      const raw = await callGemini(ai, prompt, model, GEMINI_EXTRACTION_TIMEOUT_MS);
       console.log(
         `[llm:gemini] Raw response (first 300 chars): ${raw.slice(0, 300)}`,
       );

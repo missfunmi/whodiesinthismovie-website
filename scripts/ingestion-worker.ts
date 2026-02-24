@@ -81,8 +81,20 @@ async function main(): Promise<void> {
     `  LLM: Gemini ${config.llmConfig.geminiApiKey ? `configured (model: ${config.llmConfig.geminiModel ?? "gemini-2.5-flash"})` : "not configured (no GEMINI_API_KEY — LLM enrichment skipped)"}`,
   );
 
+  // Process jobs until the queue is empty or the time budget is exhausted.
+  // Budget: 9 minutes — safely within the GitHub Actions 10-minute job timeout.
+  // A single ingestion job (TMDB + scraping + LLM) typically takes 30-60 seconds,
+  // so this handles 9-18 jobs per run rather than just one.
+  const MAX_RUNTIME_MS = 9 * 60 * 1000;
+  const startTime = Date.now();
+  let jobsProcessed = 0;
+
   try {
-    await processQueue(prisma, config);
+    while (Date.now() - startTime < MAX_RUNTIME_MS) {
+      const result = await processQueue(prisma, config);
+      if (!result.processed) break; // queue empty — nothing more to do
+      jobsProcessed++;
+    }
   } catch (error) {
     console.error(
       "[worker] Unexpected error in queue processor:",
@@ -92,8 +104,11 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  console.log(
+    `[worker] Done. Processed ${jobsProcessed} job(s) in ${elapsed}s.`,
+  );
   await prisma.$disconnect();
-  console.log("[worker] Done.");
 }
 
 main().catch((error) => {
