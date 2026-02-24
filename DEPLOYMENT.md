@@ -1,6 +1,6 @@
-# Vercel Deployment Guide
+# Deployment Guide
 
-Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel.
+Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel with GitHub Actions for background ingestion.
 
 ## Prerequisites
 
@@ -38,13 +38,7 @@ When prompted, link to an existing project or create a new one.
 
 ## Step 3: Set environment variables
 
-Generate a secure cron secret first:
-
-```bash
-openssl rand -base64 32
-```
-
-Then set each variable using the Vercel CLI or the Vercel dashboard:
+Set each variable using the Vercel CLI or the Vercel dashboard:
 
 ```bash
 # Required
@@ -53,7 +47,6 @@ vercel env add TMDB_API_KEY
 vercel env add NEXT_PUBLIC_TMDB_IMAGE_BASE   # value: https://image.tmdb.org/t/p
 vercel env add GEMINI_API_KEY
 vercel env add GEMINI_MODEL                  # value: gemini-2.5-flash
-vercel env add CRON_SECRET                   # paste the value from openssl above
 
 # Optional
 vercel env add SENTRY_DSN
@@ -92,27 +85,47 @@ This loads `data/seed-movies.json` and `data/seed-deaths.json` into the producti
 
 ---
 
-## Step 6: Verify the Cron job
+## Step 6: Configure GitHub Actions for automated ingestion
 
-1. In the Vercel dashboard, go to **Project → Functions → Cron Jobs**
-2. Confirm `/api/cron/process-queue` is listed with schedule `*/15 * * * *` (every 15 minutes)
+Movie ingestion runs every 15 minutes via GitHub Actions (`.github/workflows/process-ingestion-queue.yml`). This workflow processes one pending job from the `IngestionQueue` table per run.
 
-To test the cron manually:
+### Add GitHub repository secrets
 
-```bash
-curl -H "Authorization: Bearer <your-CRON_SECRET>" \
-  https://whodiesinthismovie.com/api/cron/process-queue
+In your GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**
+
+Add these secrets:
+
+| Secret | Value |
+|--------|-------|
+| `DATABASE_URL` | Your production database connection string |
+| `TMDB_API_KEY` | Your TMDB bearer token |
+| `GEMINI_API_KEY` | Your Gemini API key |
+| `GEMINI_MODEL` | `gemini-2.5-flash` (or leave unset to use default) |
+
+### Verify the workflow
+
+1. Go to **GitHub → Actions tab**
+2. Select **"Process Ingestion Queue"**
+3. Click **"Run workflow"** to trigger a manual test run
+4. Check the logs to verify it connects to the database and exits cleanly
+
+Expected output when no jobs are pending:
+```
+[worker] Ingestion worker starting...
+[ingestion] No pending jobs in queue
+[worker] Done.
 ```
 
-Expected response when no jobs are pending:
-```json
-{"success": true, "processed": false, "reason": "no_jobs"}
+Expected output when a job is processed:
+```
+[worker] Ingestion worker starting...
+[ingestion] Processing job 1: The Movie Title (2024)
+...
+[ingestion] Job 1 complete: The Movie Title
+[worker] Done.
 ```
 
-Expected response when a job is processed:
-```json
-{"success": true, "processed": true, "jobId": 1, "title": "The Movie Title"}
-```
+The workflow runs automatically on schedule (every 15 minutes) once the workflow file is on the default branch.
 
 ---
 
@@ -131,25 +144,29 @@ curl "https://whodiesinthismovie.com/api/notifications/poll"
 
 ---
 
-## How the Cron Job Works
+## How Ingestion Works
 
-The Vercel Cron function (`/api/cron/process-queue`) runs every 15 minutes:
+When a user requests a movie that isn't in the database:
 
-1. Vercel sends a `GET` request with `Authorization: Bearer <CRON_SECRET>`
-2. The route picks one pending job from the `IngestionQueue` table
-3. Fetches metadata from TMDB (3 parallel API calls)
-4. Scrapes death data from List of Deaths wiki / Wikipedia / The Movie Spoiler
-5. Uses Gemini 2.5 Flash to extract and enrich structured death records
-6. Inserts movie + deaths into the database atomically
-7. Returns `{ success: true, processed: true, jobId: N, title: "..." }`
+1. The request is queued in the `IngestionQueue` table via `POST /api/movies/request`
+2. GitHub Actions runs the worker every 15 minutes (`npm run worker`)
+3. The worker processes ONE job per run:
+   - Fetches metadata from TMDB (3 parallel API calls)
+   - Scrapes death data from List of Deaths wiki / Wikipedia / The Movie Spoiler
+   - Uses Gemini 2.5 Flash to extract and enrich structured death records
+   - Inserts movie + deaths into the database atomically
+4. The user is notified via the notification bell (polling-based, 60s interval)
 
-If there are no pending jobs, returns `{ success: true, processed: false, reason: "no_jobs" }`.
+The `/api/cron/process-queue` route remains available for manual HTTP testing:
+
+```bash
+curl -H "Authorization: Bearer <your-CRON_SECRET>" \
+  https://whodiesinthismovie.com/api/cron/process-queue
+```
 
 ---
 
 ## Local Development
-
-For local development, use the polling worker instead of the cron route:
 
 ```bash
 # Copy env template and fill in values
@@ -164,34 +181,40 @@ npx prisma db seed
 # Start the app
 npm run dev
 
-# (Optional, separate terminal) Start the local ingestion worker
+# (Separate terminal) Process one job from the queue
 npm run worker
 ```
 
-The local worker polls the queue every 30 seconds (vs. every 15 minutes for the cron job).
+For continuous local polling, re-run the worker periodically:
+
+```bash
+# macOS/Linux: re-run every 30 seconds
+watch -n 30 npm run worker
+```
 
 ---
 
 ## Troubleshooting
 
-### Cron job returning 401
-- Verify `CRON_SECRET` is set correctly in Vercel environment variables
-- Verify the Authorization header in your test curl matches exactly
+### GitHub Actions workflow not triggering
+- Schedules only run on the default branch — ensure the workflow file is merged to `main`/`master`
+- GitHub may delay scheduled workflows by up to 15 minutes under load
+- Use **"Run workflow"** in the Actions tab to trigger manually
 
-### Cron job timing out
-- Vercel Hobby plan has a 10-second limit — upgrade to Pro for the 60-second limit
-- The ingestion pipeline typically takes 30-60 seconds per movie
+### Worker failing in GitHub Actions
+- Check the Actions run logs for the specific error
+- Verify all four secrets (`DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`) are set in repository settings
+- Ensure the database allows connections from GitHub Actions IP ranges (or use 0.0.0.0/0 for development)
 
 ### Prisma migration errors on deploy
 - Ensure `DATABASE_URL` is correctly set in Vercel environment variables
 - If using Vercel Postgres, confirm the database is connected to the project
 
 ### Gemini rate limit errors (429)
-- The cron runs every 15 minutes, so at most 1 Gemini call per invocation
-- This is well within the free tier limit of 5 requests per minute
-- If you see 429 errors, check if multiple cron invocations overlapped
+- The worker retries up to 5 times with exponential backoff (2/4/8/16/32s)
+- Free tier limit is 5 RPM — one job per 15-minute run is well within this
+- If errors persist, check the Actions logs for the full retry sequence
 
-### Database connection issues on Vercel
+### Database connection issues
 - The app uses `@prisma/adapter-pg` with standard PostgreSQL connections
-- Ensure your database allows connections from Vercel's IP ranges (or use 0.0.0.0/0 for development)
-- Vercel Postgres automatically handles this; external databases may need allowlisting
+- Vercel Postgres automatically handles IP allowlisting; external databases may need it configured

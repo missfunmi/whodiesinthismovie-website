@@ -1,29 +1,26 @@
 /**
- * Ingestion Worker — Local Development
+ * Ingestion Worker
  *
- * Background process for local development that polls the IngestionQueue
- * for pending movie requests and processes them every 30 seconds.
+ * Processes ONE pending job from the IngestionQueue, then exits.
  *
- * In production, the Vercel Cron function at /api/cron/process-queue handles
- * job processing automatically (every 15 minutes). Use this worker for local
- * testing or to manually trigger ingestion during development.
+ * In production, invoked every 15 minutes by GitHub Actions
+ * (.github/workflows/process-ingestion-queue.yml). For local development,
+ * run manually or set up a cron job / watch loop:
  *
- * Run: npm run worker
+ *   npm run worker          # process one job and exit
+ *   watch -n 30 npm run worker  # re-run every 30 seconds locally
  *
- * Processing logic lives in lib/ingestion.ts (shared with the cron route).
+ * Processing logic lives in lib/ingestion.ts.
  */
 
-import "dotenv/config";
+import { config as dotenvConfig } from "dotenv";
+// Load env vars — tries .env first, then .env.development.local (Next.js convention)
+dotenvConfig();
+dotenvConfig({ path: ".env.development.local", override: false });
 import { PrismaClient } from "../app/generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { processQueue, sleep } from "../lib/ingestion.js";
+import { processQueue } from "../lib/ingestion.js";
 import type { LlmConfig } from "../lib/llm.js";
-
-// ---------------------------------------------------------------------------
-// Configuration
-// ---------------------------------------------------------------------------
-
-const POLL_INTERVAL_MS = 30_000; // 30 seconds
 
 // ---------------------------------------------------------------------------
 // Environment validation
@@ -83,37 +80,20 @@ async function main(): Promise<void> {
   console.log(
     `  LLM: Gemini ${config.llmConfig.geminiApiKey ? `configured (model: ${config.llmConfig.geminiModel ?? "gemini-2.5-flash"})` : "not configured (no GEMINI_API_KEY — LLM enrichment skipped)"}`,
   );
-  console.log(`  Poll interval: ${POLL_INTERVAL_MS / 1000}s`);
-  console.log(
-    "[worker] Note: In production, use the Vercel Cron route (/api/cron/process-queue) instead.",
-  );
-  console.log("[worker] Polling for jobs...\n");
 
-  // Graceful shutdown
-  const shutdown = async (signal: string) => {
-    console.log(`\n[worker] Received ${signal}, shutting down...`);
+  try {
+    await processQueue(prisma, config);
+  } catch (error) {
+    console.error(
+      "[worker] Unexpected error in queue processor:",
+      error instanceof Error ? error.message : error,
+    );
     await prisma.$disconnect();
-    console.log("[worker] Disconnected from database. Goodbye!");
-    process.exit(0);
-  };
-
-  process.on("SIGINT", () => shutdown("SIGINT"));
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-
-  // Main polling loop
-  while (true) {
-    try {
-      await processQueue(prisma, config);
-    } catch (error) {
-      // Unexpected error in the queue processor itself — log and continue
-      console.error(
-        "[worker] Unexpected error in queue processor:",
-        error instanceof Error ? error.message : error,
-      );
-    }
-
-    await sleep(POLL_INTERVAL_MS);
+    process.exit(1);
   }
+
+  await prisma.$disconnect();
+  console.log("[worker] Done.");
 }
 
 main().catch((error) => {
