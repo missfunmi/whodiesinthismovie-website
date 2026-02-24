@@ -589,9 +589,9 @@ Pagination controls:
   - Scraping failure: log error with URL, cascade to next source
   - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
   - All errors: console.log with details, don't throw (job marked failed, worker continues)
-- **Production runner**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) — runs `npm run worker` every 15 minutes via cron schedule. No Vercel plan restrictions.
+- **Production runner**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) — runs `npm run worker` every 15 minutes via cron schedule.
 - **Local dev runner**: `npm run worker` — processes ONE job then exits. For continuous polling: `watch -n 30 npm run worker`
-- **Shared processing logic**: `lib/ingestion.ts` — used by both the cron route and the local worker
+- **Shared processing logic**: `lib/ingestion.ts` — used by the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 
 ### PHASE 6 — Notification System *(Complete)*

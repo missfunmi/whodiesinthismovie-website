@@ -2,7 +2,7 @@
  * Shared LLM module — Gemini only (primary LLM for production).
  *
  * Used by:
- *   - lib/ingestion.ts (which is used by the Vercel Cron route and the local dev worker)
+ *   - lib/ingestion.ts (which is used by the ingestion worker)
  *
  * Config is passed as a parameter (not read from process.env) so the module
  * works in both Next.js and standalone Node.js contexts.
@@ -12,9 +12,7 @@
  *   - 250,000 tokens per minute (TPM)
  *   - 20 requests per day (RPD)
  *
- * Rate limiting note: The cron job runs every 15 minutes and processes one movie
- * per invocation, so at most 1 Gemini request per invocation = well within limits.
- * The local worker waits 500ms between jobs = max 2 req/min (within 5 RPM limit).
+ * The local worker waits 500ms between jobs = max 2 req/min (within Gemini 5 RPM limit).
  */
 
 import { GoogleGenAI, ApiError } from "@google/genai";

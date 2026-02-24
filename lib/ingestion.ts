@@ -2,7 +2,6 @@
  * Shared ingestion processing logic.
  *
  * Used by:
- *   - app/api/cron/process-queue/route.ts (Vercel Cron — production)
  *   - scripts/ingestion-worker.ts (local development polling worker)
  *
  * Handles: TMDB metadata fetching, multi-source death scraping,

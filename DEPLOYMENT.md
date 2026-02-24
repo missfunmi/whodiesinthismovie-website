@@ -26,13 +26,8 @@ When prompted, link to an existing project or create a new one.
 
 ## Step 2: Set up a PostgreSQL database
 
-### Option A: Vercel Postgres (recommended for simplicity)
 1. In the Vercel dashboard, go to **Storage** → **Create Database** → **Postgres**
-2. Connect it to your project — Vercel auto-populates `DATABASE_URL`
-
-### Option B: External PostgreSQL (Neon, Supabase, Railway, etc.)
-1. Create a database and get the connection string
-2. Set it as an environment variable (Step 3 below)
+2. Connect it to your project — Vercel auto-populates `DATABASE_URL`, so no need to set it in Step 3
 
 ---
 
@@ -42,7 +37,6 @@ Set each variable using the Vercel CLI or the Vercel dashboard:
 
 ```bash
 # Required
-vercel env add DATABASE_URL
 vercel env add TMDB_API_KEY
 vercel env add NEXT_PUBLIC_TMDB_IMAGE_BASE   # value: https://image.tmdb.org/t/p
 vercel env add GEMINI_API_KEY
@@ -133,13 +127,13 @@ The workflow runs automatically on schedule (every 15 minutes) once the workflow
 
 ```bash
 # Search for movies
-curl "https://whodiesinthismovie.com/api/movies/search?q=star%20wars"
+curl "https://whodiesinthismovie.missfunmi.com/api/movies/search?q=star%20wars"
 
 # Browse all movies
-curl "https://whodiesinthismovie.com/api/movies/browse?page=1&sort=alphabetical"
+curl "https://whodiesinthismovie.missfunmi.com/api/movies/browse?page=1&sort=alphabetical"
 
 # Check notifications
-curl "https://whodiesinthismovie.com/api/notifications/poll"
+curl "https://whodiesinthismovie.missfunmi.com/api/notifications/poll"
 ```
 
 ---
@@ -150,19 +144,7 @@ When a user requests a movie that isn't in the database:
 
 1. The request is queued in the `IngestionQueue` table via `POST /api/movies/request`
 2. GitHub Actions runs the worker every 15 minutes (`npm run worker`)
-3. The worker processes ONE job per run:
-   - Fetches metadata from TMDB (3 parallel API calls)
-   - Scrapes death data from List of Deaths wiki / Wikipedia / The Movie Spoiler
-   - Uses Gemini 2.5 Flash to extract and enrich structured death records
-   - Inserts movie + deaths into the database atomically
-4. The user is notified via the notification bell (polling-based, 60s interval)
-
-The `/api/cron/process-queue` route remains available for manual HTTP testing:
-
-```bash
-curl -H "Authorization: Bearer <your-CRON_SECRET>" \
-  https://whodiesinthismovie.com/api/cron/process-queue
-```
+3. The user is notified via the notification bell (polling-based, 60s interval)
 
 ---
 

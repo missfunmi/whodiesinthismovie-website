@@ -291,7 +291,6 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Process ONE job per invocation** — `npm run worker` connects to DB, processes one pending job, then exits cleanly
 - **Why not Vercel Cron**: Vercel Hobby plan only supports 1 cron job per day; GitHub Actions has no such restriction
 - **Secrets**: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` configured as GitHub repository secrets (Settings → Secrets and variables → Actions)
-- **`/api/cron/process-queue`** remains available for manual HTTP testing (still requires `CRON_SECRET` Bearer token), but is no longer the production runner
 - **Local dev**: `npm run worker` processes one job then exits. For continuous local polling: `watch -n 30 npm run worker`
 
 ### Shared `lib/ingestion.ts` Module
@@ -312,5 +311,5 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
 - The ingestion worker uses Gemini 2.5 Flash for LLM tasks. Set `GEMINI_API_KEY` for Gemini; if not set, LLM enrichment is skipped (death data uses programmatic parsing only)
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
-- Environment variables: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `NEXT_PUBLIC_TMDB_IMAGE_BASE`. `CRON_SECRET` is only needed if testing the `/api/cron/process-queue` HTTP endpoint manually.
+- Environment variables: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `NEXT_PUBLIC_TMDB_IMAGE_BASE`.
 - ALWAYS commit all changes on `feature/` or `bugfix/` branches, as necessary — never on main or master
