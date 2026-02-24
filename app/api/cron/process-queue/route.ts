@@ -9,9 +9,9 @@
  * To test manually:
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://whodiesinthismovie.com/api/cron/process-queue
  *
- * Note: maxDuration = 60 requires Vercel Pro plan. The ingestion pipeline
- * (TMDB fetch + scraping + LLM extraction) typically takes 30-60 seconds.
- * Hobby plan has a 10-second limit which is insufficient for ingestion.
+ * Note: maxDuration = 60 is achievable on Vercel Hobby plan.
+ * The ingestion pipeline (TMDB fetch + scraping + LLM extraction)
+ * typically takes 30-60 seconds.
  */
 
 import { NextResponse } from "next/server";
@@ -19,7 +19,7 @@ import { prisma } from "@/lib/prisma";
 import { processQueue } from "@/lib/ingestion";
 import type { LlmConfig } from "@/lib/llm";
 
-// Vercel function timeout — 60 seconds (requires Pro plan)
+// Vercel function timeout — 60 seconds
 export const maxDuration = 60;
 
 export async function GET(request: Request) {

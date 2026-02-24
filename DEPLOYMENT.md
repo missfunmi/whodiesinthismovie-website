@@ -4,13 +4,11 @@ Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel.
 
 ## Prerequisites
 
-- [Vercel account](https://vercel.com/signup) (Pro plan required — see note below)
+- [Vercel account](https://vercel.com/signup)
 - [Vercel CLI](https://vercel.com/docs/cli): `npm i -g vercel`
 - A PostgreSQL database (options: [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres), [Neon](https://neon.tech), [Supabase](https://supabase.com), or any hosted PostgreSQL)
 - [TMDB API key](https://www.themoviedb.org/settings/api) (bearer token)
 - [Gemini API key](https://aistudio.google.com/apikey) (free tier)
-
-> **Note on Vercel plan**: The ingestion pipeline (TMDB fetch + web scraping + Gemini LLM) typically takes 30-60 seconds per movie. Vercel's Hobby plan has a 10-second function timeout, which is insufficient. **A Pro plan (or higher) is required** for the cron job to work reliably.
 
 ---
 

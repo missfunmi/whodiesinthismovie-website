@@ -289,7 +289,7 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 ### Vercel Cron Pattern
 - **Production**: `/api/cron/process-queue` (GET) runs every 15 minutes via Vercel Cron (`vercel.json`)
 - **Process ONE job per invocation** — serverless functions are ephemeral; no polling loops
-- **`maxDuration = 60`**: Vercel Pro plan max (Hobby plan = 10s, insufficient for ingestion pipeline)
+- **`maxDuration = 60`**: Vercel Hobby plan max
 - **CRON_SECRET**: Bearer token authentication on the cron endpoint. Vercel automatically injects this header when invoking the cron. Manual testing: `curl -H "Authorization: Bearer $CRON_SECRET" .../api/cron/process-queue`
 - **Local dev**: `npm run worker` still works — polls every 30 seconds, useful for testing ingestion locally
 

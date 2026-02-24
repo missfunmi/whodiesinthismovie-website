@@ -588,7 +588,7 @@ Pagination controls:
   - Scraping failure: log error with URL, cascade to next source
   - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
   - All errors: console.log with details, don't throw (job marked failed, worker continues)
-- **Production runner**: Vercel Cron route (`/api/cron/process-queue`) — processes ONE job per invocation, runs every 15 minutes. `maxDuration = 60` (requires Vercel Pro plan)
+- **Production runner**: Vercel Cron route (`/api/cron/process-queue`) — processes ONE job per invocation, runs every 15 minutes. `maxDuration = 60`
 - **Local dev runner**: `npm run worker` — thin wrapper that polls `lib/ingestion.ts` every 30 seconds
 - **Shared processing logic**: `lib/ingestion.ts` — used by both the cron route and the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
