@@ -286,18 +286,19 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - After all retries exhausted: falls back to pre-parsed Fandom deaths (not a hard failure)
 - Rate limit note: Gemini free tier = 5 RPM / 20 RPD. Cron runs every 15 min = 1 call/invocation, well within limits
 
-### Vercel Cron Pattern
-- **Production**: `/api/cron/process-queue` (GET) runs every 15 minutes via Vercel Cron (`vercel.json`)
-- **Process ONE job per invocation** — serverless functions are ephemeral; no polling loops
-- **`maxDuration = 60`**: Vercel Hobby plan max
-- **CRON_SECRET**: Bearer token authentication on the cron endpoint. Vercel automatically injects this header when invoking the cron. Manual testing: `curl -H "Authorization: Bearer $CRON_SECRET" .../api/cron/process-queue`
-- **Local dev**: `npm run worker` still works — polls every 30 seconds, useful for testing ingestion locally
+### GitHub Actions Ingestion Runner
+- **Production**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) runs `npm run worker` every 15 minutes via cron schedule `*/15 * * * *`
+- **Process ONE job per invocation** — `npm run worker` connects to DB, processes one pending job, then exits cleanly
+- **Why not Vercel Cron**: Vercel Hobby plan only supports 1 cron job per day; GitHub Actions has no such restriction
+- **Secrets**: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` configured as GitHub repository secrets (Settings → Secrets and variables → Actions)
+- **`/api/cron/process-queue`** remains available for manual HTTP testing (still requires `CRON_SECRET` Bearer token), but is no longer the production runner
+- **Local dev**: `npm run worker` processes one job then exits. For continuous local polling: `watch -n 30 npm run worker`
 
 ### Shared `lib/ingestion.ts` Module
 - All job processing logic extracted from `scripts/ingestion-worker.ts` into `lib/ingestion.ts`
 - Exports: `processQueue()`, `processJob()`, `parseFandomDeaths()`, `sleep()`, `IngestionJob`, `ProcessJobConfig`, `QueueResult` types
 - Used by both the cron route (via `@/lib/ingestion`) and the local worker (via `"../lib/ingestion.js"`)
-- `scripts/ingestion-worker.ts` is now a thin wrapper: env validation + Prisma setup + polling loop
+- `scripts/ingestion-worker.ts` is now a thin wrapper: env validation + Prisma setup + single-job execution + exit
 
 ### Build Command for Vercel
 - `vercel-build` script in `package.json`: `prisma generate && prisma migrate deploy && next build`
@@ -311,5 +312,5 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
 - The ingestion worker uses Gemini 2.5 Flash for LLM tasks. Set `GEMINI_API_KEY` for Gemini; if not set, LLM enrichment is skipped (death data uses programmatic parsing only)
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
-- Environment variables: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `CRON_SECRET` (for production cron authentication), `NEXT_PUBLIC_TMDB_IMAGE_BASE`
+- Environment variables: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `NEXT_PUBLIC_TMDB_IMAGE_BASE`. `CRON_SECRET` is only needed if testing the `/api/cron/process-queue` HTTP endpoint manually.
 - ALWAYS commit all changes on `feature/` or `bugfix/` branches, as necessary — never on main or master

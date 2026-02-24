@@ -72,8 +72,9 @@
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  BACKGROUND WORKER                           │
-│  Production: Vercel Cron (/api/cron/process-queue, 15 min)  │
-│  Local dev: npm run worker (polls every 30s)                 │
+│  Production: GitHub Actions (.github/workflows/process-      │
+│    ingestion-queue.yml) runs npm run worker every 15 min     │
+│  Local dev: npm run worker (process one job, then exit)      │
 │  Shared processing logic: lib/ingestion.ts                   │
 │                                                              │
 │  1. ~~LLM Validation~~ (Note: This is disabled for now)        │
@@ -130,7 +131,7 @@
 4. API validates query is not empty/malformed, parses optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
 5. Check if movie already exists in main Movies DB (filtered by year if provided) → if yes, return existing movie
 6. Add to ingestion_queue with status "pending" and optional year, return success message immediately (non-blocking — no LLM call)
-7. Background worker polls queue every 30s
+7. GitHub Actions runs `npm run worker` every 15 minutes (production) or run manually (local dev)
 8. Worker picks up job, updates status to "processing"
 9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable) — Note: This is disabled for now
 10. Worker calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
@@ -546,9 +547,9 @@ Pagination controls:
 
 - Extend Prisma schema with `ingestion_queue` table (Section 6)
 - Create worker script (`scripts/ingestion-worker.ts`)
-  - Poll `ingestion_queue` every 30 seconds
-  - SELECT jobs WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
+  - SELECT one job WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
   - Update status to 'processing' (prevents duplicate work)
+  - Process job, then exit (GitHub Actions re-invokes every 15 minutes in production)
 - **TMDB Lookup**:
   - Call TMDB search API: `GET /search/movie?query=${query}&year=${year}` (year is optional, from IngestionQueue)
   - If multiple results, take first match
@@ -588,8 +589,8 @@ Pagination controls:
   - Scraping failure: log error with URL, cascade to next source
   - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
   - All errors: console.log with details, don't throw (job marked failed, worker continues)
-- **Production runner**: Vercel Cron route (`/api/cron/process-queue`) — processes ONE job per invocation, runs every 15 minutes. `maxDuration = 60`
-- **Local dev runner**: `npm run worker` — thin wrapper that polls `lib/ingestion.ts` every 30 seconds
+- **Production runner**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) — runs `npm run worker` every 15 minutes via cron schedule. No Vercel plan restrictions.
+- **Local dev runner**: `npm run worker` — processes ONE job then exits. For continuous polling: `watch -n 30 npm run worker`
 - **Shared processing logic**: `lib/ingestion.ts` — used by both the cron route and the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 
@@ -956,7 +957,7 @@ Navigate to /movie/[tmdbId]
 **5.8** Run worker as separate process
 - [x] npm script: `"worker": "tsx scripts/ingestion-worker.ts"`
 - [x] Environment variable validation at startup (DATABASE_URL, TMDB_API_KEY)
-- [x] Graceful shutdown on SIGINT/SIGTERM
+- [x] Processes ONE job then exits cleanly (invoked by GitHub Actions every 15 min)
 
 ### Phase 6 — Notification System *(Complete)*
 
