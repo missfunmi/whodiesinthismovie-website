@@ -30,7 +30,7 @@
 | Database      | PostgreSQL 15+           | Persistent data store                    |
 | ORM           | Prisma                   | Type-safe database queries               |
 | Images        | next/image + TMDB CDN    | Optimized poster loading                 |
-| LLM           | Gemini 2.5 Flash (primary), Ollama (fallback) | Query validation & death data extraction |
+| LLM           | Gemini 3.0 Flash (primary), Ollama (fallback) | Death data extraction |
 | Queue System  | Database-based (Prisma)  | Ingestion queue with polling worker      |
 | Notifications | Polling (60s interval)   | Check for new movies, localStorage       |
 | Logging       | Sentry                   | Error tracking                           |
@@ -74,10 +74,10 @@
 │                  BACKGROUND WORKER                           │
 │  (Node.js polling ingestion_queue every 30s)                │
 │                                                              │
-│  1. LLM Validation (Gemini primary, Ollama fallback)        │
+│  1. ~~LLM Validation~~ (Note: This is disabled for now)        │
 │  2. TMDB API Lookup                                          │
 │  3. Death Scraping (List of Deaths wiki)                    │
-│  4. LLM Extraction (structured death data)                   │
+│  4. LLM Extraction of structured death data (Gemini primary, Ollama fallback)                   │
 │  5. Database Insert                                          │
 │  6. Emit notification                                        │
 └─────────────────────────────────────────────────────────────┘
@@ -127,7 +127,7 @@
 6. Add to ingestion_queue with status "pending" and optional year, return success message immediately (non-blocking — no LLM call)
 7. Background worker polls queue every 30s
 8. Worker picks up job, updates status to "processing"
-9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable)
+9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable) — Note: This is disabled for now
 10. Worker calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
 11. If multiple matches, take first result
 12. Worker scrapes List of Deaths wiki / Wikipedia / The Movie Spoiler for death data, validates scraped content matches expected year/director to prevent disambiguation errors
@@ -563,7 +563,7 @@ Pagination controls:
   - **Disambiguation validation**: After fetching from each source, `validateScrapedContent()` checks that the content mentions the expected year OR director. Content that fails validation is discarded to prevent wrong-movie deaths (e.g., "The Housemaid" 1960 vs 2025)
   - If all sources fail or are rejected by disambiguation, set deaths = [] (valid zero-death movie)
 - **LLM Extraction** (shared module: `lib/llm.ts`):
-  - Primary: Google Gemini 2.5 Flash via `@google/generative-ai` SDK
+  - Primary: Google Gemini 3.0 Flash via `@google/genai` SDK
   - Fallback: Ollama (streaming mode, `num_ctx: 8192`, 30s inactivity timeout, 180s hard ceiling)
   - If `GEMINI_API_KEY` not set, Gemini is skipped entirely (Ollama-only mode)
   - Two modes: enrichment (parsed deaths + plot → LLM fills context) or full extraction (LLM extracts from raw text)
@@ -926,7 +926,7 @@ Navigate to /movie/[tmdbId]
 - [x] If no deaths found, set `scrapedContent = ""` (will result in empty deaths array)
 
 **5.5** Implement LLM extraction (shared module: `lib/llm.ts`)
-- [x] Primary: Google Gemini 2.5 Flash via `@google/generative-ai` SDK (8s validation, 30s extraction timeout)
+- [x] Primary: Google Gemini 3.0 Flash (free tier @ 5 RPM / 20 RPD rate limit) via `@google/genai` SDK (8s validation, 30s extraction timeout)
 - [x] Fallback: Ollama streaming (30s inactivity timeout, 180s ceiling, up to 3 retries)
 - [x] Parse LLM response: strip code fences, extract JSON array, repair common formatting errors
 - [x] Validate each death record with field defaults and HTML entity decoding
