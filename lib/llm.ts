@@ -1,11 +1,20 @@
 /**
- * Shared LLM module — Gemini (primary) with Ollama fallback.
+ * Shared LLM module — Gemini only (primary LLM for production).
  *
  * Used by:
- *   - scripts/ingestion-worker.ts (import "../lib/llm.js")
+ *   - lib/ingestion.ts (which is used by the Vercel Cron route and the local dev worker)
  *
  * Config is passed as a parameter (not read from process.env) so the module
  * works in both Next.js and standalone Node.js contexts.
+ *
+ * Gemini free tier limits (as of 2025):
+ *   - 5 requests per minute (RPM)
+ *   - 250,000 tokens per minute (TPM)
+ *   - 20 requests per day (RPD)
+ *
+ * Rate limiting note: The cron job runs every 15 minutes and processes one movie
+ * per invocation, so at most 1 Gemini request per invocation = well within limits.
+ * The local worker waits 500ms between jobs = max 2 req/min (within 5 RPM limit).
  */
 
 import { GoogleGenAI } from "@google/genai";
@@ -16,9 +25,7 @@ import { GoogleGenAI } from "@google/genai";
 
 export interface LlmConfig {
   geminiApiKey?: string;
-  geminiModel?: string;
-  ollamaEndpoint: string;
-  ollamaModel: string;
+  geminiModel?: string; // defaults to GEMINI_DEFAULT_MODEL if not set
 }
 
 export interface ExtractedDeath {
@@ -40,17 +47,73 @@ export interface ScrapedContent {
 // Constants
 // ---------------------------------------------------------------------------
 
-const GEMINI_VALIDATION_TIMEOUT_MS = 8_000;
+const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
 const GEMINI_EXTRACTION_TIMEOUT_MS = 30_000;
 
-const OLLAMA_INACTIVITY_TIMEOUT_MS = 30_000;
-const OLLAMA_MAX_TOTAL_MS = 180_000;
-const OLLAMA_VALIDATION_TIMEOUT_MS = 5_000;
-
-const LLM_MAX_RETRIES = 3;
+// Retry configuration — 5 retries with exponential backoff
+const GEMINI_MAX_RETRIES = 5;
+const GEMINI_RETRY_DELAYS = [2_000, 4_000, 8_000, 16_000, 32_000]; // ms
 
 // ---------------------------------------------------------------------------
-// Gemini helpers
+// Utility
+// ---------------------------------------------------------------------------
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// ---------------------------------------------------------------------------
+// Retry helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns true for recoverable Gemini errors that should be retried:
+ *   - 429 (rate limited)
+ *   - 500/502/503 (server errors)
+ *   - JSON parsing failures (transient model output corruption)
+ *
+ * Returns false for non-retryable errors:
+ *   - 400 (bad request — prompt issue)
+ *   - 401/403 (authentication/authorization — config issue)
+ *   - AbortError (request timeout — not worth retrying with same timeout)
+ */
+function isRetryableGeminiError(error: unknown): boolean {
+  if (error instanceof Error && error.name === "AbortError") return false;
+
+  const msg = error instanceof Error ? error.message : String(error);
+
+  // Non-retryable auth/client errors
+  if (msg.includes("401") || msg.includes("403") || msg.includes("400")) {
+    return false;
+  }
+
+  // Retryable server/rate-limit errors
+  if (
+    msg.includes("429") ||
+    msg.includes("500") ||
+    msg.includes("502") ||
+    msg.includes("503") ||
+    msg.toLowerCase().includes("rate limit") ||
+    msg.toLowerCase().includes("quota")
+  ) {
+    return true;
+  }
+
+  // JSON parsing failures — could be transient model output corruption
+  if (
+    msg.includes("JSON") ||
+    msg.toLowerCase().includes("parse") ||
+    msg.includes("not a JSON array") ||
+    msg.includes("SyntaxError")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// Gemini helper
 // ---------------------------------------------------------------------------
 
 async function callGemini(
@@ -58,8 +121,7 @@ async function callGemini(
   model: string,
   timeoutMs: number,
 ): Promise<string> {
-  // The model reads the GEMINI_API_KEY from the environment,
-  // so it doesn't need to be passed in
+  // GoogleGenAI reads GEMINI_API_KEY from the environment automatically
   const ai = new GoogleGenAI({});
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -83,125 +145,6 @@ async function callGemini(
       throw new Error("Gemini timeout");
     }
     throw error;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Ollama helpers
-// ---------------------------------------------------------------------------
-
-async function callOllamaStreaming(
-  endpoint: string,
-  model: string,
-  prompt: string,
-): Promise<string> {
-  const controller = new AbortController();
-  const startTime = Date.now();
-
-  const totalTimeout = setTimeout(() => controller.abort(), OLLAMA_MAX_TOTAL_MS);
-
-  let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
-  const resetInactivityTimer = () => {
-    if (inactivityTimer) clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(
-      () => controller.abort(),
-      OLLAMA_INACTIVITY_TIMEOUT_MS,
-    );
-  };
-
-  try {
-    resetInactivityTimer();
-
-    const response = await fetch(`${endpoint}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        prompt,
-        stream: true,
-        options: { num_ctx: 8192 },
-      }),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Ollama returned ${response.status}: ${response.statusText}`,
-      );
-    }
-
-    if (!response.body) {
-      throw new Error("Ollama response has no body (streaming not supported?)");
-    }
-
-    let accumulated = "";
-    const decoder = new TextDecoder();
-
-    for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
-      resetInactivityTimer();
-      const text = decoder.decode(chunk, { stream: true });
-
-      for (const line of text.split("\n")) {
-        if (!line.trim()) continue;
-        try {
-          const parsed = JSON.parse(line);
-          if (parsed.response) {
-            accumulated += parsed.response;
-          }
-          if (parsed.done) {
-            const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-            console.log(
-              `[llm:ollama] Streaming complete in ${elapsed}s (${accumulated.length} chars)`,
-            );
-            return accumulated.trim();
-          }
-        } catch {
-          // Partial JSON line — will be completed in next chunk
-        }
-      }
-    }
-
-    return accumulated.trim();
-  } catch (error) {
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    const msg = error instanceof Error ? error.message : String(error);
-    if (msg.includes("aborted") || msg.includes("abort")) {
-      throw new Error(`Ollama inactivity/total timeout after ${elapsed}s`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(totalTimeout);
-    if (inactivityTimer) clearTimeout(inactivityTimer);
-  }
-}
-
-async function callOllamaNonStreaming(
-  endpoint: string,
-  model: string,
-  prompt: string,
-  timeoutMs: number,
-): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(`${endpoint}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, prompt, stream: false }),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Ollama returned ${response.status}: ${response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-    return ((data.response as string) || "").trim();
   } finally {
     clearTimeout(timeout);
   }
@@ -337,64 +280,21 @@ ${content.slice(0, 6000)}`;
 
 /**
  * Validate whether a query is a real movie.
- * Tries Gemini first, falls back to Ollama. Returns true if both fail (best-effort).
  * TODO — Skipping LLM validation of movie title for now — results very inconsistent, needs finetuning
  */
 export async function validateMovieTitle(
   query: string,
-  config: LlmConfig,
+  _config: LlmConfig,
 ): Promise<boolean> {
-  console.log("[llm:debug] Skipping LLM validation of movie title for now...");
+  console.log(`[llm:debug] Skipping LLM validation for "${query}" (disabled)`);
   return true;
-  /*
-  const prompt = `Is '${query}' a real movie? Answer with only YES or NO.`;
-
-  // Try Gemini first
-  if (config.geminiApiKey && config.geminiModel) {
-    try {
-      console.log(`[llm:gemini] Calling Gemini to validate movie title...`);
-      const answer = await callGemini(
-        prompt,
-        config.geminiModel,
-        GEMINI_VALIDATION_TIMEOUT_MS,
-      );
-      const isRealMovie = answer.toUpperCase().startsWith("YES");
-      console.log(
-        `[llm:gemini] Validation for "${query}": ${answer.slice(0, 20)} (isRealMovie: ${isRealMovie})`,
-      );
-      return isRealMovie;
-    } catch (error) {
-      console.log(
-        `[llm:gemini] Validation failed, falling back to Ollama: ${error instanceof Error ? error.message : error}`,
-      );
-    }
-  }
-
-  // Ollama fallback
-  try {
-    const answer = await callOllamaNonStreaming(
-      config.ollamaEndpoint,
-      config.ollamaModel,
-      prompt,
-      OLLAMA_VALIDATION_TIMEOUT_MS,
-    );
-    const isRealMovie = answer.toUpperCase().startsWith("YES");
-    console.log(
-      `[llm:ollama] Validation for "${query}": ${answer.slice(0, 20)} (isRealMovie: ${isRealMovie})`,
-    );
-    return isRealMovie;
-  } catch {
-    console.log(
-      "[llm] Validation skipped (both Gemini and Ollama unavailable)",
-    );
-    return true; // Best-effort — proceed if both LLMs are down
-  }
-  */
 }
 
 /**
- * Extract/enrich structured death data using an LLM.
- * Tries Gemini first, falls back to Ollama, with retries.
+ * Extract/enrich structured death data using Gemini.
+ * Retries up to GEMINI_MAX_RETRIES times on recoverable errors (429, 500/502/503, JSON parse).
+ * Does NOT retry on auth errors (401/403) or timeouts.
+ * Falls back to pre-parsed deaths if Gemini fails after all retries.
  */
 export async function extractDeaths(
   title: string,
@@ -412,7 +312,7 @@ export async function extractDeaths(
     return [];
   }
 
-  // If we have parsed deaths but no plot summary, use them as-is
+  // If we have parsed deaths but no plot summary, use them as-is (no enrichment needed)
   if (hasParsedDeaths && !hasPlot) {
     console.log(
       `[llm] Using ${scraped.parsedDeaths.length} parsed deaths (no plot summary available for enrichment)`,
@@ -420,6 +320,15 @@ export async function extractDeaths(
     return scraped.parsedDeaths;
   }
 
+  // Skip LLM if Gemini API key is not configured
+  if (!config.geminiApiKey) {
+    console.log(
+      `[llm] GEMINI_API_KEY not set — skipping LLM enrichment, using ${scraped.parsedDeaths.length} parsed deaths`,
+    );
+    return hasParsedDeaths ? scraped.parsedDeaths : [];
+  }
+
+  const model = config.geminiModel || GEMINI_DEFAULT_MODEL;
   const prompt =
     hasParsedDeaths && hasPlot
       ? buildEnrichmentPrompt(title, scraped)
@@ -428,103 +337,69 @@ export async function extractDeaths(
           scraped.plotSummary || scraped.fandomContent,
         );
 
-  // Try Gemini first (if available)
-  if (config.geminiApiKey && config.geminiModel) {
+  // Retry loop — up to GEMINI_MAX_RETRIES attempts with exponential backoff
+  for (let attempt = 0; attempt < GEMINI_MAX_RETRIES; attempt++) {
     try {
-      console.log(`[llm:gemini] Calling Gemini for death extraction...`);
-      const raw = await callGemini(
-        prompt,
-        config.geminiModel,
-        GEMINI_EXTRACTION_TIMEOUT_MS,
+      console.log(
+        `[llm:gemini] Calling Gemini for death extraction (attempt ${attempt + 1}/${GEMINI_MAX_RETRIES}, model: ${model})...`,
       );
+
+      const raw = await callGemini(prompt, model, GEMINI_EXTRACTION_TIMEOUT_MS);
       console.log(
         `[llm:gemini] Raw response (first 300 chars): ${raw.slice(0, 300)}`,
       );
+
       const deaths = parseDeathResponse(raw);
       console.log(`[llm:gemini] Extracted ${deaths.length} deaths`);
-      // Sanity check: if LLM returned significantly fewer deaths than parsed,
+
+      // Sanity check: if Gemini returned significantly fewer deaths than parsed,
       // it likely truncated output — fall back to parsed deaths
       if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
-        const llmNames = new Set(deaths.map(d => d.character));
-        const dropped = scraped.parsedDeaths.filter(d => !llmNames.has(d.character)).map(d => d.character);
+        const llmNames = new Set(deaths.map((d) => d.character));
+        const dropped = scraped.parsedDeaths
+          .filter((d) => !llmNames.has(d.character))
+          .map((d) => d.character);
         console.warn(
           `[llm:gemini] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
         );
         return scraped.parsedDeaths;
       }
-      return deaths;
-    } catch (error) {
-      console.log(
-        `[llm:gemini] Extraction failed, falling back to Ollama: ${error instanceof Error ? error.message : error}`,
-      );
-    }
-  }
 
-  // Ollama fallback with retries
-  for (let attempt = 0; attempt < LLM_MAX_RETRIES; attempt++) {
-    try {
-      console.log(
-        `[llm:ollama] Calling Ollama (attempt ${attempt + 1}/${LLM_MAX_RETRIES}, model: ${config.ollamaModel})`,
-      );
-
-      const raw = await callOllamaStreaming(
-        config.ollamaEndpoint,
-        config.ollamaModel,
-        prompt,
-      );
-      console.log(
-        `[llm:ollama] Raw response (first 300 chars): ${raw.slice(0, 300)}`,
-      );
-
-      const deaths = parseDeathResponse(raw);
-      console.log(`[llm:ollama] Extracted ${deaths.length} deaths`);
-      // Sanity check: if LLM returned significantly fewer deaths than parsed,
-      // it likely truncated output — fall back to parsed deaths
-      if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
-        const llmNames = new Set(deaths.map(d => d.character));
-        const dropped = scraped.parsedDeaths.filter(d => !llmNames.has(d.character)).map(d => d.character);
-        console.warn(
-          `[llm:ollama] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
-        );
-        return scraped.parsedDeaths;
-      }
       return deaths;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
+      const isLast = attempt === GEMINI_MAX_RETRIES - 1;
 
-      if (
-        msg.includes("aborted") ||
-        msg.includes("abort") ||
-        msg.includes("inactivity")
-      ) {
-        console.warn(
-          `[llm:ollama] Timeout (attempt ${attempt + 1}): ${msg}`,
-        );
-      } else if (msg.includes("JSON")) {
-        console.warn(
-          `[llm:ollama] Invalid JSON (attempt ${attempt + 1}): ${msg}`,
-        );
-      } else {
-        console.warn(
-          `[llm:ollama] Error (attempt ${attempt + 1}): ${msg}`,
-        );
-      }
+      if (isLast || !isRetryableGeminiError(error)) {
+        // All retries exhausted, or non-retryable error (auth, timeout, etc.)
+        if (isLast) {
+          console.warn(
+            `[llm:gemini] All ${GEMINI_MAX_RETRIES} attempts failed. Last error: ${msg}`,
+          );
+        } else {
+          console.warn(
+            `[llm:gemini] Non-retryable error (${msg}) — not retrying`,
+          );
+        }
 
-      if (attempt === LLM_MAX_RETRIES - 1) {
         if (hasParsedDeaths) {
           console.warn(
-            `[llm] Both LLMs failed, falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
+            `[llm:gemini] Falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
           );
           return scraped.parsedDeaths;
         }
-        throw new Error(
-          `LLM extraction failed after all attempts: ${msg}`,
-        );
+
+        throw new Error(`LLM extraction failed after all attempts: ${msg}`);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 2_000));
+      const delay = GEMINI_RETRY_DELAYS[attempt] ?? 32_000;
+      console.warn(
+        `[llm:gemini] Attempt ${attempt + 1}/${GEMINI_MAX_RETRIES} failed (${msg}), retrying in ${delay / 1000}s...`,
+      );
+      await sleep(delay);
     }
   }
 
+  // Should not reach here, but just in case
   return hasParsedDeaths ? scraped.parsedDeaths : [];
 }
