@@ -267,14 +267,50 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 ### Search & Ingestion Hardening *(Complete)*
 - **Year-aware search**: Queries like "matrix 1999" extract trailing year via `parseQueryWithYear()` in `lib/utils.ts`. Search API filters by `title ILIKE` + `year =`. Request API stores year in `IngestionQueue.year`. Worker passes year to TMDB search API (`&year=YYYY`) and strips year from query string before searching
 - **Scraping disambiguation**: `validateScrapedContent(content, year, director)` checks that scraped wiki/Wikipedia/MovieSpoiler content mentions the expected year OR director (permissive OR). Prevents wrong-movie deaths (e.g., "The Housemaid" 1960 vs 2025). Content rejected by validation is discarded; worker falls through to next source
-- **LLM provider switch**: Gemini 3.0 Flash (primary) via `@google/genai` SDK, Ollama (fallback). Shared `lib/llm.ts` module exports `validateMovieTitle()` and `extractDeaths()`. Config passed as parameter, not read from `process.env`. Gemini timeout via `AbortController`. If `GEMINI_API_KEY` not set, Gemini calls are skipped (Ollama-only mode)
+- **LLM provider switch**: Gemini 2.5 Flash (primary) via `@google/genai` SDK, Ollama (fallback). Shared `lib/llm.ts` module exports `validateMovieTitle()` and `extractDeaths()`. Config passed as parameter, not read from `process.env`. Gemini timeout via `AbortController`. If `GEMINI_API_KEY` not set, Gemini calls are skipped (Ollama-only mode)
 - **Non-blocking request flow**: Request API (`POST /api/movies/request`) no longer blocks on LLM validation. Queue insert happens immediately. LLM validation deferred to worker's Step 1
+
+## Architectural Decisions (Vercel Deployment) *(Complete)*
+
+### Gemini-Only LLM (No Ollama)
+- Ollama requires a locally running process — incompatible with Vercel's serverless/ephemeral environment
+- All LLM calls now go to Gemini 2.5 Flash exclusively
+- If `GEMINI_API_KEY` is not set, LLM enrichment is skipped entirely (falls back to programmatic parsed deaths)
+- `LlmConfig` interface simplified to `{ geminiApiKey?: string; geminiModel?: string }`
+
+### Gemini Retry Strategy
+- **Max retries**: 5, with exponential backoff: 2s, 4s, 8s, 16s, 32s
+- **Retryable errors**: HTTP 429 (rate limit), 500/502/503 (server errors), JSON parse failures (transient output corruption)
+- **Non-retryable errors**: HTTP 400 (bad prompt), 401/403 (auth), AbortError (timeout)
+- Retry logic is in `extractDeaths()`, wrapping both `callGemini()` and `parseDeathResponse()` — catches HTTP and JSON errors in the same block
+- After all retries exhausted: falls back to pre-parsed Fandom deaths (not a hard failure)
+- Rate limit note: Gemini free tier = 5 RPM / 20 RPD. Cron runs every 15 min = 1 call/invocation, well within limits
+
+### GitHub Actions Ingestion Runner
+- **Production**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) runs `npm run worker` every 15 minutes via cron schedule `*/15 * * * *`
+- **Process ONE job per invocation** — `npm run worker` connects to DB, processes one pending job, then exits cleanly
+- **Why not Vercel Cron**: Vercel Hobby plan only supports 1 cron job per day; GitHub Actions has no such restriction
+- **Secrets**: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` configured as GitHub repository secrets (Settings → Secrets and variables → Actions)
+- **`/api/cron/process-queue`** remains available for manual HTTP testing (still requires `CRON_SECRET` Bearer token), but is no longer the production runner
+- **Local dev**: `npm run worker` processes one job then exits. For continuous local polling: `watch -n 30 npm run worker`
+
+### Shared `lib/ingestion.ts` Module
+- All job processing logic extracted from `scripts/ingestion-worker.ts` into `lib/ingestion.ts`
+- Exports: `processQueue()`, `processJob()`, `parseFandomDeaths()`, `sleep()`, `IngestionJob`, `ProcessJobConfig`, `QueueResult` types
+- Used by both the cron route (via `@/lib/ingestion`) and the local worker (via `"../lib/ingestion.js"`)
+- `scripts/ingestion-worker.ts` is now a thin wrapper: env validation + Prisma setup + single-job execution + exit
+
+### Build Command for Vercel
+- `vercel-build` script in `package.json`: `prisma generate && prisma migrate deploy && next build`
+- `prisma generate`: regenerates the Prisma client from schema (required on each deploy)
+- `prisma migrate deploy`: applies pending migrations to the production database (safe to run repeatedly)
+- Vercel uses this script automatically when `vercel-build` is defined
 
 ## Important Notes
 
 - The Figma prototype in `figma-make-prototype/` is for visual reference only. Do NOT copy its code. Rebuild all components from scratch with proper Next.js patterns.
 - Movie poster images come from TMDB CDN: `https://image.tmdb.org/t/p/w300{posterPath}`
-- The ingestion worker uses Gemini 3.0 Flash (primary) with Ollama fallback for LLM tasks. Set `GEMINI_API_KEY` for Gemini, or run Ollama locally (`http://localhost:11434`) with Mistral model pulled (`ollama pull mistral`) as fallback
+- The ingestion worker uses Gemini 2.5 Flash for LLM tasks. Set `GEMINI_API_KEY` for Gemini; if not set, LLM enrichment is skipped (death data uses programmatic parsing only)
 - Seed data in `data/` will be expanded over time. The seed script should handle re-runs gracefully (upsert pattern).
-- Environment variables must include TMDB_API_KEY (raw key or "Bearer ..." token both supported). Optional: GEMINI_API_KEY (primary LLM), OLLAMA_ENDPOINT (fallback LLM)
+- Environment variables: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `NEXT_PUBLIC_TMDB_IMAGE_BASE`. `CRON_SECRET` is only needed if testing the `/api/cron/process-queue` HTTP endpoint manually.
 - ALWAYS commit all changes on `feature/` or `bugfix/` branches, as necessary — never on main or master

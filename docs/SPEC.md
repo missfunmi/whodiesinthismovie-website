@@ -72,13 +72,19 @@
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                  BACKGROUND WORKER                           │
-│  (Node.js polling ingestion_queue every 30s)                │
+│  Production: GitHub Actions (.github/workflows/process-      │
+│    ingestion-queue.yml) runs npm run worker every 15 min     │
+│  Local dev: npm run worker (process one job, then exit)      │
+│  Shared processing logic: lib/ingestion.ts                   │
 │                                                              │
 │  1. ~~LLM Validation~~ (Note: This is disabled for now)        │
 │  2. TMDB API Lookup                                          │
-│  3. Death Scraping (List of Deaths wiki)                    │
-│  4. LLM Extraction of structured death data (Gemini primary, Ollama fallback)                   │
-│  5. Database Insert                                          │
+│  3. Death Scraping (List of Deaths wiki / Wikipedia / Spoiler│
+│  4. LLM Extraction via Gemini 2.5 Flash only (no Ollama)    │
+│     - Max 5 retries, exponential backoff: 2/4/8/16/32s      │
+│     - Retries on: 429, 500/502/503, JSON parse failures      │
+│     - Falls back to parsed deaths if all retries fail        │
+│  5. Database Insert (atomic transaction)                     │
 │  6. Emit notification                                        │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -125,7 +131,7 @@
 4. API validates query is not empty/malformed, parses optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
 5. Check if movie already exists in main Movies DB (filtered by year if provided) → if yes, return existing movie
 6. Add to ingestion_queue with status "pending" and optional year, return success message immediately (non-blocking — no LLM call)
-7. Background worker polls queue every 30s
+7. GitHub Actions runs `npm run worker` every 15 minutes (production) or run manually (local dev)
 8. Worker picks up job, updates status to "processing"
 9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable) — Note: This is disabled for now
 10. Worker calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
@@ -541,9 +547,9 @@ Pagination controls:
 
 - Extend Prisma schema with `ingestion_queue` table (Section 6)
 - Create worker script (`scripts/ingestion-worker.ts`)
-  - Poll `ingestion_queue` every 30 seconds
-  - SELECT jobs WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
+  - SELECT one job WHERE status = 'pending' ORDER BY createdAt ASC LIMIT 1
   - Update status to 'processing' (prevents duplicate work)
+  - Process job, then exit (GitHub Actions re-invokes every 15 minutes in production)
 - **TMDB Lookup**:
   - Call TMDB search API: `GET /search/movie?query=${query}&year=${year}` (year is optional, from IngestionQueue)
   - If multiple results, take first match
@@ -563,25 +569,29 @@ Pagination controls:
   - **Disambiguation validation**: After fetching from each source, `validateScrapedContent()` checks that the content mentions the expected year OR director. Content that fails validation is discarded to prevent wrong-movie deaths (e.g., "The Housemaid" 1960 vs 2025)
   - If all sources fail or are rejected by disambiguation, set deaths = [] (valid zero-death movie)
 - **LLM Extraction** (shared module: `lib/llm.ts`):
-  - Primary: Google Gemini 3.0 Flash via `@google/genai` SDK
-  - Fallback: Ollama (streaming mode, `num_ctx: 8192`, 30s inactivity timeout, 180s hard ceiling)
-  - If `GEMINI_API_KEY` not set, Gemini is skipped entirely (Ollama-only mode)
+  - Gemini 2.5 Flash via `@google/genai` SDK (no Ollama fallback — Ollama requires a local process, incompatible with Vercel)
+  - If `GEMINI_API_KEY` not set, LLM enrichment is skipped entirely; death data uses programmatic parsing only
   - Two modes: enrichment (parsed deaths + plot → LLM fills context) or full extraction (LLM extracts from raw text)
+  - **Retry strategy**: Max 5 retries with exponential backoff (2s, 4s, 8s, 16s, 32s)
+    - Retryable: HTTP 429 (rate limit), 500/502/503 (server errors), JSON parse failures
+    - Non-retryable: HTTP 400/401/403 (client/auth errors), AbortError (timeout)
+  - Falls back to pre-parsed Fandom deaths if all retries exhausted (not a hard failure)
   - Parse JSON response into structured death records with JSON repair for common LLM output quirks
-  - Validate each record has all required fields
-  - Set `killedBy: "N/A"` if missing
+  - Validate each record has all required fields; set `killedBy: "N/A"` if missing
 - **Database Insert**:
   - Upsert movie record by tmdbId: `prisma.movie.upsert({ where: { tmdbId }, create: {...}, update: {...} })`
   - Delete existing deaths: `prisma.death.deleteMany({ where: { movieId: movie.id } })`
   - Bulk insert deaths: `prisma.death.createMany({ data: deathRecords })`
   - Update ingestion_queue status to 'complete', set completedAt timestamp
+  - All operations wrapped in `prisma.$transaction()` for atomicity
 - **Error Handling**:
   - TMDB timeout: retry with exponential backoff (2s, 4s, 8s), max 3 attempts
-  - Scraping failure: log error with URL, mark job 'failed' with reason
-  - LLM timeout: Gemini (8s validation, 30s extraction), Ollama (30s inactivity, 180s ceiling). Retry up to 3 times for Ollama. Falls back to parsed deaths if available
-  - Invalid JSON from LLM: JSON repair (mismatched brackets, HTML entities), retry, fallback to parsed deaths
-  - All errors: console.log with details, don't throw (keep worker running)
-- Run worker as separate process: `npm run worker`
+  - Scraping failure: log error with URL, cascade to next source
+  - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
+  - All errors: console.log with details, don't throw (job marked failed, worker continues)
+- **Production runner**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) — runs `npm run worker` every 15 minutes via cron schedule. No Vercel plan restrictions.
+- **Local dev runner**: `npm run worker` — processes ONE job then exits. For continuous polling: `watch -n 30 npm run worker`
+- **Shared processing logic**: `lib/ingestion.ts` — used by both the cron route and the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 
 ### PHASE 6 — Notification System *(Complete)*
@@ -947,7 +957,7 @@ Navigate to /movie/[tmdbId]
 **5.8** Run worker as separate process
 - [x] npm script: `"worker": "tsx scripts/ingestion-worker.ts"`
 - [x] Environment variable validation at startup (DATABASE_URL, TMDB_API_KEY)
-- [x] Graceful shutdown on SIGINT/SIGTERM
+- [x] Processes ONE job then exits cleanly (invoked by GitHub Actions every 15 min)
 
 ### Phase 6 — Notification System *(Complete)*
 

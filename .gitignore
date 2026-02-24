@@ -2,6 +2,7 @@ figma-make-prototype/
 .notes*.md
 *.diff
 *.log
+.logs/
 
 # dependencies
 node_modules/
