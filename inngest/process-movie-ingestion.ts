@@ -16,6 +16,7 @@
  */
 
 import { inngest } from "@/lib/inngest";
+import { NonRetriableError } from "inngest";
 import { prisma } from "@/lib/prisma";
 import { processJob } from "@/lib/ingestion";
 import type { LlmConfig } from "@/lib/llm";
@@ -62,12 +63,20 @@ export const processMovieIngestion = inngest.createFunction(
     }
 
     // Step 2: Run the full ingestion pipeline.
-    // Fetches the job fresh from DB — step.run() JSON-serializes return values,
-    // which would convert Date fields to strings and break processJob's type contract.
+    // processJob throws on failure — it does not catch internally (the caller is
+    // responsible for marking the job as failed). We wrap it here so that if
+    // processJob throws, the queue record is moved to "failed" before re-throwing.
+    // Re-throwing lets Inngest retry on transient errors; if all retries exhaust,
+    // the job is already in a terminal "failed" state rather than stuck in "processing".
     const movieTitle = await step.run("process-job", async () => {
       const tmdbApiKey = process.env.TMDB_API_KEY;
       if (!tmdbApiKey) {
-        throw new Error("TMDB_API_KEY environment variable is not set");
+        // Permanent misconfiguration — mark failed immediately and skip all retries.
+        await prisma.ingestionQueue.update({
+          where: { id: jobId },
+          data: { status: "failed", failureReason: "TMDB_API_KEY not configured" },
+        });
+        throw new NonRetriableError("TMDB_API_KEY environment variable is not set");
       }
 
       const llmConfig: LlmConfig = {
@@ -75,11 +84,28 @@ export const processMovieIngestion = inngest.createFunction(
         geminiModel: process.env.GEMINI_MODEL || undefined,
       };
 
+      // Fetch job fresh from DB — step.run() JSON-serializes return values,
+      // which would convert Date fields to strings and break processJob's type contract.
       const job = await prisma.ingestionQueue.findUniqueOrThrow({
         where: { id: jobId },
       });
 
-      return await processJob(job, prisma, { tmdbApiKey, llmConfig });
+      try {
+        return await processJob(job, prisma, { tmdbApiKey, llmConfig });
+      } catch (err) {
+        // Mark the job as failed so it doesn't stay stuck in "processing" after
+        // all Inngest retries are exhausted. Re-throw to allow Inngest to retry
+        // on transient errors (processJob will re-run on the next attempt).
+        await prisma.ingestionQueue.update({
+          where: { id: jobId },
+          data: {
+            status: "failed",
+            failureReason:
+              err instanceof Error ? err.message.slice(0, 500) : "Unknown error",
+          },
+        });
+        throw err;
+      }
     });
 
     return { success: true, title: movieTitle };
