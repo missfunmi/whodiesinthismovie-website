@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
     "worker": "tsx scripts/ingestion-worker.ts"
@@ -29,9 +29,7 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@sentry/nextjs": "^10.38.0",
-    "@types/dompurify": "^3.0.5",
     "cheerio": "^1.2.0",
-    "isomorphic-dompurify": "^2.36.0",
     "lucide-react": "^0.563.0",
     "next": "^16.1.6",
     "pg": "^8.18.0",
