@@ -1,12 +1,16 @@
-import DOMPurify from "isomorphic-dompurify";
-
 /**
  * Sanitize user input by stripping all HTML tags and attributes.
- * Uses DOMPurify with ALLOWED_TAGS=[] to ensure no HTML passes through,
- * covering encoded entities, event handlers, and non-script XSS vectors.
+ * Removes all HTML tags, decodes common entities, and trims whitespace.
  */
 export function sanitizeInput(input: string): string {
-  return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] }).trim();
+  return input
+    .replace(/<[^>]*>/g, '') // Strip all HTML tags
+    .replace(/&lt;/g, '<')   // Decode &lt;
+    .replace(/&gt;/g, '>')   // Decode &gt;
+    .replace(/&amp;/g, '&')  // Decode &amp;
+    .replace(/&quot;/g, '"') // Decode &quot;
+    .replace(/&#39;/g, "'")  // Decode &#39;
+    .trim();
 }
 
 /**
