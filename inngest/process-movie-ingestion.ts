@@ -6,16 +6,13 @@
  * job rather than waiting for a cron schedule.
  *
  * Steps:
- *   1. fetch-job        — Verify the queue entry exists and is pending
- *   2. mark-processing  — Update status to "processing"
- *   3. process-job      — Run the full ingestion pipeline (TMDB + scraping + LLM + DB insert)
+ *   1. claim-job   — Atomically verify the job is pending and mark it as "processing"
+ *                    in a single UPDATE. Prevents duplicate processing if the event
+ *                    fires more than once (Inngest at-least-once delivery).
+ *   2. process-job — Run the full ingestion pipeline (TMDB + scraping + LLM + DB insert)
  *
  * Each step is independently retried by Inngest on failure (up to 3 times).
  * The full pipeline is in lib/ingestion.ts.
- *
- * Note: Step return values are JSON-serialized by Inngest between steps. To avoid
- * Date/string type mismatches, the process-job step re-fetches the job directly
- * from the database rather than reusing the serialized value from fetch-job.
  */
 
 import { inngest } from "@/lib/inngest";
@@ -33,36 +30,39 @@ export const processMovieIngestion = inngest.createFunction(
   async ({ event, step }) => {
     const { jobId } = event.data as { jobId: number };
 
-    // Step 1: Verify the queue entry exists and is still pending
-    const jobExists = await step.run("fetch-job", async () => {
-      const job = await prisma.ingestionQueue.findUnique({
-        where: { id: jobId },
-        select: { id: true, status: true, query: true },
-      });
-      return job;
+    // Step 1: Atomically claim the job — only succeeds if status is still "pending".
+    // Prisma throws P2025 (RecordNotFound) if the row doesn't exist or is already
+    // being processed, which causes this step to return null via the catch.
+    // This eliminates the TOCTOU window between a separate read and write.
+    const claimed = await step.run("claim-job", async () => {
+      try {
+        await prisma.ingestionQueue.update({
+          where: { id: jobId, status: "pending" },
+          data: { status: "processing" },
+        });
+        return true;
+      } catch {
+        // P2025: no row matched (not found, or already processing/complete/failed)
+        return false;
+      }
     });
 
-    if (!jobExists) {
-      return { success: false, reason: "Job not found" };
-    }
-
-    if (jobExists.status !== "pending") {
+    if (!claimed) {
+      // Verify whether the job exists at all for a clearer log message
+      const job = await prisma.ingestionQueue.findUnique({
+        where: { id: jobId },
+        select: { status: true },
+      });
       return {
         success: false,
-        reason: `Job already in status: ${jobExists.status}`,
+        reason: job
+          ? `Job already in status: ${job.status}`
+          : "Job not found",
       };
     }
 
-    // Step 2: Mark as processing to prevent duplicate work
-    await step.run("mark-processing", async () => {
-      await prisma.ingestionQueue.update({
-        where: { id: jobId },
-        data: { status: "processing" },
-      });
-    });
-
-    // Step 3: Run the full ingestion pipeline.
-    // Re-fetch the job from DB here — step.run() JSON-serializes return values,
+    // Step 2: Run the full ingestion pipeline.
+    // Fetches the job fresh from DB — step.run() JSON-serializes return values,
     // which would convert Date fields to strings and break processJob's type contract.
     const movieTitle = await step.run("process-job", async () => {
       const tmdbApiKey = process.env.TMDB_API_KEY;
