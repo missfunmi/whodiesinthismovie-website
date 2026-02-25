@@ -13,6 +13,10 @@
  *
  * Each step is independently retried by Inngest on failure (up to 3 times).
  * The full pipeline is in lib/ingestion.ts.
+ *
+ * If the function fails after all retries are exhausted (or immediately on a
+ * NonRetriableError), the `onFailure` handler moves the queue record to a
+ * terminal "failed" state so it doesn't stay stuck in "processing".
  */
 
 import { inngest } from "@/lib/inngest";
@@ -26,6 +30,20 @@ export const processMovieIngestion = inngest.createFunction(
     id: "process-movie-ingestion",
     name: "Process Movie Ingestion",
     retries: 3,
+    // Runs only after all retries are exhausted (or immediately on NonRetriableError).
+    // This is the single authoritative place that moves the queue record to "failed".
+    // Keeping failure state out of the step itself means the DB accurately reflects
+    // "processing" throughout active retry attempts, not prematurely "failed".
+    onFailure: async ({ event, error }) => {
+      const { jobId } = event.data.event.data as { jobId: number };
+      await prisma.ingestionQueue.update({
+        where: { id: jobId },
+        data: {
+          status: "failed",
+          failureReason: error.message.slice(0, 500),
+        },
+      });
+    },
   },
   { event: "movie/ingestion.requested" },
   async ({ event, step }) => {
@@ -33,7 +51,7 @@ export const processMovieIngestion = inngest.createFunction(
 
     // Step 1: Atomically claim the job — only succeeds if status is still "pending".
     // Prisma throws P2025 (RecordNotFound) if the row doesn't exist or is already
-    // being processed, which causes this step to return null via the catch.
+    // being processed, which causes this step to return false via the catch.
     // This eliminates the TOCTOU window between a separate read and write.
     const claimed = await step.run("claim-job", async () => {
       try {
@@ -63,19 +81,15 @@ export const processMovieIngestion = inngest.createFunction(
     }
 
     // Step 2: Run the full ingestion pipeline.
-    // processJob throws on failure — it does not catch internally (the caller is
-    // responsible for marking the job as failed). We wrap it here so that if
-    // processJob throws, the queue record is moved to "failed" before re-throwing.
-    // Re-throwing lets Inngest retry on transient errors; if all retries exhaust,
-    // the job is already in a terminal "failed" state rather than stuck in "processing".
+    // processJob throws on failure — do NOT catch here. Transient errors bubble
+    // up so Inngest can retry. The onFailure handler above marks the queue record
+    // as "failed" only after all retries are exhausted, keeping the DB status
+    // accurate throughout active retry attempts.
     const movieTitle = await step.run("process-job", async () => {
       const tmdbApiKey = process.env.TMDB_API_KEY;
       if (!tmdbApiKey) {
-        // Permanent misconfiguration — mark failed immediately and skip all retries.
-        await prisma.ingestionQueue.update({
-          where: { id: jobId },
-          data: { status: "failed", failureReason: "TMDB_API_KEY not configured" },
-        });
+        // Permanent misconfiguration — skip all retries immediately.
+        // NonRetriableError triggers onFailure directly to mark the record failed.
         throw new NonRetriableError("TMDB_API_KEY environment variable is not set");
       }
 
@@ -90,22 +104,7 @@ export const processMovieIngestion = inngest.createFunction(
         where: { id: jobId },
       });
 
-      try {
-        return await processJob(job, prisma, { tmdbApiKey, llmConfig });
-      } catch (err) {
-        // Mark the job as failed so it doesn't stay stuck in "processing" after
-        // all Inngest retries are exhausted. Re-throw to allow Inngest to retry
-        // on transient errors (processJob will re-run on the next attempt).
-        await prisma.ingestionQueue.update({
-          where: { id: jobId },
-          data: {
-            status: "failed",
-            failureReason:
-              err instanceof Error ? err.message.slice(0, 500) : "Unknown error",
-          },
-        });
-        throw err;
-      }
+      return await processJob(job, prisma, { tmdbApiKey, llmConfig });
     });
 
     return { success: true, title: movieTitle };
