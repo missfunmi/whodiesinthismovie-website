@@ -160,11 +160,14 @@ npx prisma migrate dev
 # Seed with initial data
 npx prisma db seed
 
-# Start the app (Inngest Dev Server starts automatically at http://localhost:8288)
+# Terminal 1: Start the Next.js app
 npm run dev
+
+# Terminal 2: Start the Inngest Dev Server (separate process)
+npm run inngest:dev
 ```
 
-Visit [http://localhost:8288](http://localhost:8288) to view the Inngest Dev Server — it shows all triggered events and function runs in real time.
+Visit [http://localhost:8288](http://localhost:8288) to view the Inngest Dev Server — it shows all triggered events and function runs in real time. The Dev Server must be running to process movie requests locally.
 
 To manually process a job without Inngest (e.g., for debugging):
 

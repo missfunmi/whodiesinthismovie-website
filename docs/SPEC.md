@@ -74,7 +74,7 @@
 │                  INNGEST FUNCTION                            │
 │  Production: Event-driven via Inngest (app.inngest.com)      │
 │    Triggered immediately on movie/ingestion.requested event  │
-│  Local dev: Inngest Dev Server at http://localhost:8288      │
+│  Local dev: `npm run inngest:dev` (separate terminal)        │
 │  Shared processing logic: lib/ingestion.ts                   │
 │                                                              │
 │  Step 1: fetch-job (retrieve queue entry from DB)            │
@@ -592,7 +592,7 @@ Pagination controls:
   - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
   - All errors: console.log with details, don't throw (job marked failed, worker continues)
 - **Production runner**: Inngest (`app/api/inngest/route.ts`) — `movie/ingestion.requested` event triggers immediate processing via `inngest/process-movie-ingestion.ts`
-- **Local dev runner**: Inngest Dev Server auto-starts at `http://localhost:8288` with `npm run dev`. Manual fallback: `npm run worker`
+- **Local dev runner**: `npm run inngest:dev` (separate terminal) — starts Inngest Dev Server at `http://localhost:8288`. Does NOT start automatically with `npm run dev`. Manual fallback without Inngest: `npm run worker`
 - **Shared processing logic**: `lib/ingestion.ts` — used by both the Inngest function and the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 

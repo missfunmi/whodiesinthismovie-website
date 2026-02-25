@@ -297,7 +297,7 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - **Retries**: 3 automatic retries on failure (Inngest level); internal retries also in `processJob` (TMDB: 3x, Gemini: 5x)
 - **Keys**: `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` configured in Vercel environment variables
 - **Endpoint registration**: Register `https://<your-domain>/api/inngest` in Inngest dashboard after deploy
-- **Local dev**: `npm run dev` auto-starts Inngest Dev Server at `http://localhost:8288` — view all events and function runs
+- **Local dev**: Run `npm run inngest:dev` in a **separate terminal** — starts Inngest Dev Server at `http://localhost:8288`. This is required to process events locally (does NOT start automatically with `npm run dev`)
 - **Manual fallback**: `npm run worker` still works for debugging without Inngest Dev Server
 
 ### Shared `lib/ingestion.ts` Module

@@ -8,7 +8,8 @@
     "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
-    "worker": "tsx scripts/ingestion-worker.ts"
+    "worker": "tsx scripts/ingestion-worker.ts",
+    "inngest:dev": "npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest"
   },
   "repository": {
     "type": "git",
