@@ -286,12 +286,19 @@ Full design system documented in `docs/SPEC.md` Section 2. Key points:
 - After all retries exhausted: falls back to pre-parsed Fandom deaths (not a hard failure)
 - Rate limit note: Gemini free tier = 5 RPM / 20 RPD. Cron runs every 15 min = 1 call/invocation, well within limits
 
-### GitHub Actions Ingestion Runner
-- **Production**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) runs `npm run worker` every 15 minutes via cron schedule `*/15 * * * *`
-- **Process ONE job per invocation** — `npm run worker` connects to DB, processes one pending job, then exits cleanly
-- **Why not Vercel Cron**: Vercel Hobby plan only supports 1 cron job per day; GitHub Actions has no such restriction
-- **Secrets**: `DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL` configured as GitHub repository secrets (Settings → Secrets and variables → Actions)
-- **Local dev**: `npm run worker` processes one job then exits. For continuous local polling: `watch -n 30 npm run worker`
+### Inngest Event-Driven Ingestion
+- **Production**: Inngest processes `movie/ingestion.requested` events immediately when users submit requests — no cron delay
+- **`POST /api/movies/request`** sends the event to Inngest after inserting the queue entry. The `inngest.send()` call is wrapped in try/catch so a user request never fails due to Inngest being unavailable
+- **`app/api/inngest/route.ts`**: Standard Inngest serve handler (GET/POST/PUT) — Inngest calls this endpoint to execute function steps
+- **`inngest/process-movie-ingestion.ts`**: 3-step Inngest function:
+  1. `fetch-job` — retrieve queue entry from DB
+  2. `mark-processing` — update status to "processing"
+  3. `process-job` — call `processJob()` from `lib/ingestion.ts` (full pipeline)
+- **Retries**: 3 automatic retries on failure (Inngest level); internal retries also in `processJob` (TMDB: 3x, Gemini: 5x)
+- **Keys**: `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` configured in Vercel environment variables
+- **Endpoint registration**: Register `https://<your-domain>/api/inngest` in Inngest dashboard after deploy
+- **Local dev**: `npm run dev` auto-starts Inngest Dev Server at `http://localhost:8288` — view all events and function runs
+- **Manual fallback**: `npm run worker` still works for debugging without Inngest Dev Server
 
 ### Shared `lib/ingestion.ts` Module
 - All job processing logic extracted from `scripts/ingestion-worker.ts` into `lib/ingestion.ts`

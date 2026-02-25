@@ -71,21 +71,24 @@
                    │
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  BACKGROUND WORKER                           │
-│  Production: GitHub Actions (.github/workflows/process-      │
-│    ingestion-queue.yml) runs npm run worker every 15 min     │
-│  Local dev: npm run worker (process one job, then exit)      │
+│                  INNGEST FUNCTION                            │
+│  Production: Event-driven via Inngest (app.inngest.com)      │
+│    Triggered immediately on movie/ingestion.requested event  │
+│  Local dev: Inngest Dev Server at http://localhost:8288      │
 │  Shared processing logic: lib/ingestion.ts                   │
 │                                                              │
-│  1. ~~LLM Validation~~ (Note: This is disabled for now)        │
-│  2. TMDB API Lookup                                          │
-│  3. Death Scraping (List of Deaths wiki / Wikipedia / Spoiler│
-│  4. LLM Extraction via Gemini 2.5 Flash only (no Ollama)    │
-│     - Max 5 retries, exponential backoff: 2/4/8/16/32s      │
-│     - Retries on: 429, 500/502/503, JSON parse failures      │
-│     - Falls back to parsed deaths if all retries fail        │
-│  5. Database Insert (atomic transaction)                     │
-│  6. Emit notification                                        │
+│  Step 1: fetch-job (retrieve queue entry from DB)            │
+│  Step 2: mark-processing (update status)                     │
+│  Step 3: process-job (full pipeline):                        │
+│    a. TMDB API Lookup                                        │
+│    b. Death Scraping (Fandom wiki / Wikipedia / Spoiler)     │
+│    c. LLM Extraction via Gemini 2.5 Flash only              │
+│       - Max 5 retries, exponential backoff: 2/4/8/16/32s    │
+│       - Retries on: 429, 500/502/503, JSON parse failures    │
+│       - Falls back to parsed deaths if all retries fail      │
+│    d. Database Insert (atomic transaction)                   │
+│  Retries: 3 automatic retries per Inngest step on failure    │
+│  Endpoint: /api/inngest (registered in Inngest dashboard)    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -130,11 +133,10 @@
 3. User clicks → `POST /api/movies/request` with `{ query: string }`
 4. API validates query is not empty/malformed, parses optional year from query (e.g., "matrix 1999" → title="matrix", year=1999)
 5. Check if movie already exists in main Movies DB (filtered by year if provided) → if yes, return existing movie
-6. Add to ingestion_queue with status "pending" and optional year, return success message immediately (non-blocking — no LLM call)
-7. GitHub Actions runs `npm run worker` every 15 minutes (production) or run manually (local dev)
-8. Worker picks up job, updates status to "processing"
-9. Worker validates query is a real movie title via LLM (Gemini primary, Ollama fallback; best-effort — proceeds if both unavailable) — Note: This is disabled for now
-10. Worker calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
+6. Add to ingestion_queue with status "pending" and optional year; send `movie/ingestion.requested` event to Inngest; return success message immediately (non-blocking)
+7. Inngest triggers `process-movie-ingestion` function within seconds (production) or via Dev Server (local dev)
+8. Function step 2 marks job status "processing"
+9. Function step 3 calls TMDB API to get movie metadata + tmdbId (passes year filter to TMDB if available)
 11. If multiple matches, take first result
 12. Worker scrapes List of Deaths wiki / Wikipedia / The Movie Spoiler for death data, validates scraped content matches expected year/director to prevent disambiguation errors
 13. Worker uses LLM to extract/enrich structured death data from scraped content (Gemini primary, Ollama fallback)
@@ -589,9 +591,9 @@ Pagination controls:
   - Scraping failure: log error with URL, cascade to next source
   - LLM (Gemini): up to 5 retries with exponential backoff, falls back to parsed deaths if available
   - All errors: console.log with details, don't throw (job marked failed, worker continues)
-- **Production runner**: GitHub Actions workflow (`.github/workflows/process-ingestion-queue.yml`) — runs `npm run worker` every 15 minutes via cron schedule.
-- **Local dev runner**: `npm run worker` — processes ONE job then exits. For continuous polling: `watch -n 30 npm run worker`
-- **Shared processing logic**: `lib/ingestion.ts` — used by the local worker
+- **Production runner**: Inngest (`app/api/inngest/route.ts`) — `movie/ingestion.requested` event triggers immediate processing via `inngest/process-movie-ingestion.ts`
+- **Local dev runner**: Inngest Dev Server auto-starts at `http://localhost:8288` with `npm run dev`. Manual fallback: `npm run worker`
+- **Shared processing logic**: `lib/ingestion.ts` — used by both the Inngest function and the local worker
 - **Rate limiting**: Wait 500ms between TMDB API calls to respect rate limits
 
 ### PHASE 6 — Notification System *(Complete)*
