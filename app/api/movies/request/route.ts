@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { inngest } from "@/lib/inngest";
 import { parseQueryWithYear, sanitizeInput } from "@/lib/utils";
 
 const MAX_QUERY_LENGTH = 200;
@@ -106,7 +107,18 @@ export async function POST(request: NextRequest) {
       `[request] Added to ingestion queue: id=${queueEntry.id}, query="${query}"${searchYear ? `, year=${searchYear}` : ""}`,
     );
 
-    // 8. Return success
+    // 8. Trigger Inngest for immediate processing (non-blocking — queue entry persists even if this fails)
+    try {
+      await inngest.send({
+        name: "movie/ingestion.requested",
+        data: { jobId: queueEntry.id },
+      });
+      console.log(`[request] Inngest event sent for job id=${queueEntry.id}`);
+    } catch (e) {
+      console.warn("[request] Inngest send failed (job still queued):", e);
+    }
+
+    // 9. Return success
     return NextResponse.json({
       success: true,
       message: "Okay, we'll check on that!",

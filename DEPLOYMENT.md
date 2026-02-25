@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel with GitHub Actions for background ingestion.
+Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel with Inngest for background ingestion.
 
 ## Prerequisites
 
@@ -9,6 +9,7 @@ Step-by-step instructions for deploying **Who Dies in This Movie?** to Vercel wi
 - A PostgreSQL database (options: [Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres), [Neon](https://neon.tech), [Supabase](https://supabase.com), or any hosted PostgreSQL)
 - [TMDB API key](https://www.themoviedb.org/settings/api) (bearer token)
 - [Gemini API key](https://aistudio.google.com/apikey) (free tier)
+- [Inngest account](https://app.inngest.com) (free tier)
 
 ---
 
@@ -41,6 +42,10 @@ vercel env add TMDB_API_KEY
 vercel env add NEXT_PUBLIC_TMDB_IMAGE_BASE   # value: https://image.tmdb.org/t/p
 vercel env add GEMINI_API_KEY
 vercel env add GEMINI_MODEL                  # value: gemini-2.5-flash
+
+# Inngest (required for event-driven ingestion)
+vercel env add INNGEST_SIGNING_KEY
+vercel env add INNGEST_EVENT_KEY
 
 # Optional
 vercel env add SENTRY_DSN
@@ -79,47 +84,38 @@ This loads `data/seed-movies.json` and `data/seed-deaths.json` into the producti
 
 ---
 
-## Step 6: Configure GitHub Actions for automated ingestion
+## Step 6: Set up Inngest
 
-Movie ingestion runs every 15 minutes via GitHub Actions (`.github/workflows/process-ingestion-queue.yml`). This workflow processes one pending job from the `IngestionQueue` table per run.
+Movie ingestion is powered by [Inngest](https://inngest.com) — an event-driven job queue that processes requests immediately when users submit them (no cron delays).
 
-### Add GitHub repository secrets
+### Create an Inngest app
 
-In your GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**
+1. Sign up at [app.inngest.com](https://app.inngest.com) (free)
+2. Create a new app called **"Who Dies in This Movie"**
+3. Copy the **Signing Key** and **Event Key** from the app dashboard
 
-Add these secrets:
+### Add keys to Vercel
 
-| Secret | Value |
-|--------|-------|
-| `DATABASE_URL` | Your production database connection string |
-| `TMDB_API_KEY` | Your TMDB bearer token |
-| `GEMINI_API_KEY` | Your Gemini API key |
-| `GEMINI_MODEL` | `gemini-2.5-flash` (or leave unset to use default) |
-
-### Verify the workflow
-
-1. Go to **GitHub → Actions tab**
-2. Select **"Process Ingestion Queue"**
-3. Click **"Run workflow"** to trigger a manual test run
-4. Check the logs to verify it connects to the database and exits cleanly
-
-Expected output when no jobs are pending:
-```
-[worker] Ingestion worker starting...
-[ingestion] No pending jobs in queue
-[worker] Done.
+```bash
+vercel env add INNGEST_SIGNING_KEY   # paste your signing key
+vercel env add INNGEST_EVENT_KEY     # paste your event key
 ```
 
-Expected output when a job is processed:
-```
-[worker] Ingestion worker starting...
-[ingestion] Processing job 1: The Movie Title (2024)
-...
-[ingestion] Job 1 complete: The Movie Title
-[worker] Done.
-```
+Or set them in **Vercel Dashboard → Project Settings → Environment Variables**.
 
-The workflow runs automatically on schedule (every 15 minutes) once the workflow file is on the default branch.
+### Register the webhook endpoint
+
+After deploying, register your app's Inngest endpoint in the Inngest dashboard:
+
+1. Go to **Inngest Dashboard → Apps → Sync**
+2. Enter your production URL: `https://<your-domain>/api/inngest`
+3. Click **Sync** — Inngest will detect the registered function (`process-movie-ingestion`)
+
+### Verify the connection
+
+1. In the Inngest dashboard, go to **Functions** — you should see `process-movie-ingestion` listed
+2. Request a movie via the UI
+3. Check **Inngest Dashboard → Runs** — you should see the function triggered and executing within seconds
 
 ---
 
@@ -142,9 +138,13 @@ curl "https://whodiesinthismovie.missfunmi.com/api/notifications/poll"
 
 When a user requests a movie that isn't in the database:
 
-1. The request is queued in the `IngestionQueue` table via `POST /api/movies/request`
-2. GitHub Actions runs the worker every 15 minutes (`npm run worker`)
-3. The user is notified via the notification bell (polling-based, 60s interval)
+1. `POST /api/movies/request` queues the job in the `IngestionQueue` table
+2. The request handler immediately sends a `movie/ingestion.requested` event to Inngest
+3. Inngest triggers the `process-movie-ingestion` function within seconds
+4. The function runs the full pipeline: TMDB lookup → death scraping → LLM extraction → DB insert
+5. The user is notified via the notification bell (polling-based, 60s interval)
+
+If Inngest is unavailable (e.g., during a deployment), the job remains in the queue with `status: "pending"`. You can process it manually with `npm run worker`.
 
 ---
 
@@ -160,43 +160,44 @@ npx prisma migrate dev
 # Seed with initial data
 npx prisma db seed
 
-# Start the app
+# Terminal 1: Start the Next.js app
 npm run dev
 
-# (Separate terminal) Process one job from the queue
-npm run worker
+# Terminal 2: Start the Inngest Dev Server (separate process)
+npm run inngest:dev
 ```
 
-For continuous local polling, re-run the worker periodically:
+Visit [http://localhost:8288](http://localhost:8288) to view the Inngest Dev Server — it shows all triggered events and function runs in real time. The Dev Server must be running to process movie requests locally.
+
+To manually process a job without Inngest (e.g., for debugging):
 
 ```bash
-# macOS/Linux: re-run every 30 seconds
-watch -n 30 npm run worker
+npm run worker
 ```
 
 ---
 
 ## Troubleshooting
 
-### GitHub Actions workflow not triggering
-- Schedules only run on the default branch — ensure the workflow file is merged to `main`/`master`
-- GitHub may delay scheduled workflows by up to 15 minutes under load
-- Use **"Run workflow"** in the Actions tab to trigger manually
+### Inngest function not triggering
 
-### Worker failing in GitHub Actions
-- Check the Actions run logs for the specific error
-- Verify all four secrets (`DATABASE_URL`, `TMDB_API_KEY`, `GEMINI_API_KEY`, `GEMINI_MODEL`) are set in repository settings
-- Ensure the database allows connections from GitHub Actions IP ranges (or use 0.0.0.0/0 for development)
+- Verify `INNGEST_SIGNING_KEY` and `INNGEST_EVENT_KEY` are set in Vercel env vars
+- Ensure the endpoint is synced in the Inngest dashboard (`/api/inngest`)
+- Check the Inngest dashboard **Runs** tab for error details
+- In local dev, ensure `npm run dev` is running (Inngest Dev Server auto-starts)
 
 ### Prisma migration errors on deploy
+
 - Ensure `DATABASE_URL` is correctly set in Vercel environment variables
 - If using Vercel Postgres, confirm the database is connected to the project
 
 ### Gemini rate limit errors (429)
+
 - The worker retries up to 5 times with exponential backoff (2/4/8/16/32s)
-- Free tier limit is 5 RPM — one job per 15-minute run is well within this
-- If errors persist, check the Actions logs for the full retry sequence
+- Free tier limit is 5 RPM — Inngest's immediate processing stays well within this
+- If errors persist, check the Inngest run logs for the full retry sequence
 
 ### Database connection issues
+
 - The app uses `@prisma/adapter-pg` with standard PostgreSQL connections
 - Vercel Postgres automatically handles IP allowlisting; external databases may need it configured

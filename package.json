@@ -8,7 +8,8 @@
     "vercel-build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
-    "worker": "tsx scripts/ingestion-worker.ts"
+    "worker": "tsx scripts/ingestion-worker.ts",
+    "inngest:dev": "npx --ignore-scripts=false inngest-cli@latest dev -u http://localhost:3000/api/inngest"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
     "@prisma/client": "^7.3.0",
     "@sentry/nextjs": "^10.38.0",
     "cheerio": "^1.2.0",
+    "inngest": "^3.52.3",
     "lucide-react": "^0.563.0",
     "next": "^16.1.6",
     "pg": "^8.18.0",
