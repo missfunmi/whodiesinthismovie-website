@@ -142,6 +142,12 @@ async function callGemini(
     const text = response.text;
 
     if (!text) {
+      const finishReason = response.candidates?.[0]?.finishReason ?? "unknown";
+      const safetyRatings = response.candidates?.[0]?.safetyRatings ?? [];
+      const promptFeedback = response.promptFeedback ?? null;
+      console.error(
+        `[llm:gemini] Empty response — finishReason: ${finishReason}, promptFeedback: ${JSON.stringify(promptFeedback)}, safetyRatings: ${JSON.stringify(safetyRatings)}`,
+      );
       throw new Error("Gemini returned empty response");
     }
 
