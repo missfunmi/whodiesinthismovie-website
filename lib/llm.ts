@@ -15,7 +15,12 @@
  * The local worker waits 500ms between jobs = max 2 req/min (within Gemini 5 RPM limit).
  */
 
-import { GoogleGenAI, ApiError } from "@google/genai";
+import {
+  GoogleGenAI,
+  ApiError,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/genai";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -136,7 +141,15 @@ async function callGemini(
     const response = await ai.models.generateContent({
       model,
       contents: prompt,
-      config: { abortSignal: controller.signal },
+      config: {
+        abortSignal: controller.signal,
+        safetySettings: [
+          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        ],
+      },
     });
 
     const text = response.text;
