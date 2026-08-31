@@ -94,8 +94,8 @@ export const processMovieIngestion = inngest.createFunction(
       }
 
       const llmConfig: LlmConfig = {
-        geminiApiKey: process.env.GEMINI_API_KEY || undefined,
-        geminiModel: process.env.GEMINI_MODEL || undefined,
+        anthropicApiKey: process.env.ANTHROPIC_API_KEY || undefined,
+        anthropicModel: process.env.ANTHROPIC_MODEL || undefined,
       };
 
       // Fetch job fresh from DB — step.run() JSON-serializes return values,

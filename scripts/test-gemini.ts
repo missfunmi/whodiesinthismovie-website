@@ -1,22 +1,22 @@
 /**
- * Standalone Gemini test script — run without deploying anything.
+ * Standalone Claude test script — run without deploying anything.
  *
- * Replicates the exact Wikipedia fetch + Gemini extraction the production
+ * Replicates the exact Wikipedia fetch + Claude extraction the production
  * ingestion worker uses (HTML parsing with cheerio, Plot section extraction).
  *
  * Usage:
- *   npx tsx scripts/test-gemini.ts "<movie title>" [model]
+ *   npx tsx scripts/test-gemini.ts "<movie title> [year]"
  *
  * Examples:
- *   npx tsx scripts/test-gemini.ts "After the Hunt" gemini-2.0-flash
- *   npx tsx scripts/test-gemini.ts "Sinners" gemini-2.0-flash
+ *   npx tsx scripts/test-gemini.ts "After the Hunt 2025"
+ *   npx tsx scripts/test-gemini.ts "Sinners 2025"
  */
 
 import "dotenv/config";
 import * as cheerio from "cheerio";
-import { GoogleGenAI, HarmCategory, HarmBlockThreshold } from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
 
-const [, , titleWithYear, model = process.env.GEMINI_MODEL ?? "gemini-3.5-flash"] =
+const [, , titleWithYear, model = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5"] =
   process.argv;
 
 // Parse optional year suffix: "Sinners 2025" → title="Sinners", year=2025
@@ -25,12 +25,12 @@ const title = yearMatch ? yearMatch[1] : titleWithYear;
 const year = yearMatch ? parseInt(yearMatch[2]) : undefined;
 
 if (!title) {
-  console.error('Usage: npx tsx scripts/test-gemini.ts "<title> [year]" [model]\n  e.g. npx tsx scripts/test-gemini.ts "Sinners 2025" gemini-3.5-flash');
+  console.error('Usage: npx tsx scripts/test-gemini.ts "<title> [year]"\n  e.g. npx tsx scripts/test-gemini.ts "Sinners 2025"');
   process.exit(1);
 }
 
-if (!process.env.GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY not set in .env");
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error("ANTHROPIC_API_KEY not set in .env");
   process.exit(1);
 }
 
@@ -115,27 +115,20 @@ Return ONLY valid JSON. No other text.
 Text:
 ${plot}`;
 
-  const safetySettings = [
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  ];
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-  console.log("Calling Gemini...\n");
-  const response = await ai.models.generateContent({
+  console.log("Calling Claude...\n");
+  const response = await client.messages.create({
     model,
-    contents: prompt,
-    config: { safetySettings },
+    max_tokens: 16_000,
+    messages: [{ role: "user", content: prompt }],
   });
 
+  const block = response.content.find((b) => b.type === "text");
   console.log("=== Response ===");
-  console.log("text:", response.text?.slice(0, 800) ?? "(empty)");
-  console.log("finishReason:", response.candidates?.[0]?.finishReason ?? "none");
-  console.log("promptFeedback:", JSON.stringify(response.promptFeedback ?? null, null, 2));
-  console.log("safetyRatings:", JSON.stringify(response.candidates?.[0]?.safetyRatings ?? [], null, 2));
+  console.log("text:", block?.type === "text" ? block.text.slice(0, 800) : "(empty)");
+  console.log("stop_reason:", response.stop_reason);
+  console.log("usage:", JSON.stringify(response.usage, null, 2));
 }
 
 main().catch((err) => {
