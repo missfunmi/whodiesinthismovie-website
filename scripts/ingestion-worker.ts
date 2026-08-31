@@ -33,8 +33,8 @@ function validateEnv(): {
 } {
   const databaseUrl = process.env.DATABASE_URL;
   const tmdbApiKey = process.env.TMDB_API_KEY;
-  const geminiApiKey = process.env.GEMINI_API_KEY || undefined;
-  const geminiModel = process.env.GEMINI_MODEL || undefined;
+  const anthropicApiKey = process.env.ANTHROPIC_API_KEY || undefined;
+  const anthropicModel = process.env.ANTHROPIC_MODEL || undefined;
 
   if (!databaseUrl) {
     console.error("[worker] Missing DATABASE_URL environment variable");
@@ -48,7 +48,7 @@ function validateEnv(): {
   return {
     databaseUrl,
     tmdbApiKey,
-    llmConfig: { geminiApiKey, geminiModel },
+    llmConfig: { anthropicApiKey, anthropicModel },
   };
 }
 
@@ -78,7 +78,7 @@ async function main(): Promise<void> {
     `  TMDB API: configured (${config.tmdbApiKey.startsWith("Bearer ") ? "Bearer token" : "raw key, will add Bearer prefix"})`,
   );
   console.log(
-    `  LLM: Gemini ${config.llmConfig.geminiApiKey ? `configured (model: ${config.llmConfig.geminiModel ?? "gemini-2.5-flash"})` : "not configured (no GEMINI_API_KEY — LLM enrichment skipped)"}`,
+    `  LLM: Claude ${config.llmConfig.anthropicApiKey ? `configured (model: ${config.llmConfig.anthropicModel ?? "claude-haiku-4-5"})` : "not configured (no ANTHROPIC_API_KEY — LLM enrichment skipped)"}`,
   );
 
   // Process jobs until the queue is empty or the time budget is exhausted.

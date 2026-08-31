@@ -1,34 +1,22 @@
 /**
- * Shared LLM module — Gemini only (primary LLM for production).
+ * Shared LLM module — Anthropic Claude (primary LLM for production).
  *
  * Used by:
- *   - lib/ingestion.ts (which is used by the ingestion worker)
+ *   - lib/ingestion.ts (which is used by the ingestion worker and Inngest function)
  *
  * Config is passed as a parameter (not read from process.env) so the module
  * works in both Next.js and standalone Node.js contexts.
- *
- * Gemini free tier limits (as of 2025):
- *   - 5 requests per minute (RPM)
- *   - 250,000 tokens per minute (TPM)
- *   - 20 requests per day (RPD)
- *
- * The local worker waits 500ms between jobs = max 2 req/min (within Gemini 5 RPM limit).
  */
 
-import {
-  GoogleGenAI,
-  ApiError,
-  HarmCategory,
-  HarmBlockThreshold,
-} from "@google/genai";
+import Anthropic from "@anthropic-ai/sdk";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export interface LlmConfig {
-  geminiApiKey?: string;
-  geminiModel?: string; // defaults to GEMINI_DEFAULT_MODEL if not set
+  anthropicApiKey?: string;
+  anthropicModel?: string;
 }
 
 export interface ExtractedDeath {
@@ -50,12 +38,11 @@ export interface ScrapedContent {
 // Constants
 // ---------------------------------------------------------------------------
 
-const GEMINI_DEFAULT_MODEL = "gemini-2.5-flash";
-const GEMINI_EXTRACTION_TIMEOUT_MS = 30_000;
+const ANTHROPIC_DEFAULT_MODEL = "claude-haiku-4-5";
+const ANTHROPIC_EXTRACTION_TIMEOUT_MS = 30_000;
 
-// Retry configuration — 5 retries with exponential backoff
-const GEMINI_MAX_RETRIES = 5;
-const GEMINI_RETRY_DELAYS = [2_000, 4_000, 8_000, 16_000, 32_000]; // ms
+const ANTHROPIC_MAX_RETRIES = 5;
+const ANTHROPIC_RETRY_DELAYS = [2_000, 4_000, 8_000, 16_000, 32_000]; // ms
 
 // ---------------------------------------------------------------------------
 // Utility
@@ -70,48 +57,35 @@ function sleep(ms: number): Promise<void> {
 // ---------------------------------------------------------------------------
 
 /**
- * Returns true for recoverable Gemini errors that should be retried:
+ * Returns true for recoverable Anthropic errors that should be retried:
  *   - 429 (rate limited)
- *   - 500/502/503 (server errors)
+ *   - 500+ (server errors)
  *   - JSON parsing failures (transient model output corruption)
  *
  * Returns false for non-retryable errors:
- *   - 400 (bad request — prompt issue)
- *   - 401/403 (authentication/authorization — config issue)
- *   - AbortError (request timeout — not worth retrying with same timeout)
+ *   - 400 (bad request)
+ *   - 401 (authentication)
+ *   - 403 (permission denied)
+ *   - Timeout (not worth retrying with the same timeout)
  */
-function isRetryableGeminiError(error: unknown): boolean {
-  if (error instanceof Error && error.name === "AbortError") return false;
+function isRetryableError(error: unknown): boolean {
+  // SDK-typed exceptions — most specific first
+  if (error instanceof Anthropic.RateLimitError) return true;
+  if (error instanceof Anthropic.AuthenticationError) return false;
+  if (error instanceof Anthropic.BadRequestError) return false;
 
-  // Primary signal: SDK's typed ApiError with a numeric HTTP status code.
-  // This is robust against SDK message format changes.
-  if (error instanceof ApiError) {
-    const { status } = error;
-    if (status === 429 || status === 500 || status === 502 || status === 503)
-      return true;
-    if (status === 400 || status === 401 || status === 403) return false;
-    // Unknown status — fall through to message-based checks below
-  }
-
-  const msg = error instanceof Error ? error.message : String(error);
-
-  // Fallback: message-based checks for non-ApiError throws (our own errors like
-  // "not a JSON array", or errors from SDK versions that don't use ApiError).
-  if (msg.includes("401") || msg.includes("403") || msg.includes("400")) {
+  // Remaining API errors — check status code
+  if (error instanceof Anthropic.APIError) {
+    if (error.status >= 500) return true;
+    // 403, 404, and other 4xx — not retryable
     return false;
   }
-  if (
-    msg.includes("429") ||
-    msg.includes("500") ||
-    msg.includes("502") ||
-    msg.includes("503") ||
-    msg.toLowerCase().includes("rate limit") ||
-    msg.toLowerCase().includes("quota")
-  ) {
-    return true;
-  }
+
+  // Connection errors (includes timeouts) — not worth retrying
+  if (error instanceof Anthropic.APIConnectionError) return false;
 
   // JSON parsing failures — transient model output corruption, worth retrying
+  const msg = error instanceof Error ? error.message : String(error);
   if (
     msg.includes("JSON") ||
     msg.toLowerCase().includes("parse") ||
@@ -125,59 +99,32 @@ function isRetryableGeminiError(error: unknown): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Gemini helper
+// Claude helper
 // ---------------------------------------------------------------------------
 
-async function callGemini(
-  ai: GoogleGenAI,
+async function callClaude(
+  client: Anthropic,
   prompt: string,
   model: string,
   timeoutMs: number,
 ): Promise<string> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  const safetySettings = [
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  ];
-  console.log(
-    `[llm:gemini:debug] safetySettings: ${JSON.stringify(safetySettings)}, promptLength: ${prompt.length}, promptSnippet: ${prompt.slice(0, 200).replace(/\n/g, " ")}`,
+  const response = await client.messages.create(
+    {
+      model,
+      max_tokens: 16_000,
+      messages: [{ role: "user", content: prompt }],
+    },
+    { timeout: timeoutMs },
   );
 
-  try {
-    const response = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        abortSignal: controller.signal,
-        safetySettings,
-      },
-    });
-
-    const text = response.text;
-
-    if (!text) {
-      const finishReason = response.candidates?.[0]?.finishReason ?? "unknown";
-      const safetyRatings = response.candidates?.[0]?.safetyRatings ?? [];
-      const promptFeedback = response.promptFeedback ?? null;
-      console.error(
-        `[llm:gemini] Empty response — finishReason: ${finishReason}, promptFeedback: ${JSON.stringify(promptFeedback)}, safetyRatings: ${JSON.stringify(safetyRatings)}`,
-      );
-      throw new Error("Gemini returned empty response");
-    }
-
-    return text.trim();
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Gemini timeout");
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
+  const block = response.content.find((b) => b.type === "text");
+  if (!block || block.type !== "text" || !block.text) {
+    throw new Error(
+      `Claude returned empty response (stop_reason: ${response.stop_reason})`,
+    );
   }
+
+  return block.text.trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -228,13 +175,11 @@ function validateDeathRecord(d: Record<string, unknown>): ExtractedDeath {
 }
 
 function parseDeathResponse(raw: string): ExtractedDeath[] {
-  // Strip markdown code fences if present
   let cleaned = raw
     .replace(/```json\s*/gi, "")
     .replace(/```\s*/g, "")
     .trim();
 
-  // Try to extract JSON array from the response if it's wrapped in other text
   const arrayMatch = cleaned.match(/\[[\s\S]*\]/);
   if (arrayMatch) {
     cleaned = arrayMatch[0];
@@ -310,7 +255,7 @@ ${content.slice(0, 6000)}`;
 
 /**
  * Validate whether a query is a real movie.
- * TODO — Skipping LLM validation of movie title for now — results very inconsistent, needs finetuning
+ * Skipping LLM validation — results inconsistent, needs fine-tuning.
  */
 export async function validateMovieTitle(
   query: string,
@@ -321,10 +266,10 @@ export async function validateMovieTitle(
 }
 
 /**
- * Extract/enrich structured death data using Gemini.
- * Retries up to GEMINI_MAX_RETRIES times on recoverable errors (429, 500/502/503, JSON parse).
- * Does NOT retry on auth errors (401/403) or timeouts.
- * Falls back to pre-parsed deaths if Gemini fails after all retries.
+ * Extract/enrich structured death data using Claude.
+ * Retries up to ANTHROPIC_MAX_RETRIES times on recoverable errors (429, 5xx, JSON parse).
+ * Does NOT retry on auth errors or connection timeouts.
+ * Falls back to pre-parsed deaths if Claude fails after all retries.
  */
 export async function extractDeaths(
   title: string,
@@ -336,13 +281,10 @@ export async function extractDeaths(
   const hasAnyContent = scraped.fandomContent.length > 0 || hasPlot;
 
   if (!hasAnyContent && !hasParsedDeaths) {
-    console.log(
-      `[llm] No content to extract deaths from — zero-death movie`,
-    );
+    console.log(`[llm] No content to extract deaths from — zero-death movie`);
     return [];
   }
 
-  // If we have parsed deaths but no plot summary, use them as-is (no enrichment needed)
   if (hasParsedDeaths && !hasPlot) {
     console.log(
       `[llm] Using ${scraped.parsedDeaths.length} parsed deaths (no plot summary available for enrichment)`,
@@ -350,15 +292,14 @@ export async function extractDeaths(
     return scraped.parsedDeaths;
   }
 
-  // Skip LLM if Gemini API key is not configured
-  if (!config.geminiApiKey) {
+  if (!config.anthropicApiKey) {
     console.log(
-      `[llm] GEMINI_API_KEY not set — skipping LLM enrichment, using ${scraped.parsedDeaths.length} parsed deaths`,
+      `[llm] ANTHROPIC_API_KEY not set — skipping LLM enrichment, using ${scraped.parsedDeaths.length} parsed deaths`,
     );
     return hasParsedDeaths ? scraped.parsedDeaths : [];
   }
 
-  const model = config.geminiModel || GEMINI_DEFAULT_MODEL;
+  const model = config.anthropicModel || ANTHROPIC_DEFAULT_MODEL;
   const prompt =
     hasParsedDeaths && hasPlot
       ? buildEnrichmentPrompt(title, scraped)
@@ -367,33 +308,38 @@ export async function extractDeaths(
           scraped.plotSummary || scraped.fandomContent,
         );
 
-  // Instantiate once — reused across all retry attempts
-  const ai = new GoogleGenAI({ apiKey: config.geminiApiKey });
+  // maxRetries: 0 — we manage our own retry loop below
+  const client = new Anthropic({
+    apiKey: config.anthropicApiKey,
+    maxRetries: 0,
+  });
 
-  // Retry loop — up to GEMINI_MAX_RETRIES attempts with exponential backoff
-  for (let attempt = 0; attempt < GEMINI_MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt < ANTHROPIC_MAX_RETRIES; attempt++) {
     try {
       console.log(
-        `[llm:gemini] Calling Gemini for death extraction (attempt ${attempt + 1}/${GEMINI_MAX_RETRIES}, model: ${model})...`,
+        `[llm:claude] Calling Claude for death extraction (attempt ${attempt + 1}/${ANTHROPIC_MAX_RETRIES}, model: ${model})...`,
       );
 
-      const raw = await callGemini(ai, prompt, model, GEMINI_EXTRACTION_TIMEOUT_MS);
+      const raw = await callClaude(
+        client,
+        prompt,
+        model,
+        ANTHROPIC_EXTRACTION_TIMEOUT_MS,
+      );
       console.log(
-        `[llm:gemini] Raw response (first 300 chars): ${raw.slice(0, 300)}`,
+        `[llm:claude] Raw response (first 300 chars): ${raw.slice(0, 300)}`,
       );
 
       const deaths = parseDeathResponse(raw);
-      console.log(`[llm:gemini] Extracted ${deaths.length} deaths`);
+      console.log(`[llm:claude] Extracted ${deaths.length} deaths`);
 
-      // Sanity check: if Gemini returned significantly fewer deaths than parsed,
-      // it likely truncated output — fall back to parsed deaths
       if (hasParsedDeaths && deaths.length < scraped.parsedDeaths.length * 0.8) {
         const llmNames = new Set(deaths.map((d) => d.character));
         const dropped = scraped.parsedDeaths
           .filter((d) => !llmNames.has(d.character))
           .map((d) => d.character);
         console.warn(
-          `[llm:gemini] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
+          `[llm:claude] Enrichment dropped deaths (${deaths.length} vs ${scraped.parsedDeaths.length} parsed) — using parsed deaths. Dropped: ${dropped.join(", ")}`,
         );
         return scraped.parsedDeaths;
       }
@@ -401,23 +347,22 @@ export async function extractDeaths(
       return deaths;
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      const isLast = attempt === GEMINI_MAX_RETRIES - 1;
+      const isLast = attempt === ANTHROPIC_MAX_RETRIES - 1;
 
-      if (isLast || !isRetryableGeminiError(error)) {
-        // All retries exhausted, or non-retryable error (auth, timeout, etc.)
+      if (isLast || !isRetryableError(error)) {
         if (isLast) {
           console.warn(
-            `[llm:gemini] All ${GEMINI_MAX_RETRIES} attempts failed. Last error: ${msg}`,
+            `[llm:claude] All ${ANTHROPIC_MAX_RETRIES} attempts failed. Last error: ${msg}`,
           );
         } else {
           console.warn(
-            `[llm:gemini] Non-retryable error (${msg}) — not retrying`,
+            `[llm:claude] Non-retryable error (${msg}) — not retrying`,
           );
         }
 
         if (hasParsedDeaths) {
           console.warn(
-            `[llm:gemini] Falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
+            `[llm:claude] Falling back to ${scraped.parsedDeaths.length} parsed deaths without enrichment`,
           );
           return scraped.parsedDeaths;
         }
@@ -425,14 +370,13 @@ export async function extractDeaths(
         throw new Error(`LLM extraction failed after all attempts: ${msg}`);
       }
 
-      const delay = GEMINI_RETRY_DELAYS[attempt] ?? 32_000;
+      const delay = ANTHROPIC_RETRY_DELAYS[attempt] ?? 32_000;
       console.warn(
-        `[llm:gemini] Attempt ${attempt + 1}/${GEMINI_MAX_RETRIES} failed (${msg}), retrying in ${delay / 1000}s...`,
+        `[llm:claude] Attempt ${attempt + 1}/${ANTHROPIC_MAX_RETRIES} failed (${msg}), retrying in ${delay / 1000}s...`,
       );
       await sleep(delay);
     }
   }
 
-  // Should not reach here, but just in case
   return hasParsedDeaths ? scraped.parsedDeaths : [];
 }
